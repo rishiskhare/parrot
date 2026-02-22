@@ -38,6 +38,49 @@ use tauri_plugin_log::{Builder as LogBuilder, RotationStrategy, Target, TargetKi
 
 use crate::settings::get_settings;
 
+/// Configure environment variables so the bundled espeak-ng binary and data
+/// directory are found by tts-rs at runtime.
+///
+/// This must be called **before** any TTS manager is created.  The function is
+/// intentionally best-effort: if the bundled files are missing (e.g. during
+/// `cargo test` or a dev build without resources) we silently fall back to the
+/// system-installed `espeak-ng`.
+fn setup_bundled_espeak_ng(app_handle: &AppHandle) {
+    let resolver = app_handle.path();
+
+    // --- espeak-ng binary ---------------------------------------------------
+    #[cfg(not(target_os = "windows"))]
+    let bin_name = "espeak-ng/espeak-ng";
+    #[cfg(target_os = "windows")]
+    let bin_name = "espeak-ng/espeak-ng.exe";
+
+    if let Ok(bin_path) = resolver.resolve(bin_name, tauri::path::BaseDirectory::Resource) {
+        if bin_path.exists() {
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                if let Ok(meta) = std::fs::metadata(&bin_path) {
+                    let mut perms = meta.permissions();
+                    // Ensure the executable bit is set (0o755)
+                    perms.set_mode(perms.mode() | 0o111);
+                    let _ = std::fs::set_permissions(&bin_path, perms);
+                }
+            }
+            std::env::set_var("ESPEAK_NG_PATH", &bin_path);
+            log::info!("Bundled espeak-ng binary: {}", bin_path.display());
+        }
+    }
+
+    // --- espeak-ng-data directory --------------------------------------------
+    if let Ok(data_path) = resolver.resolve("espeak-ng-data", tauri::path::BaseDirectory::Resource)
+    {
+        if data_path.is_dir() {
+            std::env::set_var("ESPEAK_DATA_PATH", &data_path);
+            log::info!("Bundled espeak-ng data: {}", data_path.display());
+        }
+    }
+}
+
 // Global atomic to store the file log level filter
 // We use u8 to store the log::LevelFilter as a number
 pub static FILE_LOG_LEVEL: AtomicU8 = AtomicU8::new(log::LevelFilter::Debug as u8);
@@ -391,6 +434,7 @@ pub fn run(cli_args: CliArgs) {
             let app_handle = app.handle().clone();
             app.manage(ActionCoordinator::new(app_handle.clone()));
 
+            setup_bundled_espeak_ng(&app_handle);
             initialize_core_logic(&app_handle);
 
             // Hide tray icon if --no-tray was passed

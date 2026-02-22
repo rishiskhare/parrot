@@ -7108,9 +7108,7 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "tts-rs"
-version = "2026.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba9a0db22874b243f3abf14ecd2b562dd5883cbb13943c239eab58692776e609"
+version = "2026.2.2"
 dependencies = [
  "derive_builder",
  "env_logger",

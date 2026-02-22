@@ -297,6 +297,43 @@ jobs:
           fi
           echo "platform=${patched_platform}" >> $GITHUB_OUTPUT
 
+      - name: Bundle espeak-ng binary (macOS)
+        if: contains(inputs.platform, 'macos')
+        run: |
+          brew install espeak-ng
+          mkdir -p src-tauri/resources/espeak-ng
+          cp "$(brew --prefix espeak-ng)/bin/espeak-ng" src-tauri/resources/espeak-ng/espeak-ng
+
+      - name: Bundle espeak-ng binary (Ubuntu)
+        if: contains(inputs.platform, 'ubuntu')
+        run: |
+          sudo apt-get install -y espeak-ng
+          mkdir -p src-tauri/resources/espeak-ng
+          cp "$(which espeak-ng)" src-tauri/resources/espeak-ng/espeak-ng
+
+      - name: Bundle espeak-ng binary (Windows x64)
+        if: contains(inputs.platform, 'windows') && !contains(inputs.target, 'aarch64')
+        shell: pwsh
+        run: |
+          $espeakVersion = "1.51"
+          $msiUrl = "https://github.com/espeak-ng/espeak-ng/releases/download/$espeakVersion/espeak-ng-X64.msi"
+          Invoke-WebRequest -Uri $msiUrl -OutFile espeak-ng.msi
+          msiexec /a espeak-ng.msi /qn TARGETDIR="$PWD\espeak-extract"
+          New-Item -ItemType Directory -Force -Path "src-tauri\resources\espeak-ng" | Out-Null
+          Copy-Item "espeak-extract\PFiles\eSpeak NG\espeak-ng.exe" "src-tauri\resources\espeak-ng\espeak-ng.exe"
+
+      - name: Bundle espeak-ng binary (Windows ARM64)
+        if: contains(inputs.platform, 'windows') && contains(inputs.target, 'aarch64')
+        shell: pwsh
+        run: |
+          # No native ARM64 build — use x64 binary (runs under WoW64 emulation)
+          $espeakVersion = "1.51"
+          $msiUrl = "https://github.com/espeak-ng/espeak-ng/releases/download/$espeakVersion/espeak-ng-X64.msi"
+          Invoke-WebRequest -Uri $msiUrl -OutFile espeak-ng.msi
+          msiexec /a espeak-ng.msi /qn TARGETDIR="$PWD\espeak-extract"
+          New-Item -ItemType Directory -Force -Path "src-tauri\resources\espeak-ng" | Out-Null
+          Copy-Item "espeak-extract\PFiles\eSpeak NG\espeak-ng.exe" "src-tauri\resources\espeak-ng\espeak-ng.exe"
+
       - name: Build with Tauri
         uses: tauri-apps/tauri-action@v0
         env:

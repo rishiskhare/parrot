@@ -16,7 +16,18 @@ jobs:
 
           ARM_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/Parrot_${VERSION}_aarch64.dmg"
 
-          curl -fsSL "$ARM_URL" -o arm.dmg
+          # Retry up to 10 times with 60s delay — assets may still be uploading
+          for i in $(seq 1 10); do
+            if curl -fsSL "$ARM_URL" -o arm.dmg; then
+              break
+            fi
+            if [ "$i" -eq 10 ]; then
+              echo "Failed to download DMG after 10 attempts"
+              exit 1
+            fi
+            echo "Attempt $i failed, retrying in 60s..."
+            sleep 60
+          done
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "arm_sha256=$(shasum -a 256 arm.dmg | awk '{print $1}')" >> $GITHUB_OUTPUT
