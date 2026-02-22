@@ -300,19 +300,60 @@ jobs:
       - name: Bundle espeak-ng binary (macOS)
         if: contains(inputs.platform, 'macos')
         run: |
+          set -euo pipefail
           brew install espeak-ng
-          mkdir -p src-tauri/resources/espeak-ng
-          cp "$(brew --prefix espeak-ng)/bin/espeak-ng" src-tauri/resources/espeak-ng/espeak-ng
+          DEST="src-tauri/resources/espeak-ng"
+          mkdir -p "$DEST"
 
-          # The bundled binary must be codesigned with hardened runtime and a
-          # secure timestamp, otherwise Apple notarization rejects the entire
-          # app bundle.  APPLE_SIGNING_IDENTITY is set by the earlier
-          # "verify certificate" step when a Developer ID cert is available.
-          if [ -n "$APPLE_SIGNING_IDENTITY" ]; then
-            codesign --force --options runtime --timestamp \
-              --sign "$APPLE_SIGNING_IDENTITY" \
-              src-tauri/resources/espeak-ng/espeak-ng
-            echo "Signed bundled espeak-ng with: $APPLE_SIGNING_IDENTITY"
+          PREFIX="$(brew --prefix espeak-ng)"
+          cp "$PREFIX/bin/espeak-ng" "$DEST/espeak-ng"
+
+          # Bundle shared libraries that espeak-ng links against.
+          # Without these, the binary crashes on machines without Homebrew.
+          cp "$PREFIX/lib/libespeak-ng.1.dylib" "$DEST/"
+          PCAUDIO="$(brew --prefix pcaudiolib)/lib/libpcaudio.0.dylib"
+          if [ -f "$PCAUDIO" ]; then
+            cp "$PCAUDIO" "$DEST/"
+          fi
+
+          # Make files writable so install_name_tool can modify them
+          # (Homebrew copies may be read-only).
+          chmod u+w "$DEST"/*
+
+          # Rewrite dylib load paths so the binary finds libraries next to
+          # itself (@executable_path) instead of at absolute Homebrew paths.
+          # macOS SIP strips DYLD_LIBRARY_PATH for hardened-runtime binaries,
+          # so install_name_tool is the only reliable mechanism.
+          #
+          # Read actual embedded paths from the binary (brew --prefix returns
+          # a symlink that may differ from the Cellar path stored in the binary).
+          ESPEAK_LIB="$(otool -L "$DEST/espeak-ng" | grep libespeak-ng | awk '{print $1}')"
+          PCAUDIO_LIB="$(otool -L "$DEST/espeak-ng" | grep libpcaudio | awk '{print $1}' || true)"
+
+          install_name_tool -change "$ESPEAK_LIB" "@executable_path/libespeak-ng.1.dylib" "$DEST/espeak-ng"
+          if [ -n "$PCAUDIO_LIB" ] && [ -f "$DEST/libpcaudio.0.dylib" ]; then
+            install_name_tool -change "$PCAUDIO_LIB" "@executable_path/libpcaudio.0.dylib" "$DEST/espeak-ng"
+            # libespeak-ng.dylib itself may also link to pcaudiolib
+            PCAUDIO_IN_LIB="$(otool -L "$DEST/libespeak-ng.1.dylib" | grep libpcaudio | awk '{print $1}' || true)"
+            if [ -n "$PCAUDIO_IN_LIB" ]; then
+              install_name_tool -change "$PCAUDIO_IN_LIB" "@loader_path/libpcaudio.0.dylib" "$DEST/libespeak-ng.1.dylib"
+            fi
+          fi
+
+          # Verify the rewritten paths resolve correctly
+          echo "--- espeak-ng dylib references ---"
+          otool -L "$DEST/espeak-ng"
+
+          # Codesign all bundled binaries with hardened runtime and secure
+          # timestamp.  Apple notarization rejects unsigned executables and
+          # dylibs inside the app bundle.
+          if [ -n "${APPLE_SIGNING_IDENTITY:-}" ]; then
+            for f in "$DEST"/*.dylib "$DEST/espeak-ng"; do
+              codesign --force --options runtime --timestamp \
+                --sign "$APPLE_SIGNING_IDENTITY" "$f"
+            done
+            codesign --verify --verbose "$DEST/espeak-ng"
+            echo "Signed and verified all bundled espeak-ng files"
           else
             echo "No signing identity — bundled espeak-ng will be unsigned"
           fi
@@ -320,24 +361,57 @@ jobs:
       - name: Bundle espeak-ng binary (Ubuntu)
         if: contains(inputs.platform, 'ubuntu')
         run: |
-          sudo apt-get install -y espeak-ng
-          mkdir -p src-tauri/resources/espeak-ng
-          cp "$(which espeak-ng)" src-tauri/resources/espeak-ng/espeak-ng
+          set -euo pipefail
+          sudo apt-get install -y espeak-ng libespeak-ng1 patchelf
+          DEST="src-tauri/resources/espeak-ng"
+          mkdir -p "$DEST"
+          cp "$(which espeak-ng)" "$DEST/espeak-ng"
+
+          # Bundle shared libraries so the binary works on systems without
+          # espeak-ng installed.  LD_LIBRARY_PATH is set at runtime by
+          # tts-rs to point at the binary's parent directory.
+          for lib in libespeak-ng.so.1 libpcaudio.so.0; do
+            LIB_PATH="$(ldconfig -p | grep "$lib" | head -1 | awk '{print $NF}')"
+            if [ -n "$LIB_PATH" ] && [ -f "$LIB_PATH" ]; then
+              cp "$LIB_PATH" "$DEST/"
+              echo "Bundled $lib from $LIB_PATH"
+            else
+              echo "Warning: $lib not found, skipping"
+            fi
+          done
+
+          # Set RPATH so the binary looks next to itself for shared libs
+          if command -v patchelf &>/dev/null; then
+            patchelf --set-rpath '$ORIGIN' "$DEST/espeak-ng"
+            echo "Set RPATH to \$ORIGIN"
+          else
+            echo "patchelf not available — relying on LD_LIBRARY_PATH at runtime"
+          fi
 
       - name: Bundle espeak-ng binary (Windows)
         if: contains(inputs.platform, 'windows')
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
           $espeakVersion = "1.51"
           $msiUrl = "https://github.com/espeak-ng/espeak-ng/releases/download/$espeakVersion/espeak-ng-X64.msi"
           Invoke-WebRequest -Uri $msiUrl -OutFile espeak-ng.msi
-          # Extract MSI contents with 7z for reliable path handling
-          7z x espeak-ng.msi -oespeak-extract -y
-          # Find the binary regardless of internal MSI directory structure
-          $bin = Get-ChildItem -Path espeak-extract -Recurse -Filter "espeak-ng.exe" | Select-Object -First 1
-          if (-not $bin) { Write-Error "espeak-ng.exe not found in extracted MSI"; exit 1 }
+          $installDir = "$PWD\espeak-install"
+          Start-Process msiexec -ArgumentList "/i","espeak-ng.msi","/qn","INSTALLDIR=$installDir" -Wait -NoNewWindow
+
+          $bin = Get-ChildItem -Path $installDir -Recurse -Filter "espeak-ng.exe" | Select-Object -First 1
+          if (-not $bin) { throw "espeak-ng.exe not found after MSI install" }
           New-Item -ItemType Directory -Force -Path "src-tauri\resources\espeak-ng" | Out-Null
           Copy-Item $bin.FullName "src-tauri\resources\espeak-ng\espeak-ng.exe"
+
+          # Bundle DLLs from the same directory as the exe.
+          # Windows searches the exe's directory first for DLLs, so placing
+          # them alongside espeak-ng.exe is sufficient.
+          $binDir = $bin.DirectoryName
+          Get-ChildItem -Path $binDir -Filter "*.dll" | ForEach-Object {
+            Copy-Item $_.FullName "src-tauri\resources\espeak-ng\"
+            Write-Host "Bundled DLL: $($_.Name)"
+          }
           Write-Host "Bundled espeak-ng from: $($bin.FullName)"
 
       - name: Build with Tauri

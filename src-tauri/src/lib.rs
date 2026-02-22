@@ -38,14 +38,16 @@ use tauri_plugin_log::{Builder as LogBuilder, RotationStrategy, Target, TargetKi
 
 use crate::settings::get_settings;
 
-/// Configure environment variables so the bundled espeak-ng binary and data
-/// directory are found by tts-rs at runtime.
+/// Resolve paths to the bundled espeak-ng binary and data directory.
 ///
-/// This must be called **before** any TTS manager is created.  The function is
-/// intentionally best-effort: if the bundled files are missing (e.g. during
-/// `cargo test` or a dev build without resources) we silently fall back to the
-/// system-installed `espeak-ng`.
-fn setup_bundled_espeak_ng(app_handle: &AppHandle) {
+/// Returns `(Option<PathBuf>, Option<PathBuf>)` — the binary path and data
+/// directory.  These are passed to `KokoroModelParams` so tts-rs can locate
+/// espeak-ng without relying on environment variables or PATH.
+///
+/// Best-effort: if the bundled files are missing (e.g. during `cargo test`
+/// or a dev build without resources) we return `None` and tts-rs falls back
+/// to system-installed `espeak-ng`.
+fn resolve_bundled_espeak_ng(app_handle: &AppHandle) -> (Option<std::path::PathBuf>, Option<std::path::PathBuf>) {
     let resolver = app_handle.path();
 
     // --- espeak-ng binary ---------------------------------------------------
@@ -54,31 +56,33 @@ fn setup_bundled_espeak_ng(app_handle: &AppHandle) {
     #[cfg(target_os = "windows")]
     let bin_name = "espeak-ng/espeak-ng.exe";
 
-    if let Ok(bin_path) = resolver.resolve(bin_name, tauri::path::BaseDirectory::Resource) {
-        if bin_path.exists() {
+    let bin_path = resolver
+        .resolve(bin_name, tauri::path::BaseDirectory::Resource)
+        .ok()
+        .filter(|p| p.exists())
+        .inspect(|p| {
             #[cfg(unix)]
             {
                 use std::os::unix::fs::PermissionsExt;
-                if let Ok(meta) = std::fs::metadata(&bin_path) {
+                if let Ok(meta) = std::fs::metadata(p) {
                     let mut perms = meta.permissions();
-                    // Ensure the executable bit is set (0o755)
                     perms.set_mode(perms.mode() | 0o111);
-                    let _ = std::fs::set_permissions(&bin_path, perms);
+                    let _ = std::fs::set_permissions(p, perms);
                 }
             }
-            std::env::set_var("ESPEAK_NG_PATH", &bin_path);
-            log::info!("Bundled espeak-ng binary: {}", bin_path.display());
-        }
-    }
+            log::info!("Bundled espeak-ng binary: {}", p.display());
+        });
 
     // --- espeak-ng-data directory --------------------------------------------
-    if let Ok(data_path) = resolver.resolve("espeak-ng-data", tauri::path::BaseDirectory::Resource)
-    {
-        if data_path.is_dir() {
-            std::env::set_var("ESPEAK_DATA_PATH", &data_path);
-            log::info!("Bundled espeak-ng data: {}", data_path.display());
-        }
-    }
+    let data_path = resolver
+        .resolve("espeak-ng-data", tauri::path::BaseDirectory::Resource)
+        .ok()
+        .filter(|p| p.is_dir())
+        .inspect(|p| {
+            log::info!("Bundled espeak-ng data: {}", p.display());
+        });
+
+    (bin_path, data_path)
 }
 
 // Global atomic to store the file log level filter
@@ -141,7 +145,10 @@ fn show_main_window(app: &AppHandle) {
     }
 }
 
-fn initialize_core_logic(app_handle: &AppHandle) {
+fn initialize_core_logic(
+    app_handle: &AppHandle,
+    espeak_paths: (Option<std::path::PathBuf>, Option<std::path::PathBuf>),
+) {
     // Note: Enigo (keyboard/mouse simulation) is NOT initialized here.
     // The frontend is responsible for calling the `initialize_enigo` command
     // after onboarding completes. This avoids triggering permission dialogs
@@ -153,7 +160,7 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     let history_manager =
         Arc::new(HistoryManager::new(app_handle).expect("Failed to initialize history manager"));
     let speech_manager = Arc::new(
-        TTSManager::new(app_handle, model_manager.clone())
+        TTSManager::new(app_handle, model_manager.clone(), espeak_paths)
             .expect("Failed to initialize speech manager"),
     );
 
@@ -168,7 +175,7 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     // This matches the pattern used for Enigo initialization.
 
     #[cfg(unix)]
-    let signals = Signals::new(&[SIGUSR1, SIGUSR2]).unwrap();
+    let signals = Signals::new([SIGUSR1, SIGUSR2]).unwrap();
     // Set up signal handlers for toggling transcription
     #[cfg(unix)]
     signal_handle::setup_signal_handler(app_handle.clone(), signals);
@@ -256,7 +263,7 @@ fn initialize_core_logic(app_handle: &AppHandle) {
 
     // Get the autostart manager and configure based on user setting
     let autostart_manager = app_handle.autolaunch();
-    let settings = settings::get_settings(&app_handle);
+    let settings = settings::get_settings(app_handle);
 
     if settings.autostart_enabled {
         // Enable autostart if user has opted in
@@ -419,7 +426,7 @@ pub fn run(cli_args: CliArgs) {
         ))
         .manage(cli_args.clone())
         .setup(move |app| {
-            let mut settings = get_settings(&app.handle());
+            let mut settings = get_settings(app.handle());
 
             // CLI --debug flag overrides debug_mode and log level (runtime-only, not persisted)
             if cli_args.debug {
@@ -434,8 +441,8 @@ pub fn run(cli_args: CliArgs) {
             let app_handle = app.handle().clone();
             app.manage(ActionCoordinator::new(app_handle.clone()));
 
-            setup_bundled_espeak_ng(&app_handle);
-            initialize_core_logic(&app_handle);
+            let espeak_paths = resolve_bundled_espeak_ng(&app_handle);
+            initialize_core_logic(&app_handle, espeak_paths);
 
             // Hide tray icon if --no-tray was passed
             if cli_args.no_tray {
@@ -456,7 +463,7 @@ pub fn run(cli_args: CliArgs) {
         })
         .on_window_event(|window, event| match event {
             tauri::WindowEvent::CloseRequested { api, .. } => {
-                let settings = get_settings(&window.app_handle());
+                let settings = get_settings(window.app_handle());
                 let cli = window.app_handle().state::<CliArgs>();
                 // If tray icon is hidden (via setting or --no-tray flag), quit the app
                 if !settings.show_tray_icon || cli.no_tray {
@@ -478,7 +485,7 @@ pub fn run(cli_args: CliArgs) {
             tauri::WindowEvent::ThemeChanged(theme) => {
                 log::info!("Theme changed to: {:?}", theme);
                 // Update tray icon to match new theme, maintaining idle state
-                utils::change_tray_icon(&window.app_handle());
+                utils::change_tray_icon(window.app_handle());
             }
             _ => {}
         })

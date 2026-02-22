@@ -80,6 +80,8 @@ pub struct TTSManager {
     current_sink: Arc<Mutex<Option<ActiveSink>>>,
     last_activity: Arc<AtomicU64>,
     shutdown_signal: Arc<AtomicBool>,
+    espeak_ng_path: Option<PathBuf>,
+    espeak_ng_data_path: Option<PathBuf>,
 }
 
 impl Drop for TTSManager {
@@ -89,7 +91,11 @@ impl Drop for TTSManager {
 }
 
 impl TTSManager {
-    pub fn new(app_handle: &AppHandle, model_manager: Arc<ModelManager>) -> Result<Self> {
+    pub fn new(
+        app_handle: &AppHandle,
+        model_manager: Arc<ModelManager>,
+        espeak_paths: (Option<PathBuf>, Option<PathBuf>),
+    ) -> Result<Self> {
         let engines = Arc::new(
             (0..MAX_PARALLEL_SYNTH_ENGINES)
                 .map(|_| Arc::new(Mutex::new(None)))
@@ -168,6 +174,8 @@ impl TTSManager {
             current_sink,
             last_activity,
             shutdown_signal,
+            espeak_ng_path: espeak_paths.0,
+            espeak_ng_data_path: espeak_paths.1,
         })
     }
 
@@ -228,6 +236,8 @@ impl TTSManager {
         let condvar = Arc::clone(&self.loading_condvar);
         let app_handle = self.app_handle.clone();
         let model_manager = Arc::clone(&self.model_manager);
+        let espeak_ng_path = self.espeak_ng_path.clone();
+        let espeak_ng_data_path = self.espeak_ng_data_path.clone();
 
         thread::spawn(move || {
             // Resolve human-readable name from ModelManager; fall back to ID if missing.
@@ -295,7 +305,10 @@ impl TTSManager {
                     continue;
                 }
 
-                let mut kokoro = KokoroEngine::new();
+                let mut kokoro = KokoroEngine::with_espeak(
+                    espeak_ng_path.clone(),
+                    espeak_ng_data_path.clone(),
+                );
                 match kokoro.load_model_with_params(
                     &model_dir,
                     KokoroModelParams {
@@ -696,8 +709,7 @@ impl TTSManager {
                                 voice: voice_for_worker.clone(),
                                 style_index: Some(style_index_for_worker),
                                 speed: speed_for_worker,
-                                ..Default::default()
-                            }),
+                                }),
                         )
                         .map_err(|e| format!("TTS synthesis failed: {}", e));
 
@@ -1607,7 +1619,7 @@ fn split_into_sentences(text: &str) -> Vec<&str> {
     }
 }
 
-fn split_long_segment<'a>(segment: &'a str, target: usize, hard_limit: usize) -> Vec<&'a str> {
+fn split_long_segment(segment: &str, target: usize, hard_limit: usize) -> Vec<&str> {
     if segment.len() <= hard_limit {
         return vec![segment];
     }

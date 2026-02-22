@@ -52,7 +52,7 @@ impl ActionCoordinator {
                                 let should_debounce = !is_speak_binding(&binding_id);
                                 if should_debounce
                                     && last_press
-                                        .map_or(false, |t| now.duration_since(t) < DEBOUNCE)
+                                        .is_some_and(|t| now.duration_since(t) < DEBOUNCE)
                                 {
                                     debug!("Debounced press for '{binding_id}'");
                                     continue;

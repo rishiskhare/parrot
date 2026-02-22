@@ -27,8 +27,8 @@ fn get_sound_path(settings: &AppSettings, sound_type: SoundType) -> String {
     match (settings.sound_theme, sound_type) {
         (SoundTheme::Custom, SoundType::Start) => "custom_start.wav".to_string(),
         (SoundTheme::Custom, SoundType::Stop) => "custom_stop.wav".to_string(),
-        (_, SoundType::Start) => settings.sound_theme.to_start_path(),
-        (_, SoundType::Stop) => settings.sound_theme.to_stop_path(),
+        (_, SoundType::Start) => settings.sound_theme.start_path(),
+        (_, SoundType::Stop) => settings.sound_theme.stop_path(),
     }
 }
 
