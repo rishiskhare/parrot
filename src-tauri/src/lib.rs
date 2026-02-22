@@ -52,9 +52,9 @@ fn resolve_bundled_espeak_ng(app_handle: &AppHandle) -> (Option<std::path::PathB
 
     // --- espeak-ng binary ---------------------------------------------------
     #[cfg(not(target_os = "windows"))]
-    let bin_name = "espeak-ng/espeak-ng";
+    let bin_name = "resources/espeak-ng/espeak-ng";
     #[cfg(target_os = "windows")]
-    let bin_name = "espeak-ng/espeak-ng.exe";
+    let bin_name = "resources/espeak-ng/espeak-ng.exe";
 
     let bin_path = resolver
         .resolve(bin_name, tauri::path::BaseDirectory::Resource)
@@ -75,7 +75,7 @@ fn resolve_bundled_espeak_ng(app_handle: &AppHandle) -> (Option<std::path::PathB
 
     // --- espeak-ng-data directory --------------------------------------------
     let data_path = resolver
-        .resolve("espeak-ng-data", tauri::path::BaseDirectory::Resource)
+        .resolve("resources/espeak-ng-data", tauri::path::BaseDirectory::Resource)
         .ok()
         .filter(|p| p.is_dir())
         .inspect(|p| {
