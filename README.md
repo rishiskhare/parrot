@@ -29,13 +29,30 @@ Select text. Press `Option+Space`. Done.
 
 ## Installation
 
-Download the latest release for your platform from the [Releases](../../releases) page.
+### macOS (Apple Silicon)
 
-| Platform | Format |
-|----------|--------|
-| macOS (Apple Silicon) | `.dmg` |
-| Windows | `.msi` |
-| Linux | `.AppImage` / `.deb` |
+**Homebrew:**
+```sh
+brew tap rishiskhare/parrot && brew install --cask parrot
+```
+
+**Manual:** Download [Parrot_26.2.1_aarch64.dmg](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_aarch64.dmg)
+
+### Windows
+
+| Architecture | Download |
+|--------------|----------|
+| x64 (Intel/AMD) | [Parrot_26.2.1_x64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_x64-setup.exe) |
+| ARM64 | [Parrot_26.2.1_arm64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_arm64-setup.exe) |
+
+### Linux
+
+| Architecture | AppImage | Debian |
+|--------------|----------|--------|
+| x64 (Intel/AMD) | [Parrot_26.2.1_amd64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_amd64.AppImage) | [Parrot_26.2.1_amd64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_amd64.deb) |
+| ARM64 | [Parrot_26.2.1_aarch64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_aarch64.AppImage) | [Parrot_26.2.1_arm64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_arm64.deb) |
+
+> All downloads available on the [Releases](https://github.com/rishiskhare/parrot/releases) page.
 
 On first launch, Parrot prompts you to download the TTS model (~115 MB). Once downloaded, the app works completely offline.
 
