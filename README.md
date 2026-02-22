@@ -14,7 +14,7 @@
 
   ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
   ![License](https://img.shields.io/badge/license-MIT-green)
-  ![Version](https://img.shields.io/badge/version-26.2.1-blue)
+  ![Version](https://img.shields.io/badge/version-26.2.2-blue)
 </div>
 
 ---
@@ -36,21 +36,21 @@ Select text. Press `Option+Space`. Done.
 brew tap rishiskhare/parrot && brew install --cask parrot
 ```
 
-**Manual:** Download [Parrot_26.2.1_aarch64.dmg](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_aarch64.dmg)
+**Manual:** Download [Parrot_26.2.2_aarch64.dmg](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_aarch64.dmg)
 
 ### Windows
 
 | Architecture | Download |
 |--------------|----------|
-| x64 (Intel/AMD) | [Parrot_26.2.1_x64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_x64-setup.exe) |
-| ARM64 | [Parrot_26.2.1_arm64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_arm64-setup.exe) |
+| x64 (Intel/AMD) | [Parrot_26.2.2_x64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_x64-setup.exe) |
+| ARM64 | [Parrot_26.2.2_arm64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_arm64-setup.exe) |
 
 ### Linux
 
 | Architecture | AppImage | Debian |
 |--------------|----------|--------|
-| x64 (Intel/AMD) | [Parrot_26.2.1_amd64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_amd64.AppImage) | [Parrot_26.2.1_amd64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_amd64.deb) |
-| ARM64 | [Parrot_26.2.1_aarch64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_aarch64.AppImage) | [Parrot_26.2.1_arm64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.1/Parrot_26.2.1_arm64.deb) |
+| x64 (Intel/AMD) | [Parrot_26.2.2_amd64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_amd64.AppImage) | [Parrot_26.2.2_amd64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_amd64.deb) |
+| ARM64 | [Parrot_26.2.2_aarch64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_aarch64.AppImage) | [Parrot_26.2.2_arm64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_arm64.deb) |
 
 > All downloads available on the [Releases](https://github.com/rishiskhare/parrot/releases) page.
 
