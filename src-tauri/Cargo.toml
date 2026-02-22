@@ -1,6 +1,6 @@
 [package]
 name = "parrot"
-version = "26.2.1"
+version = "26.2.2"
 description = "Parrot"
 authors = ["Rishi Khare <rishiskhare@gmail.com>"]
 repository = "https://github.com/rishiskhare/parrot"
