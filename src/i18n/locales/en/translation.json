@@ -102,10 +102,6 @@
             "name": "Speak Shortcut",
             "description": "The keyboard shortcut to speak the selected text aloud."
           },
-          "cancel": {
-            "name": "Cancel Shortcut",
-            "description": "The keyboard shortcut to stop speech playback."
-          },
           "play_pause": {
             "name": "Play / Pause Shortcut",
             "description": "The keyboard shortcut to pause or resume speech playback."

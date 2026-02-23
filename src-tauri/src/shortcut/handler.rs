@@ -46,8 +46,8 @@ pub fn handle_shortcut_event(
         return;
     };
 
-    // Cancel and play_pause bindings: fire on key press only.
-    if binding_id == "cancel" || binding_id == "play_pause" {
+    // play_pause binding: fire on key press only.
+    if binding_id == "play_pause" {
         if is_pressed {
             action.start(app, binding_id, hotkey_string);
         }

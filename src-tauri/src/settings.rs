@@ -340,22 +340,6 @@ pub fn get_default_settings() -> AppSettings {
         },
     );
     #[cfg(target_os = "macos")]
-    let default_cancel_binding = "option+escape";
-    #[cfg(not(target_os = "macos"))]
-    let default_cancel_binding = "alt+escape";
-
-    bindings.insert(
-        "cancel".to_string(),
-        ShortcutBinding {
-            id: "cancel".to_string(),
-            name: "Cancel".to_string(),
-            description: "Stops current speech playback.".to_string(),
-            default_binding: default_cancel_binding.to_string(),
-            current_binding: default_cancel_binding.to_string(),
-        },
-    );
-
-    #[cfg(target_os = "macos")]
     let default_play_pause_binding = "option+p";
     #[cfg(not(target_os = "macos"))]
     let default_play_pause_binding = "alt+p";
@@ -367,7 +351,7 @@ pub fn get_default_settings() -> AppSettings {
             name: "Play / Pause".to_string(),
             description: "Pauses or resumes speech playback while speaking.".to_string(),
             default_binding: default_play_pause_binding.to_string(),
-            current_binding: default_play_pause_binding.to_string(),
+            current_binding: "disabled".to_string(),
         },
     );
 

@@ -147,10 +147,6 @@
           "play_pause": {
             "name": "Play / Pause Shortcut",
             "description": "The keyboard shortcut to pause or resume speech playback."
-          },
-          "cancel": {
-            "name": "اختصار الإلغاء",
-            "description": ".اختصار لوحة المفاتيح لإلغاء التسجيل الحالي"
           }
         },
         "errors": {

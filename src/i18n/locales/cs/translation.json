@@ -169,10 +169,6 @@
           "play_pause": {
             "name": "Play / Pause Shortcut",
             "description": "The keyboard shortcut to pause or resume speech playback."
-          },
-          "cancel": {
-            "name": "Zkratka zrušení",
-            "description": "Klávesová zkratka pro zrušení aktuálního nahrávání."
           }
         },
         "errors": {

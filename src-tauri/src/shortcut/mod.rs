@@ -53,24 +53,6 @@ pub fn init_shortcuts(app: &AppHandle) {
     }
 }
 
-/// Register the cancel shortcut (called when speaking starts)
-pub fn register_cancel_shortcut(app: &AppHandle) {
-    let settings = get_settings(app);
-    match settings.keyboard_implementation {
-        KeyboardImplementation::Tauri => tauri_impl::register_cancel_shortcut(app),
-        KeyboardImplementation::HandyKeys => handy_keys::register_cancel_shortcut(app),
-    }
-}
-
-/// Unregister the cancel shortcut (called when speaking stops)
-pub fn unregister_cancel_shortcut(app: &AppHandle) {
-    let settings = get_settings(app);
-    match settings.keyboard_implementation {
-        KeyboardImplementation::Tauri => tauri_impl::unregister_cancel_shortcut(app),
-        KeyboardImplementation::HandyKeys => handy_keys::unregister_cancel_shortcut(app),
-    }
-}
-
 /// Register the play/pause shortcut (called when speaking starts)
 pub fn register_play_pause_shortcut(app: &AppHandle) {
     let settings = get_settings(app);
@@ -161,7 +143,7 @@ pub fn change_binding(
 
     // Dynamically-managed shortcuts: just update settings without re-registering.
     // They are registered/unregistered based on TTS lifecycle state.
-    if id == "cancel" || id == "play_pause" {
+    if id == "play_pause" {
         if let Some(mut b) = settings.bindings.get(&id).cloned() {
             b.current_binding = binding;
             settings.bindings.insert(id.clone(), b.clone());
@@ -376,7 +358,7 @@ fn unregister_all_shortcuts(app: &AppHandle, implementation: KeyboardImplementat
 
     for (id, binding) in bindings {
         // Skip dynamically-managed shortcuts
-        if id == "cancel" || id == "play_pause" {
+        if id == "play_pause" {
             continue;
         }
 
@@ -405,7 +387,7 @@ fn register_all_shortcuts_for_implementation(
 
     for (id, default_binding) in &default_bindings {
         // Skip dynamically-managed shortcuts
-        if id == "cancel" || id == "play_pause" {
+        if id == "play_pause" {
             continue;
         }
 

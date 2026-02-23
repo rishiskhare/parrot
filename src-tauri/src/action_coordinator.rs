@@ -14,9 +14,6 @@ enum Command {
         hotkey_string: String,
         is_pressed: bool,
     },
-    Cancel {
-        was_speaking: bool,
-    },
     ProcessingFinished,
 }
 
@@ -80,14 +77,6 @@ impl ActionCoordinator {
                                 action.start(&app, &binding_id, &hotkey_string);
                             }
                         }
-                        Command::Cancel {
-                            was_speaking,
-                        } => {
-                            debug!(
-                                "Coordinator received cancel event (was_speaking={})",
-                                was_speaking
-                            );
-                        }
                         Command::ProcessingFinished => {
                             debug!("Coordinator received processing-finished event");
                         }
@@ -117,18 +106,6 @@ impl ActionCoordinator {
                 binding_id: binding_id.to_string(),
                 hotkey_string: hotkey_string.to_string(),
                 is_pressed,
-            })
-            .is_err()
-        {
-            warn!("Shortcut coordinator channel closed");
-        }
-    }
-
-    pub fn notify_cancel(&self, was_speaking: bool) {
-        if self
-            .tx
-            .send(Command::Cancel {
-                was_speaking,
             })
             .is_err()
         {

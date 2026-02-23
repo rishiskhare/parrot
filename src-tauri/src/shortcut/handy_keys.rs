@@ -430,7 +430,7 @@ pub fn init_shortcuts(app: &AppHandle) -> Result<(), String> {
 
     // Register all bindings except dynamically-managed ones
     for (id, default_binding) in default_bindings {
-        if id == "cancel" || id == "play_pause" {
+        if id == "play_pause" {
             continue;
         }
 
@@ -451,49 +451,6 @@ pub fn init_shortcuts(app: &AppHandle) -> Result<(), String> {
     app.manage(state);
     info!("handy-keys shortcuts initialized");
     Ok(())
-}
-
-/// Register the cancel shortcut (called when speaking starts)
-pub fn register_cancel_shortcut(app: &AppHandle) {
-    #[cfg(target_os = "linux")]
-    {
-        let _ = app;
-        return;
-    }
-
-    #[cfg(not(target_os = "linux"))]
-    {
-        let app_clone = app.clone();
-        tauri::async_runtime::spawn(async move {
-            if let Some(cancel_binding) = get_settings(&app_clone).bindings.get("cancel").cloned() {
-                if let Some(state) = app_clone.try_state::<HandyKeysState>() {
-                    // Ignore error if already registered
-                    let _ = state.register(&cancel_binding);
-                }
-            }
-        });
-    }
-}
-
-/// Unregister the cancel shortcut (called when speaking stops)
-pub fn unregister_cancel_shortcut(app: &AppHandle) {
-    #[cfg(target_os = "linux")]
-    {
-        let _ = app;
-        return;
-    }
-
-    #[cfg(not(target_os = "linux"))]
-    {
-        let app_clone = app.clone();
-        tauri::async_runtime::spawn(async move {
-            if let Some(cancel_binding) = get_settings(&app_clone).bindings.get("cancel").cloned() {
-                if let Some(state) = app_clone.try_state::<HandyKeysState>() {
-                    let _ = state.unregister(&cancel_binding);
-                }
-            }
-        });
-    }
 }
 
 /// Register the play/pause shortcut (called when speaking starts)

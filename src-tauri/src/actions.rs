@@ -1,6 +1,5 @@
 use crate::managers::tts::TTSManager;
-use crate::tray::change_tray_icon;
-use crate::utils::{hide_speaking_overlay, show_processing_overlay};
+use crate::utils::show_processing_overlay;
 use log::{debug, info};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -32,25 +31,6 @@ impl ShortcutAction for PlayPauseAction {
 
     fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
         // Nothing to do on key release
-    }
-}
-
-// Cancel Action
-struct CancelAction;
-
-impl ShortcutAction for CancelAction {
-    fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
-        if let Some(speech) = app.try_state::<Arc<TTSManager>>() {
-            speech.stop();
-        }
-
-        // Ensure UI state returns to idle if cancellation is requested while speaking.
-        hide_speaking_overlay(app);
-        change_tray_icon(app);
-    }
-
-    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
-        // Nothing to do on stop for cancel
     }
 }
 
@@ -301,10 +281,6 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
     map.insert(
         "speak".to_string(),
         Arc::new(SpeakAction) as Arc<dyn ShortcutAction>,
-    );
-    map.insert(
-        "cancel".to_string(),
-        Arc::new(CancelAction) as Arc<dyn ShortcutAction>,
     );
     map.insert(
         "play_pause".to_string(),

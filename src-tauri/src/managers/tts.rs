@@ -538,7 +538,6 @@ impl TTSManager {
             // Show "Processing..." overlay immediately so the user gets feedback
             // before the first audio chunk is synthesized.
             show_processing_overlay(&app_handle);
-            crate::shortcut::register_cancel_shortcut(&app_handle);
 
             let tts_settings = get_settings(&app_handle);
             let tts_speed = tts_settings.tts_speed;
@@ -854,7 +853,6 @@ impl TTSManager {
                         started_playback = true;
                         lifecycle_state.store(TtsLifecycleState::Speaking as u8, Ordering::SeqCst);
                         show_speaking_overlay(&app_handle);
-                        crate::shortcut::register_cancel_shortcut(&app_handle);
                         crate::shortcut::register_play_pause_shortcut(&app_handle);
                         audio_feedback::play_sound(
                             &app_handle,
@@ -930,7 +928,6 @@ impl TTSManager {
                 lifecycle_state.store(TtsLifecycleState::Idle as u8, Ordering::SeqCst);
                 clear_sink_if_owned_by_request(&current_sink, request_id);
                 hide_speaking_overlay(&app_handle);
-                crate::shortcut::unregister_cancel_shortcut(&app_handle);
                 crate::shortcut::unregister_play_pause_shortcut(&app_handle);
                 audio_feedback::play_sound(&app_handle, audio_feedback::SoundType::Stop);
                 info!(

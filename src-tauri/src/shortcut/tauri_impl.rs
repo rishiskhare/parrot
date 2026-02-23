@@ -20,7 +20,7 @@ pub fn init_shortcuts(app: &AppHandle) {
 
     // Register all default shortcuts, applying user customizations
     for (id, default_binding) in default_bindings {
-        if id == "cancel" || id == "play_pause" {
+        if id == "play_pause" {
             continue; // Skip dynamically-managed shortcuts
         }
         let binding = user_settings
@@ -148,48 +148,6 @@ pub fn unregister_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<
     })?;
 
     Ok(())
-}
-
-/// Register the cancel shortcut (called when speaking starts)
-pub fn register_cancel_shortcut(app: &AppHandle) {
-    // Cancel shortcut is disabled on Linux due to instability with dynamic shortcut registration
-    #[cfg(target_os = "linux")]
-    {
-        let _ = app;
-        return;
-    }
-
-    #[cfg(not(target_os = "linux"))]
-    {
-        let app_clone = app.clone();
-        tauri::async_runtime::spawn(async move {
-            if let Some(cancel_binding) = get_settings(&app_clone).bindings.get("cancel").cloned() {
-                // Ignore error if already registered
-                let _ = register_shortcut(&app_clone, cancel_binding);
-            }
-        });
-    }
-}
-
-/// Unregister the cancel shortcut (called when speaking stops)
-pub fn unregister_cancel_shortcut(app: &AppHandle) {
-    // Cancel shortcut is disabled on Linux due to instability with dynamic shortcut registration
-    #[cfg(target_os = "linux")]
-    {
-        let _ = app;
-        return;
-    }
-
-    #[cfg(not(target_os = "linux"))]
-    {
-        let app_clone = app.clone();
-        tauri::async_runtime::spawn(async move {
-            if let Some(cancel_binding) = get_settings(&app_clone).bindings.get("cancel").cloned() {
-                // We ignore errors here as it might already be unregistered
-                let _ = unregister_shortcut(&app_clone, cancel_binding);
-            }
-        });
-    }
 }
 
 /// Register the play/pause shortcut (called when speaking starts)

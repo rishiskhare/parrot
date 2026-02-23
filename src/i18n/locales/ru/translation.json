@@ -169,10 +169,6 @@
           "play_pause": {
             "name": "Play / Pause Shortcut",
             "description": "The keyboard shortcut to pause or resume speech playback."
-          },
-          "cancel": {
-            "name": "Горячая клавиша отмены",
-            "description": "Сочетание клавиш для отмены текущей записи."
           }
         },
         "errors": {

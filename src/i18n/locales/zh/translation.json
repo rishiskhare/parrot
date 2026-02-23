@@ -169,10 +169,6 @@
           "play_pause": {
             "name": "Play / Pause Shortcut",
             "description": "The keyboard shortcut to pause or resume speech playback."
-          },
-          "cancel": {
-            "name": "取消快捷键",
-            "description": "用于取消当前录制的键盘快捷键。"
           }
         },
         "errors": {

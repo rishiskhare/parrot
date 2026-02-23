@@ -231,12 +231,6 @@ fn initialize_core_logic(
                     Err(e) => log::error!("Failed to unload TTS model via tray: {}", e),
                 }
             }
-            "cancel" => {
-                use crate::utils::cancel_current_operation;
-
-                // Use centralized cancellation that handles all operations
-                cancel_current_operation(app);
-            }
             "quit" => {
                 app.exit(0);
             }
