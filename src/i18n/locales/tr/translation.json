@@ -130,6 +130,9 @@
     "cancelDownload": "İndirmeyi iptal et"
   },
   "settings": {
+    "howToUseTitle": "Nasıl kullanılır",
+    "howToUseStep1": "Herhangi bir metni seçin",
+    "howToUseStep2": "Sesli okumak için <shortcut /> tuşuna basın",
     "modelSettings": {
       "title": "{{model}} Ayarları",
       "noSettingsNeeded": "Bu model yapılandırma gerektirmeden otomatik olarak çalışır."

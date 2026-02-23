@@ -130,6 +130,9 @@
     "cancelDownload": "ダウンロードをキャンセル"
   },
   "settings": {
+    "howToUseTitle": "使い方",
+    "howToUseStep1": "テキストを選択",
+    "howToUseStep2": "<shortcut /> を押して読み上げ",
     "modelSettings": {
       "title": "{{model}} 設定",
       "noSettingsNeeded": "このモデルは設定不要で自動的に動作します。"

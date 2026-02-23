@@ -1,9 +1,11 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
-import { Cog, FlaskConical, History, Info, Cpu } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
+import { Cog, FlaskConical, History, Info, Cpu, Lightbulb } from "lucide-react";
 import ParrotTextLogo from "./icons/ParrotTextLogo";
 import ParrotIcon from "./icons/ParrotIcon";
 import { useSettings } from "../hooks/useSettings";
+import { useOsType } from "../hooks/useOsType";
+import { formatKeyCombination, type OSType } from "../lib/utils/keyboard";
 import {
   GeneralSettings,
   AdvancedSettings,
@@ -12,6 +14,31 @@ import {
   AboutSettings,
   ModelsSettings,
 } from "./settings";
+
+const MAC_SYMBOLS: Record<string, string> = {
+  command: "⌘",
+  cmd: "⌘",
+  option: "⌥",
+  alt: "⌥",
+  shift: "⇧",
+  ctrl: "⌃",
+  control: "⌃",
+  fn: "fn",
+};
+
+/** Compact shortcut string using macOS symbols when applicable. */
+const formatCompactShortcut = (binding: string, osType: OSType): string => {
+  if (!binding) return "";
+  if (osType !== "macos") return formatKeyCombination(binding, osType);
+
+  return binding
+    .split("+")
+    .map((part) => {
+      const key = part.trim().replace(/_(left|right)$/, "").toLowerCase();
+      return MAC_SYMBOLS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
+    })
+    .join(" ");
+};
 
 export type SidebarSection = keyof typeof SECTIONS_CONFIG;
 
@@ -79,7 +106,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSectionChange,
 }) => {
   const { t } = useTranslation();
-  const { settings } = useSettings();
+  const { settings, getSetting } = useSettings();
+  const osType = useOsType();
+  const speakBinding = getSetting("bindings")?.speak?.current_binding;
 
   const availableSections = Object.entries(SECTIONS_CONFIG)
     .filter(([_, config]) => config.enabled(settings))
@@ -113,6 +142,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
           );
         })}
       </div>
+      {speakBinding && speakBinding !== "disabled" && (
+        <div className="mt-auto w-full border-t border-mid-gray/20 pt-3 pb-3">
+          <div className="px-1.5">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Lightbulb className="w-4 h-4 text-yellow-500 shrink-0" />
+              <p className="text-sm font-semibold leading-none">
+                {t("settings.howToUseTitle")}
+              </p>
+            </div>
+            <div className="text-sm text-text/90 leading-5 space-y-0.5">
+              <p>{t("settings.howToUseStep1")}</p>
+              <p>
+                <Trans
+                  i18nKey="settings.howToUseStep2"
+                  components={{
+                    shortcut: (
+                      <kbd className="inline-block whitespace-nowrap px-1.5 py-0.5 text-xs font-medium bg-mid-gray/15 border border-mid-gray/25 rounded shadow-[0_1px_0_0] shadow-mid-gray/20">
+                        {formatCompactShortcut(speakBinding, osType)}
+                      </kbd>
+                    ),
+                  }}
+                />
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

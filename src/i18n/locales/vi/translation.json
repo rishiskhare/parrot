@@ -75,6 +75,9 @@
     "cancelDownload": "Hủy tải xuống"
   },
   "settings": {
+    "howToUseTitle": "Cách sử dụng",
+    "howToUseStep1": "Chọn bất kỳ văn bản nào",
+    "howToUseStep2": "Nhấn <shortcut /> để đọc to",
     "modelSettings": {
       "title": "Cài đặt {{model}}",
       "noSettingsNeeded": "Mô hình này hoạt động tự động mà không cần cấu hình.",

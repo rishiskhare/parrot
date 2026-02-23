@@ -130,6 +130,9 @@
     "cancelDownload": "Скасувати завантаження"
   },
   "settings": {
+    "howToUseTitle": "Як використовувати",
+    "howToUseStep1": "Виділіть будь-який текст",
+    "howToUseStep2": "Натисніть <shortcut />, щоб прочитати вголос",
     "modelSettings": {
       "title": "Налаштування {{model}}",
       "noSettingsNeeded": "Ця модель працює автоматично без потреби в налаштуванні."

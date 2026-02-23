@@ -130,6 +130,9 @@
     "cancelDownload": "Download abbrechen"
   },
   "settings": {
+    "howToUseTitle": "Anleitung",
+    "howToUseStep1": "Text auswählen",
+    "howToUseStep2": "<shortcut /> drücken zum Vorlesen",
     "modelSettings": {
       "title": "{{model}}-Einstellungen",
       "noSettingsNeeded": "Dieses Modell funktioniert automatisch ohne Konfiguration."

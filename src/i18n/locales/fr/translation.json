@@ -75,6 +75,9 @@
     "cancelDownload": "Annuler le téléchargement"
   },
   "settings": {
+    "howToUseTitle": "Comment utiliser",
+    "howToUseStep1": "Sélectionnez du texte",
+    "howToUseStep2": "Appuyez sur <shortcut /> pour lire à voix haute",
     "modelSettings": {
       "title": "Paramètres de {{model}}",
       "noSettingsNeeded": "Ce modèle fonctionne automatiquement sans configuration nécessaire.",

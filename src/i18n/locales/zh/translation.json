@@ -130,6 +130,9 @@
     "cancelDownload": "取消下载"
   },
   "settings": {
+    "howToUseTitle": "使用方法",
+    "howToUseStep1": "选择任意文本",
+    "howToUseStep2": "按 <shortcut /> 朗读",
     "modelSettings": {
       "title": "{{model}} 设置",
       "noSettingsNeeded": "此模型自动运行，无需配置。"

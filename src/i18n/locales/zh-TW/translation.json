@@ -130,6 +130,9 @@
     }
   },
   "settings": {
+    "howToUseTitle": "使用方法",
+    "howToUseStep1": "選取任意文字",
+    "howToUseStep2": "按 <shortcut /> 朗讀",
     "modelSettings": {
       "title": "{{model}} 設定",
       "noSettingsNeeded": "此模型自動運行，無需設定"

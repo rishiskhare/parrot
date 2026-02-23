@@ -130,6 +130,9 @@
     "cancelDownload": "Zrušit stahování"
   },
   "settings": {
+    "howToUseTitle": "Jak používat",
+    "howToUseStep1": "Vyberte libovolný text",
+    "howToUseStep2": "Stiskněte <shortcut /> pro přečtení nahlas",
     "modelSettings": {
       "title": "Nastavení {{model}}",
       "noSettingsNeeded": "Tento model funguje automaticky bez nutnosti konfigurace."

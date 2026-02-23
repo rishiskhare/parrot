@@ -75,6 +75,9 @@
     }
   },
   "settings": {
+    "howToUseTitle": "How to use",
+    "howToUseStep1": "Select any text",
+    "howToUseStep2": "Press <shortcut /> to read aloud",
     "modelSettings": {
       "title": "{{model}} Settings",
       "noSettingsNeeded": "This model works automatically with no configuration needed.",

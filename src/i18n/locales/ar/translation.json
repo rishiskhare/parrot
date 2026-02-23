@@ -130,6 +130,9 @@
     }
   },
   "settings": {
+    "howToUseTitle": "كيفية الاستخدام",
+    "howToUseStep1": "حدد أي نص",
+    "howToUseStep2": "اضغط <shortcut /> للقراءة بصوت عالٍ",
     "general": {
       "title": "عام",
       "shortcut": {

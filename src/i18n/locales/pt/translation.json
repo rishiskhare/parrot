@@ -130,6 +130,9 @@
     "cancelDownload": "Cancelar download"
   },
   "settings": {
+    "howToUseTitle": "Como usar",
+    "howToUseStep1": "Selecione qualquer texto",
+    "howToUseStep2": "Pressione <shortcut /> para ler em voz alta",
     "modelSettings": {
       "title": "Configurações de {{model}}",
       "noSettingsNeeded": "Este modelo funciona automaticamente sem necessidade de configuração."
