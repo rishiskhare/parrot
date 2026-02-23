@@ -223,7 +223,7 @@
     },
     "history": {
       "title": "History",
-      "openFolder": "Open Recordings Folder",
+      "openFolder": "Open Audio Folder",
       "loading": "Loading history...",
       "empty": "No spoken text yet. Use the shortcut to start speaking!",
       "copyToClipboard": "Copy text to clipboard",

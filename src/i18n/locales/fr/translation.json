@@ -209,7 +209,7 @@
     },
     "history": {
       "title": "Historique",
-      "openFolder": "Ouvrir le dossier des enregistrements",
+      "openFolder": "Ouvrir le dossier audio",
       "loading": "Chargement de l'historique...",
       "empty": "Pas encore de texte lu. Utilisez le raccourci pour commencer à parler !",
       "copyToClipboard": "Copier le texte dans le presse-papiers",

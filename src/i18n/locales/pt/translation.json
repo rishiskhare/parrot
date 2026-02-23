@@ -266,7 +266,7 @@
     },
     "history": {
       "title": "Histórico",
-      "openFolder": "Abrir Pasta de Gravações",
+      "openFolder": "Abrir Pasta de Áudio",
       "loading": "Carregando histórico...",
       "empty": "Nenhuma transcrição ainda. Comece a gravar para construir seu histórico!",
       "copyToClipboard": "Copiar transcrição para área de transferência",

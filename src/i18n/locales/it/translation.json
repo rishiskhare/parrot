@@ -266,7 +266,7 @@
     },
     "history": {
       "title": "Cronologia",
-      "openFolder": "Apri la cartella delle registrazioni",
+      "openFolder": "Apri la cartella audio",
       "loading": "Caricamento cronologia...",
       "empty": "Non ci sono ancora trascrizioni. Comincia a registrare per costruire la tua cronologia!",
       "copyToClipboard": "Copia la trascrizione negli appunti",

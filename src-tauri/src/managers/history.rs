@@ -1,6 +1,6 @@
 use anyhow::Result;
 use chrono::{DateTime, Local, Utc};
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use rusqlite::{params, Connection, OptionalExtension};
 use rusqlite_migration::{Migrations, M};
 use serde::{Deserialize, Serialize};
@@ -11,6 +11,9 @@ use tauri::{AppHandle, Emitter, Manager};
 
 use crate::audio_toolkit::save_wav_file;
 
+const AUDIO_DIR_NAME: &str = "audio";
+const LEGACY_RECORDINGS_DIR_NAME: &str = "recordings";
+
 /// Database migrations for transcription history.
 /// Each migration is applied in order. The library tracks which migrations
 /// have been applied using SQLite's user_version pragma.
@@ -18,9 +21,8 @@ use crate::audio_toolkit::save_wav_file;
 /// Note: For users upgrading from tauri-plugin-sql, migrate_from_tauri_plugin_sql()
 /// converts the old _sqlx_migrations table tracking to the user_version pragma,
 /// ensuring migrations don't re-run on existing databases.
-static MIGRATIONS: &[M] = &[
-    M::up(
-        "CREATE TABLE IF NOT EXISTS transcription_history (
+static MIGRATIONS: &[M] = &[M::up(
+    "CREATE TABLE IF NOT EXISTS transcription_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             file_name TEXT NOT NULL,
             timestamp INTEGER NOT NULL,
@@ -28,8 +30,7 @@ static MIGRATIONS: &[M] = &[
             title TEXT NOT NULL,
             transcription_text TEXT NOT NULL
         );",
-    ),
-];
+)];
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
 pub struct HistoryEntry {
@@ -43,26 +44,40 @@ pub struct HistoryEntry {
 
 pub struct HistoryManager {
     app_handle: AppHandle,
-    recordings_dir: PathBuf,
+    audio_dir: PathBuf,
     db_path: PathBuf,
 }
 
 impl HistoryManager {
     pub fn new(app_handle: &AppHandle) -> Result<Self> {
-        // Create recordings directory in app data dir
+        // Use "audio" as the storage directory.
+        // If this is an upgraded install, rename legacy "recordings" once.
         let app_data_dir = app_handle.path().app_data_dir()?;
-        let recordings_dir = app_data_dir.join("recordings");
+        let audio_dir = app_data_dir.join(AUDIO_DIR_NAME);
+        let legacy_recordings_dir = app_data_dir.join(LEGACY_RECORDINGS_DIR_NAME);
         let db_path = app_data_dir.join("history.db");
 
-        // Ensure recordings directory exists
-        if !recordings_dir.exists() {
-            fs::create_dir_all(&recordings_dir)?;
-            debug!("Created recordings directory: {:?}", recordings_dir);
+        if !audio_dir.exists() && legacy_recordings_dir.exists() {
+            match fs::rename(&legacy_recordings_dir, &audio_dir) {
+                Ok(_) => info!(
+                    "Migrated legacy '{}' directory to '{}'",
+                    LEGACY_RECORDINGS_DIR_NAME, AUDIO_DIR_NAME
+                ),
+                Err(err) => warn!(
+                    "Legacy '{}' directory rename to '{}' failed: {}",
+                    LEGACY_RECORDINGS_DIR_NAME, AUDIO_DIR_NAME, err
+                ),
+            }
+        }
+
+        if !audio_dir.exists() {
+            fs::create_dir_all(&audio_dir)?;
+            debug!("Created audio directory: {:?}", audio_dir);
         }
 
         let manager = Self {
             app_handle: app_handle.clone(),
-            recordings_dir,
+            audio_dir,
             db_path,
         };
 
@@ -184,7 +199,10 @@ impl HistoryManager {
         let title = self.format_timestamp_title(timestamp);
 
         // Save WAV file
-        let file_path = self.recordings_dir.join(&file_name);
+        if !self.audio_dir.exists() {
+            fs::create_dir_all(&self.audio_dir)?;
+        }
+        let file_path = self.audio_dir.join(&file_name);
         save_wav_file(file_path, &audio_samples, sample_rate)?;
 
         // Save to database
@@ -254,7 +272,7 @@ impl HistoryManager {
             )?;
 
             // Delete WAV file
-            let file_path = self.recordings_dir.join(file_name);
+            let file_path = self.get_audio_file_path(file_name);
             if file_path.exists() {
                 if let Err(e) = fs::remove_file(&file_path) {
                     error!("Failed to delete WAV file {}: {}", file_name, e);
@@ -420,7 +438,11 @@ impl HistoryManager {
     }
 
     pub fn get_audio_file_path(&self, file_name: &str) -> PathBuf {
-        self.recordings_dir.join(file_name)
+        self.audio_dir.join(file_name)
+    }
+
+    pub fn get_audio_dir_path(&self) -> PathBuf {
+        self.audio_dir.clone()
     }
 
     pub async fn get_entry_by_id(&self, id: i64) -> Result<Option<HistoryEntry>> {

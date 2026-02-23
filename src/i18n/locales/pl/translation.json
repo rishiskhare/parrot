@@ -266,7 +266,7 @@
     },
     "history": {
       "title": "Historia",
-      "openFolder": "Otwórz folder nagrań",
+      "openFolder": "Otwórz folder audio",
       "loading": "Wczytywanie historii...",
       "empty": "Brak transkrypcji. Rozpocznij nagrywanie, aby zbudować historię!",
       "copyToClipboard": "Kopiuj transkrypcję do schowka",

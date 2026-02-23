@@ -209,7 +209,7 @@
     },
     "history": {
       "title": "Historial",
-      "openFolder": "Abrir Carpeta de Grabaciones",
+      "openFolder": "Abrir Carpeta de Audio",
       "loading": "Cargando historial...",
       "empty": "Aún no hay texto hablado. ¡Usa el atajo para comenzar a hablar!",
       "copyToClipboard": "Copiar texto al portapapeles",

@@ -266,7 +266,7 @@
     },
     "history": {
       "title": "히스토리",
-      "openFolder": "녹음 폴더 열기",
+      "openFolder": "오디오 폴더 열기",
       "loading": "히스토리 로딩 중...",
       "empty": "아직 변환된 내용이 없습니다. 녹음을 시작하여 히스토리를 만드세요!",
       "copyToClipboard": "녹음 내용을 클립보드에 복사",

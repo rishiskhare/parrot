@@ -2,12 +2,14 @@ pub mod audio;
 pub mod history;
 pub mod models;
 
+use crate::managers::history::HistoryManager;
 use crate::managers::model::ModelManager;
 use crate::managers::tts::{TTSManager, MODEL_ID as TTS_MODEL_ID};
 use crate::settings::{get_settings, write_settings, AppSettings, LogLevel};
 use crate::utils::cancel_current_operation;
 use serde::Serialize;
 use specta::Type;
+use std::fs;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_opener::OpenerExt;
@@ -72,15 +74,17 @@ pub fn set_log_level(app: AppHandle, level: LogLevel) -> Result<(), String> {
 
 #[specta::specta]
 #[tauri::command]
-pub fn open_history_folder(app: AppHandle) -> Result<(), String> {
-    let app_data_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+pub fn open_history_folder(
+    app: AppHandle,
+    history_manager: State<'_, Arc<HistoryManager>>,
+) -> Result<(), String> {
+    let audio_dir = history_manager.get_audio_dir_path();
+    if !audio_dir.exists() {
+        fs::create_dir_all(&audio_dir)
+            .map_err(|e| format!("Failed to create audio directory: {}", e))?;
+    }
 
-    let recordings_dir = app_data_dir.join("recordings");
-
-    let path = recordings_dir.to_string_lossy().as_ref().to_string();
+    let path = audio_dir.to_string_lossy().as_ref().to_string();
     app.opener()
         .open_path(path, None::<String>)
         .map_err(|e| format!("Failed to open history folder: {}", e))?;

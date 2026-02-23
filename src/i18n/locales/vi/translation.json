@@ -209,7 +209,7 @@
     },
     "history": {
       "title": "Lịch sử",
-      "openFolder": "Mở thư mục ghi âm",
+      "openFolder": "Mở thư mục âm thanh",
       "loading": "Đang tải lịch sử...",
       "empty": "Chưa có văn bản nào được đọc. Sử dụng phím tắt để bắt đầu phát giọng nói!",
       "copyToClipboard": "Sao chép văn bản vào clipboard",
