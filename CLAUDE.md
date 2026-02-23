@@ -74,7 +74,7 @@ Parrot is a cross-platform desktop text-to-speech (TTS) app built with Tauri 2.x
 **Shortcut system** (`shortcut/`):
 - Dual-backend architecture: **HandyKeys** (default on macOS) and **Tauri** via `tauri-plugin-global-shortcut` (default on Windows/Linux)
 - Runtime switching via the `keyboard_implementation` setting; HandyKeys auto-falls back to Tauri with persistence on failure
-- `handler.rs` — Routes shortcut events through ActionCoordinator; implements push-to-talk semantics (key-down = start, key-up = stop)
+- `handler.rs` — Routes shortcut events through ActionCoordinator
 
 **Helpers** (`helpers/`):
 - `clamshell.rs` — `is_laptop()`: detects laptop (clamshell) vs. desktop

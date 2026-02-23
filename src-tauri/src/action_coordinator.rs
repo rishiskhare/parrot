@@ -13,7 +13,6 @@ enum Command {
         binding_id: String,
         hotkey_string: String,
         is_pressed: bool,
-        push_to_talk: bool,
     },
     Cancel {
         was_speaking: bool,
@@ -45,7 +44,6 @@ impl ActionCoordinator {
                             binding_id,
                             hotkey_string,
                             is_pressed,
-                            push_to_talk,
                         } => {
                             if is_pressed {
                                 let now = Instant::now();
@@ -74,21 +72,8 @@ impl ActionCoordinator {
                             };
 
                             if is_speak_binding(&binding_id) {
-                                if push_to_talk {
-                                    // PTT: start speaking on key-down, stop on key-up.
-                                    if is_pressed {
-                                        action.start(&app, &binding_id, &hotkey_string);
-                                    } else {
-                                        action.stop(&app, &binding_id, &hotkey_string);
-                                    }
-                                } else {
-                                    // Toggle mode: each key-down toggles start/stop.
-                                    if is_pressed {
-                                        action.start(&app, &binding_id, &hotkey_string);
-                                    }
-                                }
-                            } else if push_to_talk {
-                                if !is_pressed {
+                                // Toggle mode: each key-down toggles start/stop.
+                                if is_pressed {
                                     action.start(&app, &binding_id, &hotkey_string);
                                 }
                             } else if is_pressed {
@@ -125,7 +110,6 @@ impl ActionCoordinator {
         binding_id: &str,
         hotkey_string: &str,
         is_pressed: bool,
-        push_to_talk: bool,
     ) {
         if self
             .tx
@@ -133,7 +117,6 @@ impl ActionCoordinator {
                 binding_id: binding_id.to_string(),
                 hotkey_string: hotkey_string.to_string(),
                 is_pressed,
-                push_to_talk,
             })
             .is_err()
         {

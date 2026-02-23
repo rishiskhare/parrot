@@ -124,10 +124,6 @@
         "searchPlaceholder": "Search languages...",
         "noResults": "No languages found",
         "auto": "Use System Language"
-      },
-      "pushToTalk": {
-        "label": "Hold to Speak",
-        "description": "Hold shortcut to hear speech, release to stop"
       }
     },
     "models": {

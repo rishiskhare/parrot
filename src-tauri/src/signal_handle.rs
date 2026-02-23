@@ -15,8 +15,8 @@ use std::thread;
 /// Used by signal handlers, CLI flags, and any other external trigger.
 pub fn send_action_input(app: &AppHandle, binding_id: &str, source: &str) {
     if let Some(c) = app.try_state::<ActionCoordinator>() {
-        c.send_input(binding_id, source, true, false);
-        c.send_input(binding_id, source, false, false);
+        c.send_input(binding_id, source, true);
+        c.send_input(binding_id, source, false);
     } else {
         warn!("ActionCoordinator not initialized");
     }

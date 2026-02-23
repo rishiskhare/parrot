@@ -170,10 +170,6 @@
         "searchPlaceholder": "搜尋語言...",
         "noResults": "未找到語言",
         "auto": "自動"
-      },
-      "pushToTalk": {
-        "label": "按住說話",
-        "description": "按住錄製，放開停止"
       }
     },
     "models": {

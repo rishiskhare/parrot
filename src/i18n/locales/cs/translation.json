@@ -188,10 +188,6 @@
         "searchPlaceholder": "Hledat jazyky...",
         "noResults": "Žádné jazyky nenalezeny",
         "auto": "Auto"
-      },
-      "pushToTalk": {
-        "label": "Stisk a mluv",
-        "description": "Podržte pro nahrávání, uvolněte pro zastavení"
       }
     },
     "sound": {

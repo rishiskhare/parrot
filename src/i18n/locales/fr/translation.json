@@ -142,10 +142,6 @@
         "searchPlaceholder": "Rechercher des langues...",
         "noResults": "Aucune langue trouvée",
         "auto": "Auto"
-      },
-      "pushToTalk": {
-        "label": "Maintenir pour Écouter",
-        "description": "Maintenez le raccourci pour écouter la synthèse vocale, relâchez pour arrêter"
       }
     },
     "sound": {

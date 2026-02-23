@@ -188,10 +188,6 @@
         "searchPlaceholder": "Cerca lingue...",
         "noResults": "Nessuna lingua trovata",
         "auto": "Auto"
-      },
-      "pushToTalk": {
-        "label": "Premi per Parlare",
-        "description": "Tieni premuto per parlare, rilascia per interrompere"
       }
     },
     "sound": {

@@ -7,7 +7,6 @@ use log::warn;
 use tauri::{AppHandle, Manager};
 
 use crate::actions::ACTION_MAP;
-use crate::settings::get_settings;
 use crate::action_coordinator::is_speak_binding;
 use crate::ActionCoordinator;
 
@@ -15,8 +14,7 @@ use crate::ActionCoordinator;
 ///
 /// This function contains the shared logic for:
 /// - Looking up the action in ACTION_MAP
-/// - Handling the cancel binding (only fires when recording)
-/// - Handling push-to-talk mode (start on press, stop on release)
+/// - Handling the cancel binding
 /// - Handling toggle mode (toggle state on press only)
 ///
 /// # Arguments
@@ -30,12 +28,10 @@ pub fn handle_shortcut_event(
     hotkey_string: &str,
     is_pressed: bool,
 ) {
-    let settings = get_settings(app);
-
     // Speak bindings are handled by the coordinator.
     if is_speak_binding(binding_id) {
         if let Some(coordinator) = app.try_state::<ActionCoordinator>() {
-            coordinator.send_input(binding_id, hotkey_string, is_pressed, settings.push_to_talk);
+            coordinator.send_input(binding_id, hotkey_string, is_pressed);
         } else {
             warn!("ActionCoordinator is not initialized");
         }

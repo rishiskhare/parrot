@@ -6,12 +6,9 @@ import { SettingsGroup } from "../../ui/SettingsGroup";
 import { SoundPicker } from "../SoundPicker";
 import { ShortcutInput } from "../ShortcutInput";
 import { UpdateChecksToggle } from "../UpdateChecksToggle";
-import { useSettings } from "../../../hooks/useSettings";
 
 export const DebugSettings: React.FC = () => {
   const { t } = useTranslation();
-  const { getSetting } = useSettings();
-  const pushToTalk = getSetting("push_to_talk");
   const isLinux = type() === "linux";
 
   return (
@@ -28,7 +25,6 @@ export const DebugSettings: React.FC = () => {
           <ShortcutInput
             shortcutId="cancel"
             grouped={true}
-            disabled={pushToTalk}
           />
         )}
       </SettingsGroup>

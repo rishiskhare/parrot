@@ -291,17 +291,8 @@ impl ShortcutAction for SpeakAction {
         });
     }
 
-    fn stop(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
-        // In push-to-talk mode, releasing the key stops playback immediately.
-        let settings = crate::settings::get_settings(app);
-        if settings.push_to_talk {
-            if let Some(speech) = app.try_state::<Arc<TTSManager>>() {
-                speech.stop();
-            }
-            hide_speaking_overlay(app);
-            crate::tray::change_tray_icon(app);
-        }
-        // In toggle mode, playback continues until interrupted by another press or cancel.
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        // Nothing to do on key release — playback continues until interrupted by another press or cancel.
     }
 }
 

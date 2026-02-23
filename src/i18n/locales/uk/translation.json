@@ -170,10 +170,6 @@
         "searchPlaceholder": "Пошук мов...",
         "noResults": "Мов не знайдено",
         "auto": "Авто"
-      },
-      "pushToTalk": {
-        "label": "Утримувати для запису (Push To Talk)",
-        "description": "Утримуйте для запису, відпустіть для зупинки"
       }
     },
     "models": {

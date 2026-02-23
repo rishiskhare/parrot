@@ -8,7 +8,6 @@ export { ModelsSettings } from "./models/ModelsSettings";
 
 // Individual setting components
 export { OutputDeviceSelector } from "./OutputDeviceSelector";
-export { PushToTalk } from "./PushToTalk";
 export { AudioFeedback } from "./AudioFeedback";
 export { ShowOverlay } from "./ShowOverlay";
 export { GlobalShortcutInput } from "./GlobalShortcutInput";

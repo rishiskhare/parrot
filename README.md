@@ -110,7 +110,7 @@ The pause/resume and cancel shortcuts are only active while Parrot is playing. T
 
 | Category | Options |
 |----------|---------|
-| **General** | Shortcuts, TTS language, voice, hold-to-speak, output device, audio feedback |
+| **General** | Shortcuts, TTS language, voice, output device, audio feedback |
 | **Models** | Download, switch, and delete TTS models |
 | **Advanced → App** | Start hidden, autostart, tray icon, overlay position, model unload timeout |
 | **Advanced → Speech** | Worker threads, playback speed, fast first response |

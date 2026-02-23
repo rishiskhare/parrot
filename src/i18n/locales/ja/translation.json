@@ -188,10 +188,6 @@
         "searchPlaceholder": "言語を検索...",
         "noResults": "言語が見つかりません",
         "auto": "自動"
-      },
-      "pushToTalk": {
-        "label": "プッシュトゥトーク",
-        "description": "押し続けて録音、離して停止"
       }
     },
     "sound": {

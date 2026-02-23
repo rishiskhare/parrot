@@ -188,10 +188,6 @@
         "searchPlaceholder": "Szukaj języka...",
         "noResults": "Nie znaleziono języków",
         "auto": "Auto"
-      },
-      "pushToTalk": {
-        "label": "Push To Talk",
-        "description": "Przytrzymaj, aby nagrywać, puść, aby zatrzymać"
       }
     },
     "sound": {

@@ -142,10 +142,6 @@
         "searchPlaceholder": "Buscar idiomas...",
         "noResults": "No se encontraron idiomas",
         "auto": "Auto"
-      },
-      "pushToTalk": {
-        "label": "Mantener para Hablar",
-        "description": "Mantén presionado el atajo para escuchar el habla, suelta para detener"
       }
     },
     "sound": {

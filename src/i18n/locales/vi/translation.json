@@ -142,10 +142,6 @@
         "searchPlaceholder": "Tìm kiếm ngôn ngữ...",
         "noResults": "Không tìm thấy ngôn ngữ",
         "auto": "Tự động"
-      },
-      "pushToTalk": {
-        "label": "Giữ để nói",
-        "description": "Giữ phím tắt để nghe giọng nói, thả để dừng"
       }
     },
     "sound": {

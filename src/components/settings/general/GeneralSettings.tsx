@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { ShortcutInput } from "../ShortcutInput";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { OutputDeviceSelector } from "../OutputDeviceSelector";
-import { PushToTalk } from "../PushToTalk";
 import { AudioFeedback } from "../AudioFeedback";
 import { useSettings } from "../../../hooks/useSettings";
 import { VolumeSlider } from "../VolumeSlider";
@@ -19,7 +18,6 @@ export const GeneralSettings: React.FC = () => {
         <ShortcutInput shortcutId="speak" grouped={true} />
         <ShortcutInput shortcutId="cancel" grouped={true} allowDisable={true} />
         <ShortcutInput shortcutId="play_pause" grouped={true} allowDisable={true} />
-        <PushToTalk descriptionMode="tooltip" grouped={true} />
         <ShowCloseButton descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <ModelSettingsCard />
