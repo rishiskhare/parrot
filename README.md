@@ -14,7 +14,7 @@
 
   ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
   ![License](https://img.shields.io/badge/license-MIT-green)
-  ![Version](https://img.shields.io/badge/version-26.2.2-blue)
+  ![Version](https://img.shields.io/badge/version-26.2.3-blue)
 </div>
 
 ---
@@ -36,21 +36,21 @@ Select text. Press `Option+Space`. Done.
 brew tap rishiskhare/parrot && brew install --cask parrot
 ```
 
-**Manual:** Download [Parrot_26.2.2_aarch64.dmg](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_aarch64.dmg)
+**Manual:** Download [Parrot_26.2.3_aarch64.dmg](https://github.com/rishiskhare/parrot/releases/download/v26.2.3/Parrot_26.2.3_aarch64.dmg)
 
 ### Windows
 
 | Architecture | Download |
 |--------------|----------|
-| x64 (Intel/AMD) | [Parrot_26.2.2_x64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_x64-setup.exe) |
-| ARM64 | [Parrot_26.2.2_arm64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_arm64-setup.exe) |
+| x64 (Intel/AMD) | [Parrot_26.2.3_x64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.3/Parrot_26.2.3_x64-setup.exe) |
+| ARM64 | [Parrot_26.2.3_arm64-setup.exe](https://github.com/rishiskhare/parrot/releases/download/v26.2.3/Parrot_26.2.3_arm64-setup.exe) |
 
 ### Linux
 
 | Architecture | AppImage | Debian |
 |--------------|----------|--------|
-| x64 (Intel/AMD) | [Parrot_26.2.2_amd64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_amd64.AppImage) | [Parrot_26.2.2_amd64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_amd64.deb) |
-| ARM64 | [Parrot_26.2.2_aarch64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_aarch64.AppImage) | [Parrot_26.2.2_arm64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.2/Parrot_26.2.2_arm64.deb) |
+| x64 (Intel/AMD) | [Parrot_26.2.3_amd64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.3/Parrot_26.2.3_amd64.AppImage) | [Parrot_26.2.3_amd64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.3/Parrot_26.2.3_amd64.deb) |
+| ARM64 | [Parrot_26.2.3_aarch64.AppImage](https://github.com/rishiskhare/parrot/releases/download/v26.2.3/Parrot_26.2.3_aarch64.AppImage) | [Parrot_26.2.3_arm64.deb](https://github.com/rishiskhare/parrot/releases/download/v26.2.3/Parrot_26.2.3_arm64.deb) |
 
 > All downloads available on the [Releases](https://github.com/rishiskhare/parrot/releases) page.
 
@@ -64,7 +64,7 @@ On first launch, Parrot prompts you to download the TTS model (~115 MB). Once do
 - **Streaming playback:** audio starts playing before the full text has been synthesized
 - **Free forever:** no subscription, no API key, no account required
 - **Pause & resume:** pause and resume playback mid-sentence with a keyboard shortcut
-- **Floating overlay:** a lightweight indicator shows speaking status with pause/cancel controls
+- **Floating overlay:** a lightweight indicator shows speaking status with pause controls
 - **History:** every utterance is saved with audio for replay or copy
 
 ## How It Works
@@ -72,7 +72,7 @@ On first launch, Parrot prompts you to download the TTS model (~115 MB). Once do
 1. **Select text** in any application
 2. **Press the shortcut** (default: `Option+Space` on macOS, `Ctrl+Space` on Windows/Linux)
 3. A small overlay appears while Parrot synthesizes and plays the audio
-4. Press `Option+P` to pause/resume, or `Option+Escape` to cancel (all shortcuts are customizable)
+4. Press `Option+P` to pause/resume (all shortcuts are customizable)
 
 ## Models
 
@@ -100,11 +100,10 @@ All shortcuts are fully customizable in **Settings → General**.
 |--------|-------|-----------------|
 | Speak selected text | `Option+Space` | `Ctrl+Space` |
 | Pause / resume playback | `Option+P` | `Alt+P` |
-| Cancel / stop playback | `Option+Escape` | `Alt+Escape` |
 | Open settings | `Cmd+,` | `Ctrl+,` |
 | Open debug panel | `Cmd+Shift+D` | `Ctrl+Shift+D` |
 
-The pause/resume and cancel shortcuts are only active while Parrot is playing. They can also be disabled entirely in **Settings → General** if you prefer not to capture those keys.
+The pause/resume shortcut is only active while Parrot is playing. It can be customized or disabled in **Settings → General**.
 
 ## Settings Overview
 
@@ -129,7 +128,6 @@ parrot [FLAGS]
 | Flag | Description |
 |------|-------------|
 | `--toggle-transcription` | Toggle TTS on/off in the running instance |
-| `--cancel` | Cancel the current playback |
 | `--start-hidden` | Launch without showing the main window |
 | `--no-tray` | Launch without a tray icon (closing the window quits) |
 | `--debug` | Enable verbose trace logging |
