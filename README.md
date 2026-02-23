@@ -13,7 +13,8 @@
   English (US & UK) · Spanish · French · Hindi · Italian · Japanese · Portuguese (Brazilian) · Chinese (Mandarin)
 
   ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
-  ![License](https://img.shields.io/badge/license-MIT-green)
+  ![License](https://img.shields.io/badge/license-MIT-red)
+  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/rishiskhare/parrot/total)
   ![Version](https://img.shields.io/badge/version-26.2.3-blue)
 </div>
 
