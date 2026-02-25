@@ -357,6 +357,7 @@
   },
   "overlay": {
     "speaking": "Speaking...",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "reading": "Reading:"
   }
 }

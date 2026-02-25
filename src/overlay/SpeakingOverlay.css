@@ -2,26 +2,82 @@
   height: 36px;
   width: 172px;
   margin: 0 auto;
+  position: relative;
+  padding: 6px;
+  background: rgba(15, 15, 20, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 14px;
+  opacity: 0;
+  overflow: visible;
+  transition:
+    opacity 200ms ease-out,
+    width 300ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    padding 300ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-radius 300ms ease-out,
+    background 300ms ease-out,
+    border-color 300ms ease-out;
+  box-sizing: border-box;
+  border: 1px solid rgba(155, 232, 112, 0.3);
+}
+
+/* Suppress size/layout transitions when reappearing after a hide so the
+   overlay snaps to its correct dimensions, but keep the opacity fade-in. */
+.speaking-overlay.no-transition {
+  transition: opacity 200ms ease-out !important;
+}
+
+.speaking-overlay.fade-in {
+  opacity: 1;
+}
+
+/* ── Content layers ──
+   Both layers live inside the overlay simultaneously. Only the active
+   one is visible; they cross-fade during state transitions. */
+.overlay-layer {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 200ms ease-out,
+    visibility 0ms 200ms;
+}
+
+.overlay-layer.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 200ms ease-out,
+    visibility 0ms 0ms;
+}
+
+/* Processing layer fades out immediately when leaving.
+   Speaking layer fades in with a delay so it appears after the size
+   transition has mostly finished. */
+.speaking-layer {
+  transition: opacity 200ms ease-out 200ms;
+}
+
+.speaking-layer.active {
+  transition: opacity 200ms ease-out 200ms;
+}
+
+/* When going back to processing, fade in immediately. */
+.processing-layer.active {
+  transition: opacity 150ms ease-out;
+}
+
+/* ── Processing layer layout ── */
+.processing-layer {
+  position: absolute;
+  inset: 0;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
   gap: 0;
   padding: 6px;
-  background: #000000cc;
-  border-radius: 15px;
-  position: relative;
-  opacity: 0;
-  transition:
-    opacity 220ms ease-out,
-    width 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
   box-sizing: border-box;
-  will-change: width;
-}
-
-.speaking-overlay.speaking-state {
-  width: 206px;
-  grid-template-columns: 26px 1fr 26px;
-  column-gap: 10px;
 }
 
 .overlay-left {
@@ -37,27 +93,6 @@
   min-width: 0;
 }
 
-.speaking-overlay.speaking-state .overlay-middle {
-  justify-content: center;
-  padding-inline-start: 0;
-}
-
-.speaking-overlay.speaking-state .overlay-left,
-.speaking-overlay.speaking-state .overlay-right {
-  justify-content: center;
-}
-
-.overlay-right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 30px;
-}
-
-.speaking-overlay.fade-in {
-  opacity: 1;
-}
-
 .status-text {
   color: white;
   font-size: 12px;
@@ -68,33 +103,131 @@
   white-space: nowrap;
 }
 
-.speaking-overlay.speaking-state .status-text {
-  animation: none;
-}
-
 @keyframes status-pulse {
-
   0%,
   100% {
     opacity: 0.6;
   }
-
   50% {
     opacity: 1;
   }
 }
 
+/* ── Speaking state (outer container dimensions) ── */
+.speaking-overlay.speaking-state {
+  width: 540px;
+  height: auto;
+  min-height: 48px;
+  padding: 0;
+}
+
+/* ── Speaking layer layout ── */
+.speaking-layer {
+  width: 100%;
+}
+
+.speaking-content {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.speaking-text-section {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+}
+
+.speaking-text {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+/* ── Right controls panel ── */
+.speaking-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+/* ── Waveform bars ── */
+.waveform-bars {
+  display: flex;
+  align-items: center;
+  gap: 2.5px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.waveform-bar {
+  width: 3px;
+  border-radius: 1.5px;
+  background: #9BE870;
+  height: 5px;
+  animation: waveform-bounce 1.2s ease-in-out infinite;
+}
+
+.waveform-bar:nth-child(1) {
+  animation-delay: 0s;
+}
+.waveform-bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.waveform-bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.waveform-bar:nth-child(4) {
+  animation-delay: 0.45s;
+}
+.waveform-bar:nth-child(5) {
+  animation-delay: 0.6s;
+}
+
+@keyframes waveform-bounce {
+  0%,
+  100% {
+    height: 5px;
+    opacity: 0.4;
+  }
+  50% {
+    height: 18px;
+    opacity: 0.9;
+  }
+}
+
+/* Freeze waveform when paused */
+.speaking-overlay.paused .waveform-bar {
+  animation-play-state: paused;
+}
+
+/* ── Pause/play button ── */
 .speaking-toggle-button {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  border: 1px solid rgba(155, 232, 112, 0.4);
+  background: rgba(155, 232, 112, 0.12);
+  color: #9BE870;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
   transition:
     background-color 150ms ease-out,
     transform 100ms ease-out,
@@ -102,18 +235,18 @@
 }
 
 .speaking-toggle-button:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.34);
-  transform: scale(1.04);
+  background: rgba(155, 232, 112, 0.22);
+  border-color: rgba(155, 232, 112, 0.6);
+  transform: scale(1.06);
 }
 
 .speaking-toggle-button:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
 }
 
 .speaking-toggle-button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.42);
+  box-shadow: 0 0 0 2px rgba(155, 232, 112, 0.4);
 }
 
 .speaking-toggle-button:disabled {
@@ -122,10 +255,11 @@
   transform: none;
 }
 
+/* ── Mac close button ── */
 .mac-close-button {
   position: absolute;
-  top: -4px;
-  left: -4px;
+  top: -5px;
+  inset-inline-start: -5px;
   width: 16px;
   height: 16px;
   border-radius: 50%;

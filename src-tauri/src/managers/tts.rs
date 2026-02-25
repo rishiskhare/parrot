@@ -751,6 +751,10 @@ impl TTSManager {
             let mut pending_results: BTreeMap<usize, ChunkSynthesisResult> = BTreeMap::new();
             let mut next_chunk_to_append = 0usize;
             let mut crossfade_tail: Option<Vec<f32>> = None;
+            // Channel for sending (chunk_index, duration_secs) to the overlay
+            // text updater thread as chunks are appended to the audio sink.
+            let (chunk_dur_tx, chunk_dur_rx) = mpsc::channel::<(usize, f32)>();
+            let mut chunk_dur_rx = Some(chunk_dur_rx);
 
             while next_chunk_to_append < total_chunks {
                 if generation.load(Ordering::SeqCst) != request_id
@@ -840,6 +844,9 @@ impl TTSManager {
                         NonZero::new(chunk_result.sample_rate).unwrap(),
                         samples,
                     ));
+                    // Feed the overlay text updater thread so it can schedule
+                    // when to show each chunk's text during playback.
+                    let _ = chunk_dur_tx.send((next_chunk_to_append, chunk_audio_seconds));
 
                     if !started_playback {
                         if generation.load(Ordering::SeqCst) != request_id
@@ -852,13 +859,34 @@ impl TTSManager {
                         }
                         started_playback = true;
                         lifecycle_state.store(TtsLifecycleState::Speaking as u8, Ordering::SeqCst);
-                        show_speaking_overlay(&app_handle);
+                        show_speaking_overlay(&app_handle, chunks.first().cloned());
                         crate::shortcut::register_play_pause_shortcut(&app_handle);
                         audio_feedback::play_sound(
                             &app_handle,
                             audio_feedback::SoundType::Start,
                         );
                         shared_sink.play();
+
+                        // Spawn overlay text updater: sleeps through each chunk's
+                        // audio duration and emits the next chunk's text at the
+                        // right moment, pausing the timer when TTS is paused.
+                        if let Some(rx) = chunk_dur_rx.take() {
+                            let overlay_chunks = Arc::clone(&chunks);
+                            let overlay_lifecycle = Arc::clone(&lifecycle_state);
+                            let overlay_generation = Arc::clone(&generation);
+                            let overlay_app = app_handle.clone();
+                            thread::spawn(move || {
+                                overlay_text_updater(
+                                    rx,
+                                    &overlay_chunks,
+                                    &overlay_lifecycle,
+                                    &overlay_generation,
+                                    request_id,
+                                    &overlay_app,
+                                );
+                            });
+                        }
+
                         let overall_rtf = total_synth_secs / buffered_seconds.max(0.001);
                         info!(
                             "TTS playback started in {}ms (buffered={:.2}s, rtf={:.2}, chunks={}/{}, workers={})",
@@ -883,6 +911,9 @@ impl TTSManager {
                     next_chunk_to_append += 1;
                 }
             }
+
+            // Drop the sender so the overlay updater thread knows no more chunks are coming.
+            drop(chunk_dur_tx);
 
             // Flush any held-back crossfade tail from the final chunk
             if let Some(tail) = crossfade_tail.take() {
@@ -1006,6 +1037,104 @@ impl TTSManager {
         }
 
         Ok(())
+    }
+}
+
+/// Runs on a dedicated thread. Receives `(chunk_index, duration_secs)` from the
+/// synthesis loop and emits `overlay-text` events timed to when each chunk
+/// actually starts playing, so the overlay shows the text being read aloud.
+///
+/// The timer pauses when TTS playback is paused and exits when the request
+/// is cancelled or all chunks have been emitted.
+fn overlay_text_updater(
+    rx: mpsc::Receiver<(usize, f32)>,
+    chunks: &[String],
+    lifecycle_state: &AtomicU8,
+    generation: &AtomicU64,
+    request_id: u64,
+    app_handle: &AppHandle,
+) {
+    // Collect chunk durations as they arrive from the synthesis loop.
+    // We need to wait for each chunk's audio to finish playing before
+    // showing the next chunk's text.
+    let mut pending: Vec<(usize, f32)> = Vec::new();
+    let mut next_to_show: usize = 0; // index into `pending`
+
+    // The first chunk's text is already shown by show_speaking_overlay.
+    // We need to wait for the first chunk to finish, then show the second, etc.
+
+    loop {
+        // Check if this request is still active
+        if generation.load(Ordering::SeqCst) != request_id {
+            return;
+        }
+
+        // Drain any newly arrived chunk durations
+        while let Ok(entry) = rx.try_recv() {
+            pending.push(entry);
+        }
+
+        // If we haven't started showing any chunks yet, we need at least one
+        if pending.is_empty() {
+            match rx.recv_timeout(Duration::from_millis(50)) {
+                Ok(entry) => pending.push(entry),
+                Err(mpsc::RecvTimeoutError::Timeout) => continue,
+                Err(mpsc::RecvTimeoutError::Disconnected) => return,
+            }
+        }
+
+        // If we've shown all chunks, we're done
+        if next_to_show >= pending.len() {
+            // Wait for more chunks or channel close
+            match rx.recv_timeout(Duration::from_millis(50)) {
+                Ok(entry) => pending.push(entry),
+                Err(mpsc::RecvTimeoutError::Timeout) => continue,
+                Err(mpsc::RecvTimeoutError::Disconnected) => return,
+            }
+        }
+
+        // Sleep through the current chunk's duration, then emit the next one.
+        // The current chunk at `next_to_show` is already being displayed.
+        // We need to wait for its audio to finish before showing the next.
+        let (_chunk_idx, duration_secs) = pending[next_to_show];
+        let sleep_target = Duration::from_secs_f32(duration_secs);
+        let mut slept = Duration::ZERO;
+
+        while slept < sleep_target {
+            if generation.load(Ordering::SeqCst) != request_id {
+                return;
+            }
+
+            // If paused, don't advance the timer
+            let state = lifecycle_state.load(Ordering::SeqCst);
+            if state == TtsLifecycleState::Paused as u8 {
+                thread::sleep(Duration::from_millis(50));
+                continue;
+            }
+            // If no longer speaking (idle, loading, etc.), exit
+            if state != TtsLifecycleState::Speaking as u8 {
+                return;
+            }
+
+            let step = Duration::from_millis(50).min(sleep_target - slept);
+            thread::sleep(step);
+            slept += step;
+        }
+
+        next_to_show += 1;
+
+        // Emit the next chunk's text if available
+        // Drain any new arrivals first
+        while let Ok(entry) = rx.try_recv() {
+            pending.push(entry);
+        }
+
+        if next_to_show < pending.len() {
+            let (chunk_idx, _) = pending[next_to_show];
+            if let Some(text) = chunks.get(chunk_idx) {
+                let _ = app_handle.emit("overlay-text", text.as_str());
+            }
+        }
     }
 }
 
