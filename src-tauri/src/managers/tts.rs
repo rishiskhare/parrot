@@ -1055,16 +1055,15 @@ fn overlay_text_updater(
     app_handle: &AppHandle,
 ) {
     // Collect chunk durations as they arrive from the synthesis loop.
-    // We need to wait for each chunk's audio to finish playing before
-    // showing the next chunk's text.
+    // We emit each chunk's text *before* sleeping through its duration,
+    // which correctly handles both the normal case (chunks pre-buffered)
+    // and the "gap" case (synthesis lagging behind playback).
     let mut pending: Vec<(usize, f32)> = Vec::new();
-    let mut next_to_show: usize = 0; // index into `pending`
+    let mut current: usize = 0; // index of the chunk we're about to sleep through
 
-    // The first chunk's text is already shown by show_speaking_overlay.
-    // We need to wait for the first chunk to finish, then show the second, etc.
+    // Chunk 0's text is already shown by show_speaking_overlay.
 
     loop {
-        // Check if this request is still active
         if generation.load(Ordering::SeqCst) != request_id {
             return;
         }
@@ -1074,29 +1073,31 @@ fn overlay_text_updater(
             pending.push(entry);
         }
 
-        // If we haven't started showing any chunks yet, we need at least one
-        if pending.is_empty() {
+        // Wait until we have timing info for the current chunk
+        if current >= pending.len() {
             match rx.recv_timeout(Duration::from_millis(50)) {
                 Ok(entry) => pending.push(entry),
                 Err(mpsc::RecvTimeoutError::Timeout) => continue,
                 Err(mpsc::RecvTimeoutError::Disconnected) => return,
             }
-        }
-
-        // If we've shown all chunks, we're done
-        if next_to_show >= pending.len() {
-            // Wait for more chunks or channel close
-            match rx.recv_timeout(Duration::from_millis(50)) {
-                Ok(entry) => pending.push(entry),
-                Err(mpsc::RecvTimeoutError::Timeout) => continue,
-                Err(mpsc::RecvTimeoutError::Disconnected) => return,
+            if current >= pending.len() {
+                continue;
             }
         }
 
-        // Sleep through the current chunk's duration, then emit the next one.
-        // The current chunk at `next_to_show` is already being displayed.
-        // We need to wait for its audio to finish before showing the next.
-        let (_chunk_idx, duration_secs) = pending[next_to_show];
+        // Emit the current chunk's text. Chunk 0 is already displayed by
+        // show_speaking_overlay; for subsequent chunks this fires right
+        // when the chunk starts playing — whether it was pre-buffered or
+        // arrived after a synthesis gap.
+        if current > 0 {
+            let (chunk_idx, _) = pending[current];
+            if let Some(text) = chunks.get(chunk_idx) {
+                let _ = app_handle.emit("overlay-text", text.as_str());
+            }
+        }
+
+        // Sleep through the current chunk's audio duration
+        let (_chunk_idx, duration_secs) = pending[current];
         let sleep_target = Duration::from_secs_f32(duration_secs);
         let mut slept = Duration::ZERO;
 
@@ -1105,13 +1106,11 @@ fn overlay_text_updater(
                 return;
             }
 
-            // If paused, don't advance the timer
             let state = lifecycle_state.load(Ordering::SeqCst);
             if state == TtsLifecycleState::Paused as u8 {
                 thread::sleep(Duration::from_millis(50));
                 continue;
             }
-            // If no longer speaking (idle, loading, etc.), exit
             if state != TtsLifecycleState::Speaking as u8 {
                 return;
             }
@@ -1121,20 +1120,7 @@ fn overlay_text_updater(
             slept += step;
         }
 
-        next_to_show += 1;
-
-        // Emit the next chunk's text if available
-        // Drain any new arrivals first
-        while let Ok(entry) = rx.try_recv() {
-            pending.push(entry);
-        }
-
-        if next_to_show < pending.len() {
-            let (chunk_idx, _) = pending[next_to_show];
-            if let Some(text) = chunks.get(chunk_idx) {
-                let _ = app_handle.emit("overlay-text", text.as_str());
-            }
-        }
+        current += 1;
     }
 }
 
