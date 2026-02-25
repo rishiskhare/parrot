@@ -33,8 +33,7 @@ The backend is written in Rust, keeping the app fast, lightweight, and resource-
 3. A small overlay appears while Parrot synthesizes and plays the audio
 4. Press `Option+P` to pause/resume (all shortcuts are customizable)
 
-### 🔊 Here's how it sounds (make sure to unmute): 
-https://github.com/user-attachments/assets/baee7c2c-ac25-4418-9d55-713caeb23cee
+### 🔊 Here's how it sounds (make sure to unmute): [sample](https://drive.google.com/file/d/10nEemc1hR_0yckWwOrvKcle3hOjsCx5n/view?usp=sharing)
 
 ## Installation
 
