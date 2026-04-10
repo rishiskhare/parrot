@@ -8,6 +8,7 @@ mod helpers;
 mod input;
 mod managers;
 mod overlay;
+mod selection;
 mod settings;
 mod shortcut;
 mod signal_handle;
@@ -315,6 +316,9 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_update_checks_setting,
         shortcut::change_keyboard_implementation_setting,
         shortcut::get_keyboard_implementation,
+        shortcut::change_selection_capture_method_setting,
+        shortcut::change_clipboard_handling_setting,
+        shortcut::change_model_unload_timeout_setting,
         shortcut::change_show_tray_icon_setting,
         shortcut::change_tts_workers_setting,
         shortcut::change_tts_speed_setting,

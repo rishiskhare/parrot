@@ -109,6 +109,30 @@ async changeExperimentalEnabledSetting(enabled: boolean) : Promise<Result<null, 
     else return { status: "error", error: e  as any };
 }
 },
+async changeSelectionCaptureMethodSetting(method: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_selection_capture_method_setting", { method }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeClipboardHandlingSetting(handling: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_clipboard_handling_setting", { handling }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeModelUnloadTimeoutSetting(timeout: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_model_unload_timeout_setting", { timeout }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 /**
  * Temporarily unregister a binding while the user is editing it in the UI.
  * This avoids firing the action while keys are being recorded.
@@ -547,9 +571,10 @@ async isLaptop() : Promise<Result<boolean, string>> {
 
 /** user-defined types **/
 
-export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; update_checks_enabled?: boolean; selected_model?: string; selected_output_device?: string | null; selected_language?: string; selected_kokoro_voice?: string | null; show_close_button?: boolean; overlay_position?: OverlayPosition; debug_mode?: boolean; log_level?: LogLevel; model_unload_timeout?: ModelUnloadTimeout; history_limit?: number; history_retention_period?: HistoryRetentionPeriod; app_language?: string; experimental_enabled?: boolean; keyboard_implementation?: KeyboardImplementation; show_tray_icon?: boolean; tts_workers?: number; tts_speed?: number; tts_shorten_first_chunk?: boolean }
+export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; update_checks_enabled?: boolean; selected_model?: string; selected_output_device?: string | null; selected_language?: string; selected_kokoro_voice?: string | null; show_close_button?: boolean; overlay_position?: OverlayPosition; debug_mode?: boolean; log_level?: LogLevel; model_unload_timeout?: ModelUnloadTimeout; history_limit?: number; history_retention_period?: HistoryRetentionPeriod; app_language?: string; experimental_enabled?: boolean; keyboard_implementation?: KeyboardImplementation; selection_capture_method?: SelectionCaptureMethod; clipboard_handling?: ClipboardHandling; show_tray_icon?: boolean; tts_workers?: number; tts_speed?: number; tts_shorten_first_chunk?: boolean }
 export type AudioDevice = { index: string; name: string; is_default: boolean }
 export type BindingResponse = { success: boolean; binding: ShortcutBinding | null; error: string | null }
+export type ClipboardHandling = "dont_modify" | "copy_to_clipboard"
 export type CustomSounds = { start: boolean; stop: boolean }
 export type EngineType = "Kokoro"
 export type HistoryEntry = { id: number; file_name: string; timestamp: number; saved: boolean; title: string; transcription_text: string }
@@ -590,6 +615,7 @@ components?: ModelComponent[] }
 export type ModelStatus = { model_id: string; model_name: string; model_description: string; accuracy_score: number; speed_score: number; is_recommended: boolean; model_dir: string; model_files_present: boolean; model_loaded: boolean }
 export type ModelUnloadTimeout = "never" | "immediately" | "min_2" | "min_5" | "min_10" | "min_15" | "hour_1" | "sec_5"
 export type OverlayPosition = "none" | "top" | "bottom"
+export type SelectionCaptureMethod = "auto" | "accessibility" | "clipboard"
 export type ShortcutBinding = { id: string; name: string; description: string; default_binding: string; current_binding: string }
 export type SoundTheme = "marimba" | "pop" | "custom"
 
