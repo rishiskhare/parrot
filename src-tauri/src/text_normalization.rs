@@ -227,7 +227,11 @@ impl SpeechTextRenderer {
 
         self.flush_breaks();
 
-        if needs_space_between(self.output.chars().next_back(), normalized.chars().next()) {
+        if needs_space_between(
+            self.output.chars().rev().nth(1),
+            self.output.chars().next_back(),
+            normalized.chars().next(),
+        ) {
             self.output.push(' ');
         }
         self.output.push_str(&normalized);
@@ -316,7 +320,11 @@ fn append_segment(buffer: &mut String, segment: &str) {
         return;
     }
 
-    if needs_space_between(buffer.chars().next_back(), segment.chars().next()) {
+    if needs_space_between(
+        buffer.chars().rev().nth(1),
+        buffer.chars().next_back(),
+        segment.chars().next(),
+    ) {
         buffer.push(' ');
     }
     buffer.push_str(segment);
@@ -341,12 +349,36 @@ fn normalize_inline_whitespace(text: &str) -> String {
     normalized.trim().to_string()
 }
 
-fn needs_space_between(left: Option<char>, right: Option<char>) -> bool {
-    match (left, right) {
-        (Some(left), Some(right)) => {
-            !left.is_whitespace()
-                && !matches!(right, ',' | '.' | '!' | '?' | ':' | ';' | ')' | ']' | '}')
-                && !matches!(left, '(' | '[' | '{' | '/' | '\n')
+fn needs_space_between(prev_left: Option<char>, left: Option<char>, right: Option<char>) -> bool {
+    match (prev_left, left, right) {
+        (_, Some(left), Some(right))
+            if left.is_alphanumeric() && matches!(right, '&' | '\'' | '’') =>
+        {
+            false
+        }
+        (_, Some('&'), Some(right)) if right.is_alphanumeric() => false,
+        (prev_left, Some('\'' | '’'), Some(right)) if right.is_alphanumeric() => {
+            match prev_left {
+                None => false,
+                Some(ch)
+                    if ch.is_whitespace()
+                        || matches!(ch, '(' | '[' | '{' | '"' | ':' | ';' | '—' | '–') =>
+                {
+                    false
+                }
+                Some(_) => true,
+            }
+        }
+        (_, Some(left), Some(right)) => {
+            if (left.is_alphanumeric() && matches!(right, '&' | '\'' | '’'))
+                || (left == '&' && right.is_alphanumeric())
+            {
+                false
+            } else {
+                !left.is_whitespace()
+                    && !matches!(right, ',' | '.' | '!' | '?' | ':' | ';' | ')' | ']' | '}')
+                    && !matches!(left, '(' | '[' | '{' | '/' | '\n')
+            }
         }
         _ => false,
     }
@@ -418,15 +450,13 @@ fn strip_html_tags(html: &str) -> String {
     for ch in html.chars() {
         if in_entity {
             if ch == ';' {
-                out.push_str(match entity.as_str() {
-                    "amp" => "&",
-                    "lt" => "<",
-                    "gt" => ">",
-                    "quot" => "\"",
-                    "apos" | "#39" => "'",
-                    "nbsp" => " ",
-                    _ => "",
-                });
+                if let Some(decoded) = decode_html_entity(&entity) {
+                    out.push_str(&decoded);
+                } else {
+                    out.push('&');
+                    out.push_str(&entity);
+                    out.push(';');
+                }
                 entity.clear();
                 in_entity = false;
                 continue;
@@ -450,7 +480,40 @@ fn strip_html_tags(html: &str) -> String {
         }
     }
 
+    if in_entity {
+        out.push('&');
+        out.push_str(&entity);
+    }
+
     normalize_inline_whitespace(&out)
+}
+
+fn decode_html_entity(entity: &str) -> Option<String> {
+    match entity {
+        "amp" => Some("&".to_string()),
+        "lt" => Some("<".to_string()),
+        "gt" => Some(">".to_string()),
+        "quot" => Some("\"".to_string()),
+        "apos" => Some("'".to_string()),
+        "nbsp" => Some(" ".to_string()),
+        _ => decode_numeric_html_entity(entity),
+    }
+}
+
+fn decode_numeric_html_entity(entity: &str) -> Option<String> {
+    let code = entity.strip_prefix('#')?;
+
+    let (radix, digits) = match code.as_bytes() {
+        [b'x', rest @ ..] | [b'X', rest @ ..] => (16, std::str::from_utf8(rest).ok()?),
+        _ => (10, code),
+    };
+
+    if digits.is_empty() {
+        return None;
+    }
+
+    let value = u32::from_str_radix(digits, radix).ok()?;
+    char::from_u32(value).map(|decoded| decoded.to_string())
 }
 
 #[cfg(test)]
@@ -530,5 +593,25 @@ fn main() {
         assert!(!spoken.contains("## "));
         assert!(!spoken.contains("**"));
         assert!(spoken.len() > 1000);
+    }
+
+    #[test]
+    fn decodes_named_and_numeric_html_entities_in_html_blocks() {
+        let markdown = r#"
+<span>AT&amp;T uses smart quotes: &#8217;hello&#8217; and &#x2014; dash.</span>
+"#;
+
+        let spoken = normalize_text_for_tts(markdown);
+        assert!(spoken.contains("AT&T uses smart quotes: ’hello’ and — dash."));
+    }
+
+    #[test]
+    fn preserves_unknown_or_incomplete_entities_as_literal_text() {
+        let markdown = r#"
+Keep &custom; visible and preserve dangling &entity text.
+"#;
+
+        let spoken = normalize_text_for_tts(markdown);
+        assert!(spoken.contains("Keep &custom; visible and preserve dangling &entity text."));
     }
 }
