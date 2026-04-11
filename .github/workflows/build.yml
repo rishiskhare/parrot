@@ -44,6 +44,9 @@ on:
         type: boolean
         default: false
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     permissions:
@@ -192,12 +195,44 @@ jobs:
           sudo apt install vulkan-sdk -y
           sudo apt-get install -y mesa-vulkan-drivers
 
+      - name: Cache Vulkan SDK for Ubuntu ARM64
+        if: contains(inputs.platform, 'ubuntu') && contains(inputs.platform, 'arm')
+        id: cache-vulkan-sdk-ubuntu-arm64
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/parrot/vulkan-sdk-arm
+          key: ${{ runner.os }}-${{ runner.arch }}-vulkan-sdk-1.4.335.0-${{ inputs.platform }}
+
       - name: Prepare Vulkan SDK for Ubuntu ARM64
         if: contains(inputs.platform, 'ubuntu') && contains(inputs.platform, 'arm')
-        uses: jakoch/install-vulkan-sdk-action@v1
-        with:
-          vulkan_version: 1.4.335.0
-          cache: true
+        shell: bash
+        env:
+          VULKAN_SDK_VERSION: "1.4.335.0"
+          VULKAN_SDK_ASSET: ${{ contains(inputs.platform, '24.04') && 'vulkansdk-ubuntu-24.04-arm-1.4.335.0.tar.xz' || 'vulkansdk-ubuntu-22.04-arm-1.4.335.0.tar.xz' }}
+        run: |
+          set -euo pipefail
+
+          SDK_CACHE_ROOT="$HOME/.cache/parrot/vulkan-sdk-arm"
+          SDK_ROOT="$SDK_CACHE_ROOT/$VULKAN_SDK_VERSION/aarch64"
+          SDK_ARCHIVE="$RUNNER_TEMP/$VULKAN_SDK_ASSET"
+          SDK_DOWNLOAD_URL="https://github.com/jakoch/vulkan-sdk-arm/releases/download/$VULKAN_SDK_VERSION/$VULKAN_SDK_ASSET"
+
+          mkdir -p "$SDK_CACHE_ROOT"
+
+          if [ ! -x "$SDK_ROOT/bin/glslc" ]; then
+            rm -rf "$SDK_CACHE_ROOT/$VULKAN_SDK_VERSION"
+            curl -fsSL "$SDK_DOWNLOAD_URL" -o "$SDK_ARCHIVE"
+            tar -xJf "$SDK_ARCHIVE" -C "$SDK_CACHE_ROOT"
+          fi
+
+          test -x "$SDK_ROOT/bin/glslc"
+          "$SDK_ROOT/bin/glslc" --version
+
+          {
+            echo "VULKAN_SDK=$SDK_ROOT"
+            echo "VK_LAYER_PATH=$SDK_ROOT/share/vulkan/explicit_layer.d"
+            echo "LD_LIBRARY_PATH=$SDK_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          } >> "$GITHUB_ENV"
 
       - name: Install Vulkan runtime libraries (Ubuntu ARM64)
         if: contains(inputs.platform, 'ubuntu') && contains(inputs.platform, 'arm')
