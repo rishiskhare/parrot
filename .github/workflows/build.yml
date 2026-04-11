@@ -131,12 +131,42 @@ jobs:
           dpkg-query -W -f='${Status}\n' libgtk-layer-shell0 | grep -q "install ok installed"
           ldconfig -p | grep -q "libgtk-layer-shell.so.0"
 
-      - name: Install Vulkan SDK (Windows x64)
+      - name: Cache Vulkan SDK for Windows x64
         if: contains(inputs.platform, 'windows') && !contains(inputs.target, 'aarch64')
-        uses: humbletim/install-vulkan-sdk@v1.2
+        id: cache-vulkan-sdk-windows-x64
+        uses: actions/cache@v5
         with:
-          version: 1.4.309.0
-          cache: true
+          path: ~/.cache/parrot/vulkan-sdk-windows-x64
+          key: ${{ runner.os }}-${{ runner.arch }}-vulkan-sdk-1.4.309.0
+
+      - name: Prepare Vulkan SDK for Windows x64
+        if: contains(inputs.platform, 'windows') && !contains(inputs.target, 'aarch64')
+        shell: pwsh
+        env:
+          VULKAN_SDK_VERSION: "1.4.309.0"
+        run: |
+          $sdkCacheRoot = Join-Path $env:USERPROFILE ".cache\parrot\vulkan-sdk-windows-x64"
+          $sdkRoot = Join-Path $sdkCacheRoot $env:VULKAN_SDK_VERSION
+          $sdkBin = Join-Path $sdkRoot "Bin"
+          $sdkTool = Join-Path $sdkBin "glslangValidator.exe"
+          $sdkArchive = Join-Path $env:RUNNER_TEMP "vulkan_sdk_windows_x64.exe"
+          $sdkUrl = "https://sdk.lunarg.com/sdk/download/$env:VULKAN_SDK_VERSION/windows/VulkanSDK-$env:VULKAN_SDK_VERSION-Installer.exe?Human=true"
+
+          if (!(Test-Path $sdkTool)) {
+            Remove-Item -Recurse -Force $sdkRoot -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory -Force -Path $sdkRoot | Out-Null
+            Invoke-WebRequest -Uri $sdkUrl -OutFile $sdkArchive
+            $sevenZip = (Get-Command 7z.exe -ErrorAction Stop).Source
+            & $sevenZip x $sdkArchive "-o$sdkRoot" -aoa | Out-Null
+          }
+
+          if (!(Test-Path $sdkTool)) {
+            throw "glslangValidator.exe was not found under $sdkBin after extracting the Vulkan SDK"
+          }
+
+          Add-Content -Path $env:GITHUB_ENV -Value "VULKAN_SDK=$sdkRoot"
+          Add-Content -Path $env:GITHUB_PATH -Value $sdkBin
+          & $sdkTool --version
 
       # humbletim/install-vulkan-sdk@v1.2 cannot target Windows ARM64 yet.
       # Download prebuilt binaries (Bin) + build headers/libs from source.
