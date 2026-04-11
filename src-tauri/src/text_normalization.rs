@@ -377,12 +377,47 @@ fn normalize_quote_spacing(text: &str) -> String {
         let next = chars.get(idx + 1).copied();
 
         if ch == ' ' {
-            if matches!(next, Some('"' | '“' | '‘'))
-                && prev.map(|c| !c.is_whitespace()).unwrap_or(false)
-            {
-                continue;
+            let prev_non_space = chars[..idx]
+                .iter()
+                .rev()
+                .copied()
+                .find(|c| !c.is_whitespace());
+            let next_non_space = chars[idx + 1..]
+                .iter()
+                .copied()
+                .find(|c| !c.is_whitespace());
+
+            if let Some(next_quote) = next_non_space.filter(|c| is_quote_char(*c)) {
+                let next_quote_idx = idx + 1
+                    + chars[idx + 1..]
+                        .iter()
+                        .position(|c| !c.is_whitespace())
+                        .unwrap_or(0);
+                let after_next_quote = chars[next_quote_idx + 1..]
+                    .iter()
+                    .copied()
+                    .find(|c| !c.is_whitespace());
+
+                if is_opening_quote(next_quote, prev_non_space, after_next_quote)
+                    && prev_non_space
+                        .map(should_trim_space_before_opening_quote)
+                        .unwrap_or(false)
+                {
+                    continue;
+                }
             }
-            if matches!(prev, Some('"' | '”' | '‘' | '’'))
+
+            if prev
+                .filter(|c| is_quote_char(*c))
+                .map(|prev_quote| {
+                    let before_prev_quote = chars[..idx.saturating_sub(1)]
+                        .iter()
+                        .rev()
+                        .copied()
+                        .find(|c| !c.is_whitespace());
+                    is_opening_quote(prev_quote, before_prev_quote, next_non_space)
+                })
+                .unwrap_or(false)
                 && next.map(|c| !c.is_whitespace()).unwrap_or(false)
             {
                 continue;
@@ -404,6 +439,30 @@ fn normalize_quote_spacing(text: &str) -> String {
         .replace("’and", "’ and")
         .replace("a“", "a “")
         .replace(" ”", "”")
+}
+
+fn is_opening_quote(ch: char, prev: Option<char>, next: Option<char>) -> bool {
+    match ch {
+        '“' | '‘' => true,
+        '”' => false,
+        '"' | '’' => {
+            !prev.map(is_quote_word_char).unwrap_or(false)
+                && next.map(is_quote_word_char).unwrap_or(false)
+        }
+        _ => false,
+    }
+}
+
+fn is_quote_char(ch: char) -> bool {
+    matches!(ch, '"' | '“' | '”' | '‘' | '’')
+}
+
+fn is_quote_word_char(ch: char) -> bool {
+    ch.is_alphanumeric()
+}
+
+fn should_trim_space_before_opening_quote(prev: char) -> bool {
+    matches!(prev, '"' | '“' | '‘' | '(' | '[' | '{')
 }
 
 fn needs_space_between(prev_left: Option<char>, left: Option<char>, right: Option<char>) -> bool {
@@ -699,5 +758,16 @@ Keep &custom; visible and preserve dangling &entity text.
         assert!(!spoken.contains("“ This"));
         assert!(!spoken.contains("“ nice"));
         assert!(!spoken.contains("have ”"));
+    }
+
+    #[test]
+    fn preserves_spaces_around_adjacent_quoted_terms() {
+        let markdown =
+            r#"**'Navigate to Settings/Integrations:** Look for "CSV" or "NPS" settings."#;
+
+        let spoken = normalize_text_for_tts(markdown);
+        assert!(spoken.contains(r#"Navigate to Settings/Integrations: Look for “CSV” or “NPS” settings."#));
+        assert!(!spoken.contains("”or“"));
+        assert!(!spoken.contains("”settings"));
     }
 }
