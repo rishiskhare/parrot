@@ -201,13 +201,36 @@ jobs:
           Write-Host "Verifying glslc..."
           & (Join-Path $binPath "glslc.exe") --version
 
-      - name: Build Vulkan SDK headers and libs (Windows ARM64)
+      - name: Cache Vulkan SDK components (Windows ARM64)
         if: contains(inputs.platform, 'windows') && contains(inputs.target, 'aarch64')
+        id: cache-vulkan-sdk-windows-arm64
+        uses: actions/cache@v5
+        with:
+          path: VULKAN_SDK
+          key: ${{ runner.os }}-${{ runner.arch }}-vulkan-sdk-arm64-1.4.309.0-headers-loader
+
+      - name: Build Vulkan SDK headers and libs (Windows ARM64)
+        if: contains(inputs.platform, 'windows') && contains(inputs.target, 'aarch64') && steps.cache-vulkan-sdk-windows-arm64.outputs.cache-hit != 'true'
         uses: humbletim/setup-vulkan-sdk@v1.2.1
         with:
           vulkan-query-version: 1.4.309.0
           vulkan-components: Vulkan-Headers, Vulkan-Loader
-          vulkan-use-cache: true
+          vulkan-use-cache: false
+
+      - name: Restore Vulkan SDK env (Windows ARM64)
+        if: contains(inputs.platform, 'windows') && contains(inputs.target, 'aarch64') && steps.cache-vulkan-sdk-windows-arm64.outputs.cache-hit == 'true'
+        shell: pwsh
+        run: |
+          $sdkDir = $env:VULKAN_SDK
+          $sdkBin = Join-Path $sdkDir "bin"
+          $sdkEnv = Join-Path $sdkDir "sdk.env"
+
+          if (!(Test-Path $sdkEnv)) {
+            throw "sdk.env was not found in cached Windows ARM64 Vulkan SDK at $sdkDir"
+          }
+
+          Add-Content -Path $env:GITHUB_ENV -Value "VULKAN_SDK_VERSION=1.4.309.0"
+          Add-Content -Path $env:GITHUB_PATH -Value $sdkBin
 
       - name: Install trusted-signing-cli
         if: contains(inputs.platform, 'windows') && inputs.sign-binaries
