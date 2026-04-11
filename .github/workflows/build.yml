@@ -414,6 +414,91 @@ jobs:
           }
           Write-Host "Bundled espeak-ng from: $($bin.FullName)"
 
+      - name: Bundle ONNX Runtime shared library (Unix)
+        if: contains(inputs.platform, 'macos') || contains(inputs.platform, 'ubuntu')
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ORT_VERSION="1.23.1"
+          case "${{ inputs.target }}" in
+            x86_64-apple-darwin)
+              ASSET="onnxruntime-osx-x86_64-${ORT_VERSION}.tgz"
+              LIB_GLOB='libonnxruntime*.dylib'
+              ;;
+            aarch64-apple-darwin)
+              ASSET="onnxruntime-osx-arm64-${ORT_VERSION}.tgz"
+              LIB_GLOB='libonnxruntime*.dylib'
+              ;;
+            x86_64-unknown-linux-gnu)
+              ASSET="onnxruntime-linux-x64-${ORT_VERSION}.tgz"
+              LIB_GLOB='libonnxruntime.so*'
+              ;;
+            aarch64-unknown-linux-gnu)
+              ASSET="onnxruntime-linux-aarch64-${ORT_VERSION}.tgz"
+              LIB_GLOB='libonnxruntime.so*'
+              ;;
+            *)
+              echo "Unsupported target for ONNX Runtime bundling: ${{ inputs.target }}"
+              exit 1
+              ;;
+          esac
+
+          TMP_DIR="$(mktemp -d)"
+          ARCHIVE_PATH="${TMP_DIR}/${ASSET}"
+          DEST="src-tauri/resources/onnxruntime"
+          mkdir -p "$DEST"
+
+          curl -fsSL "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${ASSET}" -o "$ARCHIVE_PATH"
+          tar -xzf "$ARCHIVE_PATH" -C "$TMP_DIR"
+
+          LIB_DIR="$(find "$TMP_DIR" -type d \( -name lib -o -name lib64 \) | head -n 1)"
+          if [ -z "$LIB_DIR" ]; then
+            echo "Unable to find ONNX Runtime library directory in ${ASSET}"
+            exit 1
+          fi
+
+          find "$LIB_DIR" -maxdepth 1 -name "$LIB_GLOB" -exec cp -L {} "$DEST/" \;
+          if ! find "$DEST" -maxdepth 1 \( -type f -o -type l \) | grep -q .; then
+            echo "No ONNX Runtime libraries were copied for target ${{ inputs.target }}"
+            exit 1
+          fi
+
+          echo "Bundled ONNX Runtime files:"
+          ls -la "$DEST"
+
+      - name: Bundle ONNX Runtime shared library (Windows)
+        if: contains(inputs.platform, 'windows')
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $ortVersion = "1.23.1"
+          if ("${{ inputs.target }}" -like "*aarch64*") {
+            $asset = "onnxruntime-win-arm64-$ortVersion.zip"
+          } else {
+            $asset = "onnxruntime-win-x64-$ortVersion.zip"
+          }
+
+          $tmpDir = Join-Path $env:RUNNER_TEMP "onnxruntime"
+          Remove-Item -Recurse -Force $tmpDir -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
+
+          $archivePath = Join-Path $tmpDir $asset
+          Invoke-WebRequest -Uri "https://github.com/microsoft/onnxruntime/releases/download/v$ortVersion/$asset" -OutFile $archivePath
+          Expand-Archive -LiteralPath $archivePath -DestinationPath $tmpDir -Force
+
+          $dll = Get-ChildItem -Path $tmpDir -Recurse -Filter "onnxruntime.dll" | Select-Object -First 1
+          if (-not $dll) {
+            throw "onnxruntime.dll not found in $asset"
+          }
+
+          $dest = "src-tauri\resources\onnxruntime"
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Get-ChildItem -Path $dll.DirectoryName -Filter "onnxruntime*.dll" | ForEach-Object {
+            Copy-Item $_.FullName $dest
+            Write-Host "Bundled ONNX Runtime DLL: $($_.Name)"
+          }
+
       - name: Build with Tauri
         uses: tauri-apps/tauri-action@v0
         env:
