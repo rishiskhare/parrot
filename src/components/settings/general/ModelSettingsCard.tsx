@@ -12,8 +12,7 @@ export const ModelSettingsCard: React.FC = () => {
 
   const currentModelInfo = models.find((m: ModelInfo) => m.id === currentModel);
 
-  const supportsLanguageSelection =
-    currentModelInfo?.engine_type === "Kokoro";
+  const supportsLanguageSelection = currentModelInfo?.engine_type === "Kokoro";
 
   // Don't render anything if no model is selected or no settings available
   if (!currentModel || !currentModelInfo || !supportsLanguageSelection) {

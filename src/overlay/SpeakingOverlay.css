@@ -180,7 +180,7 @@
 .waveform-bar {
   width: 3px;
   border-radius: 1.5px;
-  background: #9BE870;
+  background: #9be870;
   height: 5px;
   animation: waveform-bounce 1.2s ease-in-out infinite;
 }
@@ -225,7 +225,7 @@
   border-radius: 999px;
   border: 1px solid rgba(155, 232, 112, 0.4);
   background: rgba(155, 232, 112, 0.12);
-  color: #9BE870;
+  color: #9be870;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,7 +281,7 @@
 
 .mac-close-button::before,
 .mac-close-button::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;

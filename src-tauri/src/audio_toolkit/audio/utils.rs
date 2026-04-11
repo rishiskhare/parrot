@@ -4,7 +4,11 @@ use log::debug;
 use std::path::Path;
 
 /// Save audio samples as a WAV file
-pub fn save_wav_file<P: AsRef<Path>>(file_path: P, samples: &[f32], sample_rate: u32) -> Result<()> {
+pub fn save_wav_file<P: AsRef<Path>>(
+    file_path: P,
+    samples: &[f32],
+    sample_rate: u32,
+) -> Result<()> {
     let spec = WavSpec {
         channels: 1,
         sample_rate,

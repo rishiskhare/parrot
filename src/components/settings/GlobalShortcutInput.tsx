@@ -51,7 +51,14 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (cleanup) return;
       if (e.repeat) return; // ignore auto-repeat
-      if (e.key === "Escape" && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && keyPressed.length === 0) {
+      if (
+        e.key === "Escape" &&
+        !e.ctrlKey &&
+        !e.shiftKey &&
+        !e.altKey &&
+        !e.metaKey &&
+        keyPressed.length === 0
+      ) {
         // Cancel recording and restore original binding
         if (editingShortcutId && originalBinding) {
           try {
@@ -282,7 +289,8 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
     binding.description,
   );
 
-  const isShortcutDisabled = allowDisable && binding.current_binding === "disabled";
+  const isShortcutDisabled =
+    allowDisable && binding.current_binding === "disabled";
 
   const handleToggleEnable = async () => {
     if (isShortcutDisabled) {
@@ -327,7 +335,9 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
           </div>
         )}
         {allowDisable && (
-          <label className={`inline-flex items-center ${isUpdating(`binding_${shortcutId}`) ? "cursor-not-allowed" : "cursor-pointer"}`}>
+          <label
+            className={`inline-flex items-center ${isUpdating(`binding_${shortcutId}`) ? "cursor-not-allowed" : "cursor-pointer"}`}
+          >
             <input
               type="checkbox"
               className="sr-only peer"

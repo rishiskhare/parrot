@@ -29,4 +29,3 @@ pub fn cancel_current_operation(app: &AppHandle) {
 
     info!("Operation cancellation completed - returned to idle state");
 }
-

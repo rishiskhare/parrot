@@ -8,11 +8,11 @@
   },
   "sidebar": {
     "general": "عام",
+    "models": "النماذج",
     "advanced": "متقدم",
     "history": "السجل",
     "debug": "تصحيح الأخطاء",
-    "about": "حول",
-    "models": "النماذج"
+    "about": "حول"
   },
   "onboarding": {
     "subtitle": "للبدء، اختر نموذج التفريغ الصوتي",
@@ -25,56 +25,7 @@
       "accuracy": "الدقة",
       "speed": "السرعة"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": ".سريع ودقيق إلى حد ما"
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": ".دقة جيدة، سرعة متوسطة"
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": ".توازن بين الدقة والسرعة"
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": ".دقة جيدة، لكنه بطيء"
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": ".الإنجليزية فقط. أفضل نموذج للمتحدثين بالإنجليزية"
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": ".سريع ودقيق"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": ".سريع جداً، الإنجليزية فقط. يتعامل جيداً مع اللهجات"
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "سريع للغاية، الإنجليزية فقط"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "سريع، الإنجليزية فقط. توازن جيد بين السرعة والدقة."
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "الإنجليزية فقط. جودة عالية."
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "محسّن للماندرين التايوانية. دعم التبديل بين اللغات."
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "سريع جداً. الصينية، الإنجليزية، اليابانية، الكورية، الكانتونية."
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "فشل تحميل النماذج المتاحة",
       "downloadModel": "فشل تنزيل النموذج: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "الأذونات المطلوبة",
       "description": ".يحتاج Parrot إلى بعض الأذونات ليعمل بشكل صحيح",
-      "microphone": {
-        "title": "الوصول إلى الميكروفون",
-        "description": ".مطلوب لسماع صوتك من أجل التفريغ الصوتي"
-      },
       "accessibility": {
         "title": "إمكانية الوصول",
         "description": ".مطلوب لكتابة النص المفرغ في تطبيقاتك"
@@ -103,6 +50,7 @@
   "modelSelector": {
     "custom": "مخصص",
     "active": "نشط",
+    "switching": "جارٍ التبديل...",
     "noModelsAvailable": "لا توجد نماذج متاحة",
     "extracting": "...جاري استخراج {{modelName}}",
     "extractingMultiple": "...جاري استخراج {{count}} من النماذج",
@@ -116,7 +64,6 @@
     "modelUnloaded": "تم إلغاء تحميل النموذج",
     "noModelDownloadRequired": "لا يوجد نموذج - التنزيل مطلوب",
     "deleteModel": "حذف {{modelName}}",
-    "switching": "جارٍ التبديل...",
     "downloadSpeed": "{{speed}} ميجابايت/ث",
     "cancel": "إلغاء",
     "cancelDownload": "إلغاء التنزيل",
@@ -124,15 +71,26 @@
       "languageSelection": "يدعم اختيار اللغة",
       "singleLanguage": "يدعم هذه اللغة فقط",
       "multiLanguage": "متعدد اللغات",
-      "languageOnly": "{{language}} فقط",
-      "translation": "يدعم الترجمة",
-      "translate": "ترجمة"
+      "languageOnly": "{{language}} فقط"
     }
   },
   "settings": {
     "howToUseTitle": "كيفية الاستخدام",
     "howToUseStep1": "حدد أي نص",
     "howToUseStep2": "اضغط <shortcut /> للقراءة بصوت عالٍ",
+    "modelSettings": {
+      "title": "إعدادات النموذج",
+      "noSettingsNeeded": "لا توجد إعدادات مطلوبة لهذا النموذج",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
+    },
     "general": {
       "title": "عام",
       "shortcut": {
@@ -167,14 +125,26 @@
         "auto": "تلقائي"
       }
     },
+    "models": {
+      "title": "نماذج النسخ",
+      "description": "اختر نموذج نسخ أو قم بتنزيل نماذج إضافية. تقدم النماذج المختلفة مستويات متفاوتة من الدقة والسرعة.",
+      "yourModels": "النماذج المحمّلة",
+      "availableModels": "متاح للتنزيل",
+      "downloaded": "تم التنزيل",
+      "available": "متاح للتنزيل",
+      "deleteConfirm": "هل أنت متأكد أنك تريد حذف {{modelName}}؟ ستحتاج إلى تنزيله مرة أخرى لاستخدامه.",
+      "deleteActiveConfirm": "{{modelName}} هو النموذج النشط حاليًا. حذفه سيوقف النسخ حتى تختار نموذجًا جديدًا. هل أنت متأكد؟",
+      "deleteTitle": "حذف النموذج",
+      "filters": {
+        "all": "الكل",
+        "multiLanguage": "متعدد اللغات",
+        "translation": "ترجمة",
+        "allLanguages": "جميع اللغات"
+      },
+      "noModelsMatch": "لا توجد نماذج مطابقة لهذا الفلتر."
+    },
     "sound": {
       "title": "الصوت",
-      "microphone": {
-        "title": "الميكروفون",
-        "description": "اختر جهاز الميكروفون المفضل لديك",
-        "placeholder": "...اختر الميكروفون",
-        "loading": "...جاري التحميل"
-      },
       "audioFeedback": {
         "label": "تنبيهات صوتية",
         "description": "تشغيل صوت عند بدء التسجيل وتوقفه"
@@ -194,8 +164,22 @@
       "title": "متقدم",
       "groups": {
         "app": "التطبيق",
+        "speech": "Speech",
         "history": "السجل",
         "experimental": "تجريبي"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "الميزات التجريبية",
@@ -221,11 +205,6 @@
           "bottom": "أسفل",
           "top": "أعلى"
         }
-      },
-      "translateToEnglish": {
-        "label": "الترجمة إلى الإنجليزية",
-        "description": ".ترجمة الكلام من اللغات الأخرى تلقائياً إلى الإنجليزية أثناء التفريغ",
-        "descriptionUnsupported": ".الترجمة غير مدعومة من قبل نموذج {{model}}"
       },
       "modelUnload": {
         "title": "إلغاء تحميل النموذج",
@@ -286,22 +265,6 @@
         "months3": "بعد 3 أشهر",
         "placeholder": "اختر فترة الاحتفاظ..."
       },
-      "alwaysOnMicrophone": {
-        "label": "ميكروفون يعمل دائماً",
-        "description": "إبقاء الميكروفون نشطاً لاستجابة أسرع"
-      },
-      "clamshellMicrophone": {
-        "title": "ميكروفون وضع الإغلاق",
-        "description": "الميكروفون المراد استخدامه عندما يكون غطاء المحمول مغلقاً"
-      },
-      "muteWhileRecording": {
-        "label": "كتم الصوت أثناء التسجيل",
-        "description": "كتم صوت النظام أثناء التسجيل"
-      },
-      "appendTrailingSpace": {
-        "label": "إضافة مسافة تابعة",
-        "description": "إضافة مسافة بعد التفريغ الملصق"
-      },
       "keyboardImplementation": {
         "title": "تنفيذ لوحة المفاتيح",
         "description": ".اختر الواجهة الخلفية لاختصارات لوحة المفاتيح",
@@ -335,34 +298,12 @@
       },
       "acknowledgments": {
         "title": "شكر وتقدير",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "استنتاج عالي الأداء لنموذج التعرف التلقائي على الكلام Whisper من OpenAI",
-          "details": ".يستخدم Parrot برنامج Whisper.cpp لمعالجة سريعة ومحلية لتحويل الكلام إلى نص. شكراً للعمل الرائع الذي قام به Georgi Gerganov والمساهمون"
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
-    },
-    "modelSettings": {
-      "title": "إعدادات النموذج",
-      "noSettingsNeeded": "لا توجد إعدادات مطلوبة لهذا النموذج"
-    },
-    "models": {
-      "title": "نماذج النسخ",
-      "description": "اختر نموذج نسخ أو قم بتنزيل نماذج إضافية. تقدم النماذج المختلفة مستويات متفاوتة من الدقة والسرعة.",
-      "yourModels": "النماذج المحمّلة",
-      "availableModels": "متاح للتنزيل",
-      "downloaded": "تم التنزيل",
-      "available": "متاح للتنزيل",
-      "deleteConfirm": "هل أنت متأكد أنك تريد حذف {{modelName}}؟ ستحتاج إلى تنزيله مرة أخرى لاستخدامه.",
-      "deleteActiveConfirm": "{{modelName}} هو النموذج النشط حاليًا. حذفه سيوقف النسخ حتى تختار نموذجًا جديدًا. هل أنت متأكد؟",
-      "deleteTitle": "حذف النموذج",
-      "filters": {
-        "all": "الكل",
-        "multiLanguage": "متعدد اللغات",
-        "translation": "ترجمة",
-        "allLanguages": "جميع اللغات"
-      },
-      "noModelsMatch": "لا توجد نماذج مطابقة لهذا الفلتر."
     }
   },
   "footer": {
@@ -415,7 +356,8 @@
     "description": "تغيير لغة واجهة Parrot"
   },
   "overlay": {
-    "transcribing": "...جاري التفريغ",
-    "processing": "...جاري المعالجة"
+    "speaking": "Speaking...",
+    "processing": "...جاري المعالجة",
+    "reading": "Reading:"
   }
 }

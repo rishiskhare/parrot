@@ -1,3 +1,4 @@
+mod action_coordinator;
 mod actions;
 mod audio_feedback;
 pub mod audio_toolkit;
@@ -10,7 +11,7 @@ mod overlay;
 mod settings;
 mod shortcut;
 mod signal_handle;
-mod action_coordinator;
+mod text_normalization;
 mod tray;
 mod tray_i18n;
 mod utils;
@@ -18,6 +19,7 @@ mod utils;
 pub use cli::CliArgs;
 use tauri_specta::{collect_commands, Builder};
 
+pub use action_coordinator::ActionCoordinator;
 use env_filter::Builder as EnvFilterBuilder;
 use managers::history::HistoryManager;
 use managers::model::ModelManager;
@@ -29,7 +31,6 @@ use signal_hook::iterator::Signals;
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
 use tauri::image::Image;
-pub use action_coordinator::ActionCoordinator;
 
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Listener, Manager};
@@ -47,7 +48,9 @@ use crate::settings::get_settings;
 /// Best-effort: if the bundled files are missing (e.g. during `cargo test`
 /// or a dev build without resources) we return `None` and tts-rs falls back
 /// to system-installed `espeak-ng`.
-fn resolve_bundled_espeak_ng(app_handle: &AppHandle) -> (Option<std::path::PathBuf>, Option<std::path::PathBuf>) {
+fn resolve_bundled_espeak_ng(
+    app_handle: &AppHandle,
+) -> (Option<std::path::PathBuf>, Option<std::path::PathBuf>) {
     let resolver = app_handle.path();
 
     // --- espeak-ng binary ---------------------------------------------------
@@ -75,7 +78,10 @@ fn resolve_bundled_espeak_ng(app_handle: &AppHandle) -> (Option<std::path::PathB
 
     // --- espeak-ng-data directory --------------------------------------------
     let data_path = resolver
-        .resolve("resources/espeak-ng-data", tauri::path::BaseDirectory::Resource)
+        .resolve(
+            "resources/espeak-ng-data",
+            tauri::path::BaseDirectory::Resource,
+        )
         .ok()
         .filter(|p| p.is_dir())
         .inspect(|p| {

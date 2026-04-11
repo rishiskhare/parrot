@@ -2,9 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pause, Play } from "lucide-react";
-import {
-  SpeakingIcon,
-} from "../components/icons";
+import { SpeakingIcon } from "../components/icons";
 import "./SpeakingOverlay.css";
 import { commands } from "@/bindings";
 import i18n, { syncLanguageFromSettings } from "@/i18n";
@@ -44,10 +42,14 @@ const SpeakingOverlay: React.FC = () => {
 
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const height = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+        const height =
+          entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
         // Skip zero-height (unmounted) and sub-pixel noise to avoid
         // redundant IPC calls during CSS transitions.
-        if (height > 0 && Math.abs(height - lastReportedHeightRef.current) >= 1) {
+        if (
+          height > 0 &&
+          Math.abs(height - lastReportedHeightRef.current) >= 1
+        ) {
           lastReportedHeightRef.current = height;
           commands.resizeOverlay(height);
         }
@@ -103,9 +105,12 @@ const SpeakingOverlay: React.FC = () => {
         setSpokenText(event.payload);
       });
 
-      const unlistenPauseState = await listen<boolean>("tts-pause-state", (event) => {
-        setSpeakingPaused(event.payload);
-      });
+      const unlistenPauseState = await listen<boolean>(
+        "tts-pause-state",
+        (event) => {
+          setSpeakingPaused(event.payload);
+        },
+      );
 
       return () => {
         unlistenShow();
@@ -156,7 +161,9 @@ const SpeakingOverlay: React.FC = () => {
         />
       )}
 
-      <div className={`overlay-layer processing-layer ${!isSpeaking ? "active" : ""}`}>
+      <div
+        className={`overlay-layer processing-layer ${!isSpeaking ? "active" : ""}`}
+      >
         <div className="overlay-left">
           <SpeakingIcon width={24} height={24} />
         </div>
@@ -167,7 +174,9 @@ const SpeakingOverlay: React.FC = () => {
         </div>
       </div>
 
-      <div className={`overlay-layer speaking-layer ${isSpeaking ? "active" : ""}`}>
+      <div
+        className={`overlay-layer speaking-layer ${isSpeaking ? "active" : ""}`}
+      >
         <div className="speaking-content">
           <div className="speaking-text-section">
             <span className="speaking-text">{spokenText}</span>
@@ -188,7 +197,11 @@ const SpeakingOverlay: React.FC = () => {
               title={speakingPaused ? "Resume" : "Pause"}
               aria-label={speakingPaused ? "Resume playback" : "Pause playback"}
             >
-              {speakingPaused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
+              {speakingPaused ? (
+                <Play size={16} fill="currentColor" />
+              ) : (
+                <Pause size={16} fill="currentColor" />
+              )}
             </button>
           </div>
         </div>

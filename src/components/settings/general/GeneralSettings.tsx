@@ -16,7 +16,11 @@ export const GeneralSettings: React.FC = () => {
     <div className="max-w-3xl w-full mx-auto space-y-6">
       <SettingsGroup title={t("settings.general.title")}>
         <ShortcutInput shortcutId="speak" grouped={true} />
-        <ShortcutInput shortcutId="play_pause" grouped={true} allowDisable={true} />
+        <ShortcutInput
+          shortcutId="play_pause"
+          grouped={true}
+          allowDisable={true}
+        />
         <ShowCloseButton descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <ModelSettingsCard />

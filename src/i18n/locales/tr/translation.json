@@ -25,56 +25,7 @@
       "accuracy": "doğruluk",
       "speed": "hız"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "Hızlı ve oldukça doğru."
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "İyi doğruluk, orta hız."
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "Dengeli doğruluk ve hız."
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "İyi doğruluk, ancak yavaş."
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "Yalnızca İngilizce. İngilizce konuşanlar için en iyi model."
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "Hızlı ve doğru."
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "Çok hızlı, yalnızca İngilizce. Aksanları iyi işler."
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "Ultra hızlı, yalnızca İngilizce"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "Hızlı, yalnızca İngilizce. Hız ve doğruluk arasında iyi denge."
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "Yalnızca İngilizce. Yüksek kalite."
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "Tayvan Mandarin Çincesi için optimize edilmiş. Dil değiştirme desteği."
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "Çok hızlı. Çince, İngilizce, Japonca, Korece, Kantonca."
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "Mevcut modeller yüklenemedi",
       "downloadModel": "Model indirilemedi: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "İzinler Gerekli",
       "description": "Parrot'nin düzgün çalışabilmesi için birkaç izne ihtiyacı var.",
-      "microphone": {
-        "title": "Mikrofon Erişimi",
-        "description": "Sesinizi transkripsiyon için alabilmek için gereklidir."
-      },
       "accessibility": {
         "title": "Erişilebilirlik Erişimi",
         "description": "Transkribe edilen metni uygulamalarınıza yazabilmek için gereklidir."
@@ -103,6 +50,7 @@
   "modelSelector": {
     "custom": "Özel",
     "active": "Aktif",
+    "switching": "Değiştiriliyor...",
     "noModelsAvailable": "Kullanılabilir model yok",
     "extracting": "{{modelName}} çıkarılıyor...",
     "extractingMultiple": "{{count}} model çıkarılıyor...",
@@ -116,18 +64,15 @@
     "modelUnloaded": "Model Boşaltıldı",
     "noModelDownloadRequired": "Model Yok – İndirme Gerekli",
     "deleteModel": "{{modelName}} Sil",
-    "switching": "Değiştiriliyor...",
     "downloadSpeed": "{{speed}} MB/s",
+    "cancel": "İptal",
+    "cancelDownload": "İndirmeyi iptal et",
     "capabilities": {
       "languageSelection": "Birden fazla giriş dilini destekler",
-      "multiLanguage": "Çok dilli",
-      "translation": "İngilizce'ye çevirebilir",
-      "translate": "İngilizce'ye çevir",
       "singleLanguage": "Yalnızca bu dili destekler",
+      "multiLanguage": "Çok dilli",
       "languageOnly": "Yalnızca {{language}}"
-    },
-    "cancel": "İptal",
-    "cancelDownload": "İndirmeyi iptal et"
+    }
   },
   "settings": {
     "howToUseTitle": "Nasıl kullanılır",
@@ -135,25 +80,16 @@
     "howToUseStep2": "Sesli okumak için <shortcut /> tuşuna basın",
     "modelSettings": {
       "title": "{{model}} Ayarları",
-      "noSettingsNeeded": "Bu model yapılandırma gerektirmeden otomatik olarak çalışır."
-    },
-    "models": {
-      "title": "Transkripsiyon Modelleri",
-      "description": "Bir transkripsiyon modeli seçin veya ek modeller indirin. Farklı modeller değişen doğruluk ve hız seviyeleri sunar.",
-      "downloaded": "İndirildi",
-      "available": "İndirilebilir",
-      "deleteConfirm": "{{modelName}} modelini silmek istediğinizden emin misiniz? Kullanmak için tekrar indirmeniz gerekecek.",
-      "deleteActiveConfirm": "{{modelName}} aktif modelinizdir. Silmek, yeni bir model seçene kadar transkripsiyonları durduracaktır. Emin misiniz?",
-      "deleteTitle": "Modeli Sil",
-      "filters": {
-        "all": "Tümü",
-        "multiLanguage": "Çok dilli",
-        "translation": "Çeviri",
-        "allLanguages": "Tüm Diller"
-      },
-      "noModelsMatch": "Bu filtreyle eşleşen model yok.",
-      "yourModels": "İndirilen modeller",
-      "availableModels": "İndirilebilir"
+      "noSettingsNeeded": "Bu model yapılandırma gerektirmeden otomatik olarak çalışır.",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "Genel",
@@ -189,14 +125,26 @@
         "auto": "Otomatik"
       }
     },
+    "models": {
+      "title": "Transkripsiyon Modelleri",
+      "description": "Bir transkripsiyon modeli seçin veya ek modeller indirin. Farklı modeller değişen doğruluk ve hız seviyeleri sunar.",
+      "yourModels": "İndirilen modeller",
+      "availableModels": "İndirilebilir",
+      "downloaded": "İndirildi",
+      "available": "İndirilebilir",
+      "deleteConfirm": "{{modelName}} modelini silmek istediğinizden emin misiniz? Kullanmak için tekrar indirmeniz gerekecek.",
+      "deleteActiveConfirm": "{{modelName}} aktif modelinizdir. Silmek, yeni bir model seçene kadar transkripsiyonları durduracaktır. Emin misiniz?",
+      "deleteTitle": "Modeli Sil",
+      "filters": {
+        "all": "Tümü",
+        "multiLanguage": "Çok dilli",
+        "translation": "Çeviri",
+        "allLanguages": "Tüm Diller"
+      },
+      "noModelsMatch": "Bu filtreyle eşleşen model yok."
+    },
     "sound": {
       "title": "Ses",
-      "microphone": {
-        "title": "Mikrofon",
-        "description": "Tercih ettiğiniz mikrofon cihazını seçin",
-        "placeholder": "Mikrofon seçin...",
-        "loading": "Yükleniyor..."
-      },
       "audioFeedback": {
         "label": "Sesli Geri Bildirim",
         "description": "Kayıt başladığında ve bittiğinde ses çalar"
@@ -216,8 +164,22 @@
       "title": "Gelişmiş",
       "groups": {
         "app": "Uygulama",
+        "speech": "Speech",
         "history": "Geçmiş",
         "experimental": "Deneysel"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "Deneysel Özellikler",
@@ -243,11 +205,6 @@
           "bottom": "Alt",
           "top": "Üst"
         }
-      },
-      "translateToEnglish": {
-        "label": "İngilizceye Çevir",
-        "description": "Transkripsiyon sırasında diğer dillerden İngilizceye otomatik olarak çevirir.",
-        "descriptionUnsupported": "Çeviri {{model}} modeli tarafından desteklenmiyor."
       },
       "modelUnload": {
         "title": "Modeli Boşalt",
@@ -308,22 +265,6 @@
         "months3": "3 ay sonra",
         "placeholder": "Saklama süresi seçin..."
       },
-      "alwaysOnMicrophone": {
-        "label": "Mikrofon Her Zaman Açık",
-        "description": "Daha hızlı yanıt için mikrofonu aktif tutar"
-      },
-      "clamshellMicrophone": {
-        "title": "Kapalı Kapak Mikrofonu",
-        "description": "Dizüstü bilgisayar kapağı kapalıyken kullanılacak mikrofon"
-      },
-      "muteWhileRecording": {
-        "label": "Kayıt Sırasında Sessize Al",
-        "description": "Kayıt sırasında sistem sesini kapatır"
-      },
-      "appendTrailingSpace": {
-        "label": "Sonuna Boşluk Ekle",
-        "description": "Yapıştırılan transkripsiyondan sonra boşluk ekler"
-      },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
         "description": "Choose the keyboard shortcut backend.",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "Teşekkürler",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "OpenAI'nin Whisper otomatik konuşma tanıma modelinin yüksek performanslı çıkarımı",
-          "details": "Parrot, hızlı ve yerel konuşmadan metne dönüştürme için Whisper.cpp kullanır. Georgi Gerganov ve katkıda bulunanların harika çalışmaları için teşekkür ederiz."
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "Parrot arayüzünün dilini değiştirin"
   },
   "overlay": {
-    "transcribing": "Transkribe ediliyor...",
-    "processing": "İşleniyor..."
+    "speaking": "Speaking...",
+    "processing": "İşleniyor...",
+    "reading": "Reading:"
   }
 }

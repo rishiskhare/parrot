@@ -65,14 +65,14 @@
     "noModelDownloadRequired": "Aucun Modèle - Téléchargement Requis",
     "deleteModel": "Supprimer {{modelName}}",
     "downloadSpeed": "{{speed}} Mo/s",
+    "cancel": "Annuler",
+    "cancelDownload": "Annuler le téléchargement",
     "capabilities": {
       "languageSelection": "Prend en charge plusieurs langues",
-      "multiLanguage": "Multilingue",
       "singleLanguage": "Prend en charge uniquement cette langue",
+      "multiLanguage": "Multilingue",
       "languageOnly": "{{language}} uniquement"
-    },
-    "cancel": "Annuler",
-    "cancelDownload": "Annuler le téléchargement"
+    }
   },
   "settings": {
     "howToUseTitle": "Comment utiliser",
@@ -90,24 +90,6 @@
         "noResults": "Aucune voix trouvée",
         "loadError": "Impossible de charger les voix disponibles."
       }
-    },
-    "models": {
-      "title": "Modèles TTS",
-      "description": "Sélectionnez un modèle de synthèse vocale ou téléchargez des modèles supplémentaires.",
-      "downloaded": "Téléchargés",
-      "available": "Disponibles au Téléchargement",
-      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {{modelName}} ? Vous devrez le télécharger à nouveau pour l'utiliser.",
-      "deleteActiveConfirm": "{{modelName}} est votre modèle actif. Le supprimer arrêtera la synthèse vocale jusqu'à ce que vous sélectionniez un nouveau modèle. Êtes-vous sûr ?",
-      "deleteTitle": "Supprimer le modèle",
-      "filters": {
-        "all": "Tous",
-        "multiLanguage": "Multilingue",
-        "translation": "Traduction",
-        "allLanguages": "Toutes les langues"
-      },
-      "noModelsMatch": "Aucun modèle ne correspond à ce filtre.",
-      "yourModels": "Modèles téléchargés",
-      "availableModels": "Disponibles au téléchargement"
     },
     "general": {
       "title": "Général",
@@ -143,6 +125,24 @@
         "auto": "Auto"
       }
     },
+    "models": {
+      "title": "Modèles TTS",
+      "description": "Sélectionnez un modèle de synthèse vocale ou téléchargez des modèles supplémentaires.",
+      "yourModels": "Modèles téléchargés",
+      "availableModels": "Disponibles au téléchargement",
+      "downloaded": "Téléchargés",
+      "available": "Disponibles au Téléchargement",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {{modelName}} ? Vous devrez le télécharger à nouveau pour l'utiliser.",
+      "deleteActiveConfirm": "{{modelName}} est votre modèle actif. Le supprimer arrêtera la synthèse vocale jusqu'à ce que vous sélectionniez un nouveau modèle. Êtes-vous sûr ?",
+      "deleteTitle": "Supprimer le modèle",
+      "filters": {
+        "all": "Tous",
+        "multiLanguage": "Multilingue",
+        "translation": "Traduction",
+        "allLanguages": "Toutes les langues"
+      },
+      "noModelsMatch": "Aucun modèle ne correspond à ce filtre."
+    },
     "sound": {
       "title": "Son",
       "audioFeedback": {
@@ -164,8 +164,22 @@
       "title": "Avancé",
       "groups": {
         "app": "Application",
+        "speech": "Speech",
         "history": "Historique",
         "experimental": "Expérimental"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "Fonctionnalités Expérimentales",
@@ -343,6 +357,7 @@
   },
   "overlay": {
     "speaking": "Lecture en cours...",
-    "processing": "Traitement..."
+    "processing": "Traitement...",
+    "reading": "Reading:"
   }
 }

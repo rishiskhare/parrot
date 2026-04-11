@@ -2,20 +2,21 @@
 
   <img src="parrot.webp" alt="Parrot" width="120" />
 
-  # Parrot: AI Text-to-Speech
+# Parrot: AI Text-to-Speech
 
-  **A free, offline, private AI text-to-speech for your desktop**
+**A free, offline, private AI text-to-speech for your desktop**
 
-  Highlight text in any app, press a shortcut<br/>
-  Hear it read aloud *instantly, privately, on your device*
+Highlight text in any app, press a shortcut<br/>
+Hear it read aloud _instantly, privately, on your device_
 
-  Supports **9 languages:**<br/>
-  English (US & UK) · Spanish · French · Hindi · Italian · Japanese · Portuguese (Brazilian) · Chinese (Mandarin)
+Supports **9 languages:**<br/>
+English (US & UK) · Spanish · French · Hindi · Italian · Japanese · Portuguese (Brazilian) · Chinese (Mandarin)
 
-  ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
-  ![License](https://img.shields.io/badge/license-MIT-red)
-  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/rishiskhare/parrot/total)
-  ![Version](https://img.shields.io/badge/version-26.2.4-blue)
+![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-red)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/rishiskhare/parrot/total)
+![Version](https://img.shields.io/badge/version-26.2.4-blue)
+
 </div>
 
 ---
@@ -58,42 +59,43 @@ Parrot ships with **Kokoro-82M**, a compact neural TTS model that delivers natur
 Kokoro supports **54 voices** across 9 languages. The voice is selected automatically based on your language setting, or choose one manually in **Settings → General**.
 
 ### Voices
-| Language | Female Voices | Male Voices |
-|----------|---------------|-------------|
-| English (US) | Alloy, Aoede, Bella, Heart, Jessica, Kore, Nicole, Nova, River, Sarah, Sky | Adam, Echo, Eric, Fenrir, Liam, Michael, Onyx, Puck, Santa |
-| English (UK) | Alice, Emma, Isabella, Lily | Daniel, Fable, George, Lewis |
-| Spanish | Dora | Alex, Santa |
-| French | Siwis | - |
-| Hindi | Alpha, Beta | Omega, Psi |
-| Italian | Sara | Nicola |
-| Japanese | Alpha, Gongitsune, Nezumi, Tebukuro | Kumo |
-| Portuguese (Brazilian) | Dora | Alex, Santa |
-| Chinese (Mandarin) | Xiaobei, Xiaoni, Xiaoxiao, Xiaoyi | Yunjian, Yunxi, Yunxia, Yunyang |
+
+| Language               | Female Voices                                                              | Male Voices                                                |
+| ---------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| English (US)           | Alloy, Aoede, Bella, Heart, Jessica, Kore, Nicole, Nova, River, Sarah, Sky | Adam, Echo, Eric, Fenrir, Liam, Michael, Onyx, Puck, Santa |
+| English (UK)           | Alice, Emma, Isabella, Lily                                                | Daniel, Fable, George, Lewis                               |
+| Spanish                | Dora                                                                       | Alex, Santa                                                |
+| French                 | Siwis                                                                      | -                                                          |
+| Hindi                  | Alpha, Beta                                                                | Omega, Psi                                                 |
+| Italian                | Sara                                                                       | Nicola                                                     |
+| Japanese               | Alpha, Gongitsune, Nezumi, Tebukuro                                        | Kumo                                                       |
+| Portuguese (Brazilian) | Dora                                                                       | Alex, Santa                                                |
+| Chinese (Mandarin)     | Xiaobei, Xiaoni, Xiaoxiao, Xiaoyi                                          | Yunjian, Yunxi, Yunxia, Yunyang                            |
 
 ## Keyboard Shortcuts
 
 All shortcuts are fully customizable in **Settings → General**.
 
-| Action | macOS | Windows / Linux |
-|--------|-------|-----------------|
-| Speak selected text | `Option+Space` | `Ctrl+Space` |
-| Pause / resume playback | `Option+P` | `Alt+P` |
-| Open settings | `Cmd+,` | `Ctrl+,` |
-| Open debug panel | `Cmd+Shift+D` | `Ctrl+Shift+D` |
+| Action                  | macOS          | Windows / Linux |
+| ----------------------- | -------------- | --------------- |
+| Speak selected text     | `Option+Space` | `Ctrl+Space`    |
+| Pause / resume playback | `Option+P`     | `Alt+P`         |
+| Open settings           | `Cmd+,`        | `Ctrl+,`        |
+| Open debug panel        | `Cmd+Shift+D`  | `Ctrl+Shift+D`  |
 
 The pause/resume shortcut is only active while Parrot is playing. It can be customized or disabled in **Settings → General**.
 
 ## Settings Overview
 
-| Category | Options |
-|----------|---------|
-| **General** | Shortcuts, TTS language, voice, output device, audio feedback |
-| **Models** | Download, switch, and delete TTS models |
-| **Advanced → App** | Start hidden, autostart, tray icon, overlay position, model unload timeout |
-| **Advanced → Speech** | Worker threads, playback speed, fast first response |
-| **Advanced → History** | Entry limit, auto-delete period |
-| **History** | Browse, replay, copy, and delete past utterances |
-| **Debug** | Log level, keyboard implementation, diagnostics |
+| Category               | Options                                                                    |
+| ---------------------- | -------------------------------------------------------------------------- |
+| **General**            | Shortcuts, TTS language, voice, output device, audio feedback              |
+| **Models**             | Download, switch, and delete TTS models                                    |
+| **Advanced → App**     | Start hidden, autostart, tray icon, overlay position, model unload timeout |
+| **Advanced → Speech**  | Worker threads, playback speed, fast first response                        |
+| **Advanced → History** | Entry limit, auto-delete period                                            |
+| **History**            | Browse, replay, copy, and delete past utterances                           |
+| **Debug**              | Log level, keyboard implementation, diagnostics                            |
 
 ## Command-Line Interface
 
@@ -103,19 +105,21 @@ Parrot supports CLI flags for scripting and window manager integration. Remote c
 parrot [FLAGS]
 ```
 
-| Flag | Description |
-|------|-------------|
-| `--toggle-transcription` | Toggle TTS on/off in the running instance |
-| `--start-hidden` | Launch without showing the main window |
-| `--no-tray` | Launch without a tray icon (closing the window quits) |
-| `--debug` | Enable verbose trace logging |
+| Flag                     | Description                                           |
+| ------------------------ | ----------------------------------------------------- |
+| `--toggle-transcription` | Toggle TTS on/off in the running instance             |
+| `--start-hidden`         | Launch without showing the main window                |
+| `--no-tray`              | Launch without a tray icon (closing the window quits) |
+| `--debug`                | Enable verbose trace logging                          |
 
 **Example: bind to a window manager shortcut:**
+
 ```sh
 parrot --toggle-transcription
 ```
 
 > **macOS:** When using the app bundle, invoke the binary directly:
+>
 > ```sh
 > /Applications/Parrot.app/Contents/MacOS/Parrot --toggle-transcription
 > ```
@@ -126,11 +130,11 @@ parrot --toggle-transcription
 
 For reliable text pasting on Linux, install the appropriate tool for your display server:
 
-| Display Server | Recommended | Install |
-|----------------|-------------|---------|
-| X11 | `xdotool` | `sudo apt install xdotool` |
-| Wayland | `wtype` | `sudo apt install wtype` |
-| Both | `dotool` | `sudo apt install dotool` |
+| Display Server | Recommended | Install                    |
+| -------------- | ----------- | -------------------------- |
+| X11            | `xdotool`   | `sudo apt install xdotool` |
+| Wayland        | `wtype`     | `sudo apt install wtype`   |
+| Both           | `dotool`    | `sudo apt install dotool`  |
 
 `dotool` requires adding your user to the `input` group: `sudo usermod -aG input $USER` (log out and back in after).
 
@@ -139,19 +143,23 @@ For reliable text pasting on Linux, install the appropriate tool for your displa
 Parrot's built-in global shortcut capture has limited support on Wayland. The recommended approach is to configure your desktop environment or window manager to invoke the CLI flag instead.
 
 **GNOME:**
+
 1. Open **Settings > Keyboard > Keyboard Shortcuts > Custom Shortcuts**
 2. Add a new shortcut with the command `parrot --toggle-transcription`
 
 **KDE Plasma:**
+
 1. Open **System Settings > Shortcuts > Custom Shortcuts**
 2. Create a new **Command/URL** shortcut with `parrot --toggle-transcription`
 
 **Sway / i3:**
+
 ```ini
 bindsym $mod+o exec parrot --toggle-transcription
 ```
 
 **Hyprland:**
+
 ```ini
 bind = $mainMod, O, exec, parrot --toggle-transcription
 ```
@@ -160,8 +168,8 @@ bind = $mainMod, O, exec, parrot --toggle-transcription
 
 You can also send signals directly to the Parrot process, useful for hotkey daemons that manage their own keybindings:
 
-| Signal | Action |
-|--------|--------|
+| Signal    | Action     |
+| --------- | ---------- |
 | `SIGUSR1` | Toggle TTS |
 | `SIGUSR2` | Toggle TTS |
 
@@ -175,11 +183,11 @@ pkill -USR2 -n parrot   # toggle TTS
 - If the app fails to start, try setting `WEBKIT_DISABLE_DMABUF_RENDERER=1`.
 - If you see `error while loading shared libraries: libgtk-layer-shell.so.0`, install the runtime package:
 
-  | Distro | Package | Command |
-  |--------|---------|---------|
+  | Distro        | Package               | Command                                |
+  | ------------- | --------------------- | -------------------------------------- |
   | Ubuntu/Debian | `libgtk-layer-shell0` | `sudo apt install libgtk-layer-shell0` |
-  | Fedora/RHEL | `gtk-layer-shell` | `sudo dnf install gtk-layer-shell` |
-  | Arch | `gtk-layer-shell` | `sudo pacman -S gtk-layer-shell` |
+  | Fedora/RHEL   | `gtk-layer-shell`     | `sudo dnf install gtk-layer-shell`     |
+  | Arch          | `gtk-layer-shell`     | `sudo pacman -S gtk-layer-shell`       |
 
 ## Building from Source
 
@@ -201,6 +209,7 @@ bun run tauri build
 ```
 
 > On macOS, if you hit a CMake error:
+>
 > ```sh
 > CMAKE_POLICY_VERSION_MINIMUM=3.5 bun run tauri dev
 > ```

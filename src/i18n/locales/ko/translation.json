@@ -25,56 +25,7 @@
       "accuracy": "정확도",
       "speed": "속도"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "빠르고 상당히 정확합니다."
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "좋은 정확도, 중간 속도"
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "정확도와 속도의 균형."
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "좋은 정확도지만 느립니다."
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "영어 전용. 영어 사용자를 위한 최고의 모델."
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "빠르고 정확함"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "매우 빠름, 영어 전용. 억양을 잘 처리합니다."
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "초고속, 영어 전용"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "빠름, 영어 전용. 속도와 정확도의 균형이 좋음."
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "영어 전용. 높은 품질."
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "대만 만다린에 최적화. 코드 스위칭 지원."
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "매우 빠름. 중국어, 영어, 일본어, 한국어, 광둥어."
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "사용 가능한 모델을 불러오는데 실패했습니다",
       "downloadModel": "모델 다운로드 실패: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "권한 필요",
       "description": "Parrot가 제대로 작동하려면 몇 가지 권한이 필요합니다.",
-      "microphone": {
-        "title": "마이크 접근",
-        "description": "음성 인식을 위해 마이크 접근 권한이 필요합니다."
-      },
       "accessibility": {
         "title": "접근성 권한",
         "description": "녹음된 텍스트를 애플리케이션에 입력하기 위해 필요합니다."
@@ -124,9 +71,7 @@
       "languageSelection": "여러 입력 언어를 지원합니다",
       "singleLanguage": "이 언어만 지원합니다",
       "multiLanguage": "다국어",
-      "languageOnly": "{{language}} 전용",
-      "translation": "영어로 번역 가능",
-      "translate": "영어로 번역"
+      "languageOnly": "{{language}} 전용"
     }
   },
   "settings": {
@@ -135,7 +80,16 @@
     "howToUseStep2": "<shortcut />을 눌러 소리 내어 읽기",
     "modelSettings": {
       "title": "{{model}} 설정",
-      "noSettingsNeeded": "이 모델은 별도의 설정 없이 자동으로 작동합니다."
+      "noSettingsNeeded": "이 모델은 별도의 설정 없이 자동으로 작동합니다.",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "일반",
@@ -171,29 +125,6 @@
         "auto": "자동"
       }
     },
-    "sound": {
-      "title": "사운드",
-      "microphone": {
-        "title": "마이크",
-        "description": "선호하는 마이크 장치를 선택하세요",
-        "placeholder": "마이크 선택...",
-        "loading": "로딩 중..."
-      },
-      "audioFeedback": {
-        "label": "오디오 피드백",
-        "description": "녹음 시작 및 정지 시 소리 재생"
-      },
-      "outputDevice": {
-        "title": "출력 장치",
-        "description": "피드백 사운드를 위한 오디오 출력 장치를 선택하세요",
-        "placeholder": "출력 장치 선택...",
-        "loading": "로딩 중..."
-      },
-      "volume": {
-        "title": "볼륨",
-        "description": "오디오 피드백 사운드의 볼륨 조절"
-      }
-    },
     "models": {
       "title": "음성 인식 모델",
       "description": "음성 인식 모델을 선택하거나 추가 모델을 다운로드하세요. 모델마다 정확도와 속도가 다릅니다.",
@@ -212,12 +143,43 @@
       },
       "noModelsMatch": "이 필터에 맞는 모델이 없습니다."
     },
+    "sound": {
+      "title": "사운드",
+      "audioFeedback": {
+        "label": "오디오 피드백",
+        "description": "녹음 시작 및 정지 시 소리 재생"
+      },
+      "outputDevice": {
+        "title": "출력 장치",
+        "description": "피드백 사운드를 위한 오디오 출력 장치를 선택하세요",
+        "placeholder": "출력 장치 선택...",
+        "loading": "로딩 중..."
+      },
+      "volume": {
+        "title": "볼륨",
+        "description": "오디오 피드백 사운드의 볼륨 조절"
+      }
+    },
     "advanced": {
       "title": "고급",
       "groups": {
         "app": "앱",
+        "speech": "Speech",
         "history": "히스토리",
         "experimental": "실험적"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "실험적 기능",
@@ -243,11 +205,6 @@
           "bottom": "하단",
           "top": "상단"
         }
-      },
-      "translateToEnglish": {
-        "label": "영어로 번역",
-        "description": "텍스트로 변환시 다른 언어의 음성을 자동으로 영어로 번역합니다.",
-        "descriptionUnsupported": "번역은 {{model}} 모델에서 지원되지 않습니다."
       },
       "modelUnload": {
         "title": "모델 언로드",
@@ -308,22 +265,6 @@
         "months3": "3개월 후",
         "placeholder": "보관 기간 선택..."
       },
-      "alwaysOnMicrophone": {
-        "label": "항상 켜진 마이크",
-        "description": "더 빠른 응답을 위해 마이크를 활성 상태로 유지"
-      },
-      "clamshellMicrophone": {
-        "title": "클램셸 마이크",
-        "description": "노트북 덮개가 닫혀 있을 때 사용할 마이크"
-      },
-      "muteWhileRecording": {
-        "label": "녹음 중 음소거",
-        "description": "녹음 중 시스템 오디오 음소거"
-      },
-      "appendTrailingSpace": {
-        "label": "끝 공백 추가",
-        "description": "붙여넣은 텍스트 끝에 공백 추가"
-      },
       "keyboardImplementation": {
         "title": "키보드 구현",
         "description": "키보드 단축키 백엔드를 선택하세요.",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "감사의 말",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "OpenAI의 Whisper 자동 음성 인식 모델의 고성능 추론",
-          "details": "Parrot는 빠르고 로컬 음성-텍스트 처리를 위해 Whisper.cpp를 사용합니다. Georgi Gerganov와 기여자들의 놀라운 작업에 감사드립니다."
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "Parrot 인터페이스의 언어를 변경하세요"
   },
   "overlay": {
-    "transcribing": "텍스트로 변환 중...",
-    "processing": "처리 중..."
+    "speaking": "Speaking...",
+    "processing": "처리 중...",
+    "reading": "Reading:"
   }
 }

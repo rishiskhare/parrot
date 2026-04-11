@@ -25,56 +25,7 @@
       "accuracy": "точность",
       "speed": "скорость"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "Быстро и достаточно точно."
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "Хорошая точность, средняя скорость."
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "Сбалансированная точность и скорость."
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "Хорошая точность, но медленная."
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "Только английский. Лучшая модель для англоговорящих."
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "Быстро и точно"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "Очень быстрый, только английский. Хорошо справляется с акцентами."
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "Сверхбыстрый, только английский"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "Быстрый, только английский. Хороший баланс скорости и точности."
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "Только английский. Высокое качество."
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "Оптимизирован для тайваньского мандаринского. Поддержка переключения языков."
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "Очень быстрый. Китайский, английский, японский, корейский, кантонский."
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "Не удалось загрузить доступные модели.",
       "downloadModel": "Не удалось загрузить модель: {{error}}."
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "Требуются разрешения",
       "description": "Parrot требуются некоторые разрешения для корректной работы.",
-      "microphone": {
-        "title": "Доступ к микрофону",
-        "description": "Необходим для прослушивания вашего голоса для транскрипции."
-      },
       "accessibility": {
         "title": "Доступ к универсальному доступу",
         "description": "Необходим для ввода расшифрованного текста в ваши приложения."
@@ -118,16 +65,14 @@
     "noModelDownloadRequired": "Нет модели – требуется загрузка",
     "deleteModel": "Удалить {{modelName}}",
     "downloadSpeed": "{{speed}} МБ/с",
+    "cancel": "Отмена",
+    "cancelDownload": "Отменить загрузку",
     "capabilities": {
       "languageSelection": "Поддерживает несколько языков ввода",
-      "multiLanguage": "Многоязычный",
-      "translation": "Может переводить на английский",
-      "translate": "Перевести на английский",
       "singleLanguage": "Поддерживает только этот язык",
+      "multiLanguage": "Многоязычный",
       "languageOnly": "Только {{language}}"
-    },
-    "cancel": "Отмена",
-    "cancelDownload": "Отменить загрузку"
+    }
   },
   "settings": {
     "howToUseTitle": "Как использовать",
@@ -135,25 +80,16 @@
     "howToUseStep2": "Нажмите <shortcut />, чтобы прочитать вслух",
     "modelSettings": {
       "title": "Настройки {{model}}",
-      "noSettingsNeeded": "Эта модель работает автоматически без необходимости настройки."
-    },
-    "models": {
-      "title": "Модели транскрипции",
-      "description": "Выберите модель транскрипции или загрузите дополнительные модели. Разные модели предлагают разные уровни точности и скорости.",
-      "downloaded": "Загружено",
-      "available": "Доступно для загрузки",
-      "deleteConfirm": "Вы уверены, что хотите удалить {{modelName}}? Вам нужно будет загрузить её снова, чтобы использовать.",
-      "deleteActiveConfirm": "{{modelName}} — ваша активная модель. Удаление остановит транскрипцию, пока вы не выберете новую модель. Вы уверены?",
-      "deleteTitle": "Удалить модель",
-      "filters": {
-        "all": "Все",
-        "multiLanguage": "Многоязычные",
-        "translation": "Перевод",
-        "allLanguages": "Все языки"
-      },
-      "noModelsMatch": "Нет моделей, соответствующих этому фильтру.",
-      "yourModels": "Загруженные модели",
-      "availableModels": "Доступны для загрузки"
+      "noSettingsNeeded": "Эта модель работает автоматически без необходимости настройки.",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "Общие",
@@ -189,14 +125,26 @@
         "auto": "Авто"
       }
     },
+    "models": {
+      "title": "Модели транскрипции",
+      "description": "Выберите модель транскрипции или загрузите дополнительные модели. Разные модели предлагают разные уровни точности и скорости.",
+      "yourModels": "Загруженные модели",
+      "availableModels": "Доступны для загрузки",
+      "downloaded": "Загружено",
+      "available": "Доступно для загрузки",
+      "deleteConfirm": "Вы уверены, что хотите удалить {{modelName}}? Вам нужно будет загрузить её снова, чтобы использовать.",
+      "deleteActiveConfirm": "{{modelName}} — ваша активная модель. Удаление остановит транскрипцию, пока вы не выберете новую модель. Вы уверены?",
+      "deleteTitle": "Удалить модель",
+      "filters": {
+        "all": "Все",
+        "multiLanguage": "Многоязычные",
+        "translation": "Перевод",
+        "allLanguages": "Все языки"
+      },
+      "noModelsMatch": "Нет моделей, соответствующих этому фильтру."
+    },
     "sound": {
       "title": "Звук",
-      "microphone": {
-        "title": "Микрофон",
-        "description": "Выберите предпочитаемое микрофонное устройство",
-        "placeholder": "Выбрать микрофон...",
-        "loading": "Загрузка..."
-      },
       "audioFeedback": {
         "label": "Аудио обратная связь",
         "description": "Воспроизведение звука при запуске и остановке записи"
@@ -216,8 +164,22 @@
       "title": "Продвинутые",
       "groups": {
         "app": "Приложение",
+        "speech": "Speech",
         "history": "История",
         "experimental": "Экспериментальное"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "Экспериментальные функции",
@@ -243,11 +205,6 @@
           "bottom": "Снизу",
           "top": "Сверху"
         }
-      },
-      "translateToEnglish": {
-        "label": "Перевести на английский",
-        "description": "Автоматически переводить речь с других языков на английский во время транскрипции.",
-        "descriptionUnsupported": "Перевод не поддерживается моделью {{model}}."
       },
       "modelUnload": {
         "title": "Выгрузить модель",
@@ -308,22 +265,6 @@
         "months3": "Через 3 месяца",
         "placeholder": "Выберите срок хранения..."
       },
-      "alwaysOnMicrophone": {
-        "label": "Всегда включенный микрофон",
-        "description": "Держите микрофон активным для более быстрого ответа"
-      },
-      "clamshellMicrophone": {
-        "title": "Раскладной микрофон",
-        "description": "Микрофон для использования при закрытой крышке ноутбука"
-      },
-      "muteWhileRecording": {
-        "label": "Отключить звук во время записи",
-        "description": "Отключение звука системы во время записи"
-      },
-      "appendTrailingSpace": {
-        "label": "Добавить конечный пробел",
-        "description": "Добавить пробел после вставленной транскрипции"
-      },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
         "description": "Choose the keyboard shortcut backend.",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "Благодарности",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "Высокопроизводительный вывод модели автоматического распознавания речи OpenAI Whisper",
-          "details": "Parrot использует Whisper.cpp для быстрой локальной обработки речи в текст. Спасибо великолепной работе Георгия Герганова и его участников."
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "Изменить языка интерфейса Parrot"
   },
   "overlay": {
-    "transcribing": "Расшифровка...",
-    "processing": "Обработка..."
+    "speaking": "Speaking...",
+    "processing": "Обработка...",
+    "reading": "Reading:"
   }
 }

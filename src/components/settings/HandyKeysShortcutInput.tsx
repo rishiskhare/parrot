@@ -138,7 +138,14 @@ export const HandyKeysShortcutInput: React.FC<HandyKeysShortcutInputProps> = ({
 
     // Handle escape key to cancel
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && !currentKeysRef.current) {
+      if (
+        e.key === "Escape" &&
+        !e.ctrlKey &&
+        !e.shiftKey &&
+        !e.altKey &&
+        !e.metaKey &&
+        !currentKeysRef.current
+      ) {
         e.preventDefault();
         cancelRecording();
       }
@@ -267,7 +274,8 @@ export const HandyKeysShortcutInput: React.FC<HandyKeysShortcutInputProps> = ({
     binding.description,
   );
 
-  const isShortcutDisabled = allowDisable && binding.current_binding === "disabled";
+  const isShortcutDisabled =
+    allowDisable && binding.current_binding === "disabled";
 
   const handleToggleEnable = async () => {
     if (isShortcutDisabled) {
@@ -312,7 +320,9 @@ export const HandyKeysShortcutInput: React.FC<HandyKeysShortcutInputProps> = ({
           </div>
         )}
         {allowDisable && (
-          <label className={`inline-flex items-center ${isUpdating(`binding_${shortcutId}`) ? "cursor-not-allowed" : "cursor-pointer"}`}>
+          <label
+            className={`inline-flex items-center ${isUpdating(`binding_${shortcutId}`) ? "cursor-not-allowed" : "cursor-pointer"}`}
+          >
             <input
               type="checkbox"
               className="sr-only peer"

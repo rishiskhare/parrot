@@ -46,8 +46,7 @@ impl ActionCoordinator {
                                 let now = Instant::now();
                                 let should_debounce = !is_speak_binding(&binding_id);
                                 if should_debounce
-                                    && last_press
-                                        .is_some_and(|t| now.duration_since(t) < DEBOUNCE)
+                                    && last_press.is_some_and(|t| now.duration_since(t) < DEBOUNCE)
                                 {
                                     debug!("Debounced press for '{binding_id}'");
                                     continue;
@@ -94,12 +93,7 @@ impl ActionCoordinator {
 
     /// Send a keyboard/signal input event for a speak binding.
     /// For signal-based toggles, send a press event followed by a release event.
-    pub fn send_input(
-        &self,
-        binding_id: &str,
-        hotkey_string: &str,
-        is_pressed: bool,
-    ) {
+    pub fn send_input(&self, binding_id: &str, hotkey_string: &str, is_pressed: bool) {
         if self
             .tx
             .send(Command::Input {

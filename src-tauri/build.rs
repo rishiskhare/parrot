@@ -80,7 +80,6 @@ fn generate_tray_translations() {
     out.push_str("    m\n});\n");
 
     fs::write(Path::new(&out_dir).join("tray_translations.rs"), out).unwrap();
-
 }
 
 fn camel_to_snake(s: &str) -> String {
@@ -102,4 +101,3 @@ fn escape_string(s: &str) -> String {
         .replace('\r', "\\r")
         .replace('\t', "\\t")
 }
-

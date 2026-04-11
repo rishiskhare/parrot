@@ -3,9 +3,9 @@ use cpal::traits::{DeviceTrait, HostTrait};
 use log::{debug, error, info, warn};
 use rodio::buffer::SamplesBuffer;
 use rodio::{DeviceSinkBuilder, MixerDeviceSink, Player};
-use std::num::NonZero;
 use serde::Serialize;
 use std::collections::BTreeMap;
+use std::num::NonZero;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicU8, AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc, Condvar, Mutex, TryLockError};
@@ -22,6 +22,7 @@ use crate::audio_feedback;
 use crate::managers::history::HistoryManager;
 use crate::managers::model::ModelManager;
 use crate::settings::{get_settings, ModelUnloadTimeout};
+use crate::text_normalization::normalize_text_for_tts;
 use crate::utils::{hide_speaking_overlay, show_processing_overlay, show_speaking_overlay};
 
 /// The model ID managed by this TTS manager.
@@ -292,7 +293,9 @@ impl TTSManager {
             };
             info!(
                 "Kokoro tuning: target_workers={}, threads_per_worker={} (manual={})",
-                tuning.target_workers, tuning.threads_per_worker, tts_settings.tts_workers > 0
+                tuning.target_workers,
+                tuning.threads_per_worker,
+                tts_settings.tts_workers > 0
             );
 
             let mut loaded_workers = 0usize;
@@ -305,10 +308,8 @@ impl TTSManager {
                     continue;
                 }
 
-                let mut kokoro = KokoroEngine::with_espeak(
-                    espeak_ng_path.clone(),
-                    espeak_ng_data_path.clone(),
-                );
+                let mut kokoro =
+                    KokoroEngine::with_espeak(espeak_ng_path.clone(), espeak_ng_data_path.clone());
                 match kokoro.load_model_with_params(
                     &model_dir,
                     KokoroModelParams {
@@ -542,8 +543,15 @@ impl TTSManager {
             let tts_settings = get_settings(&app_handle);
             let tts_speed = tts_settings.tts_speed;
             let shorten_first_chunk = tts_settings.tts_shorten_first_chunk;
+            let normalized_text = normalize_text_for_tts(&text);
 
-            let chunks = split_text_for_playback(&text, shorten_first_chunk);
+            debug!(
+                "Prepared {} input chars into {} chars for TTS",
+                text.len(),
+                normalized_text.len()
+            );
+
+            let chunks = split_text_for_playback(&normalized_text, shorten_first_chunk);
             if chunks.is_empty() {
                 let message = "No readable text found for TTS.";
                 error!("{}", message);
@@ -708,7 +716,7 @@ impl TTSManager {
                                 voice: voice_for_worker.clone(),
                                 style_index: Some(style_index_for_worker),
                                 speed: speed_for_worker,
-                                }),
+                            }),
                         )
                         .map_err(|e| format!("TTS synthesis failed: {}", e));
 
@@ -861,10 +869,7 @@ impl TTSManager {
                         lifecycle_state.store(TtsLifecycleState::Speaking as u8, Ordering::SeqCst);
                         show_speaking_overlay(&app_handle, chunks.first().cloned());
                         crate::shortcut::register_play_pause_shortcut(&app_handle);
-                        audio_feedback::play_sound(
-                            &app_handle,
-                            audio_feedback::SoundType::Start,
-                        );
+                        audio_feedback::play_sound(&app_handle, audio_feedback::SoundType::Start);
                         shared_sink.play();
 
                         // Spawn overlay text updater: sleeps through each chunk's
@@ -1577,10 +1582,7 @@ fn split_text_for_playback(text: &str, shorten_first_chunk: bool) -> Vec<String>
     // Flush the last accumulated chunk.
     let trailing = current_chunk.trim();
     if !trailing.is_empty() {
-        if is_first_chunk
-            && shorten_first_chunk
-            && trailing.len() > FIRST_CHUNK_TARGET_CHARS
-        {
+        if is_first_chunk && shorten_first_chunk && trailing.len() > FIRST_CHUNK_TARGET_CHARS {
             let (head, tail) = split_at_clause_boundary(trailing, FIRST_CHUNK_TARGET_CHARS);
             chunks.push(head);
             if let Some(remainder) = tail {

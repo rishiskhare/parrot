@@ -6,8 +6,8 @@
 use log::warn;
 use tauri::{AppHandle, Manager};
 
-use crate::actions::ACTION_MAP;
 use crate::action_coordinator::is_speak_binding;
+use crate::actions::ACTION_MAP;
 use crate::ActionCoordinator;
 
 /// Handle a shortcut event from either implementation.

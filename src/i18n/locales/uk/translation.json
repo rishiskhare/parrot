@@ -25,56 +25,7 @@
       "accuracy": "точність",
       "speed": "швидкість"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "Швидка та досить точна"
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "Хороша точність, середня швидкість"
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "Збалансована точність та швидкість"
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "Хороша точність, але повільна"
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "Лише англійська. Найкраща модель для англомовних"
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "Швидка та точна"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "Дуже швидкий, лише англійська. Добре справляється з акцентами."
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "Надшвидкий, лише англійська"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "Швидкий, лише англійська. Добрий баланс швидкості та точності."
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "Лише англійська. Висока якість."
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "Оптимізовано для тайванської мандаринської. Підтримка перемикання мов."
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "Дуже швидкий. Китайська, англійська, японська, корейська, кантонська."
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "Не вдалося завантажити доступні моделі",
       "downloadModel": "Не вдалося завантажити модель: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "Потрібні дозволи",
       "description": "Parrot потребує деяких дозволів для коректної роботи.",
-      "microphone": {
-        "title": "Доступ до мікрофона",
-        "description": "Потрібен для прослуховування вашого голосу для транскрипції."
-      },
       "accessibility": {
         "title": "Доступ до доступності",
         "description": "Потрібен для введення транскрибованого тексту у ваші додатки."
@@ -103,6 +50,7 @@
   "modelSelector": {
     "custom": "Користувацька",
     "active": "Активна",
+    "switching": "Перемикання...",
     "noModelsAvailable": "Немає доступних моделей",
     "extracting": "Розпакування {{modelName}}...",
     "extractingMultiple": "Розпакування {{count}} моделей...",
@@ -116,18 +64,15 @@
     "modelUnloaded": "Модель вивантажена",
     "noModelDownloadRequired": "Немає моделі - потрібно завантажити",
     "deleteModel": "Видалити {{modelName}}",
-    "switching": "Перемикання...",
     "downloadSpeed": "{{speed}} MB/s",
+    "cancel": "Скасувати",
+    "cancelDownload": "Скасувати завантаження",
     "capabilities": {
       "languageSelection": "Підтримує кілька мов введення",
-      "multiLanguage": "Багатомовна",
-      "translation": "Може перекладати на англійську",
-      "translate": "Перекласти на англійську",
       "singleLanguage": "Підтримує лише цю мову",
+      "multiLanguage": "Багатомовна",
       "languageOnly": "Лише {{language}}"
-    },
-    "cancel": "Скасувати",
-    "cancelDownload": "Скасувати завантаження"
+    }
   },
   "settings": {
     "howToUseTitle": "Як використовувати",
@@ -135,7 +80,16 @@
     "howToUseStep2": "Натисніть <shortcut />, щоб прочитати вголос",
     "modelSettings": {
       "title": "Налаштування {{model}}",
-      "noSettingsNeeded": "Ця модель працює автоматично без потреби в налаштуванні."
+      "noSettingsNeeded": "Ця модель працює автоматично без потреби в налаштуванні.",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "Загальні",
@@ -174,6 +128,8 @@
     "models": {
       "title": "Моделі транскрипції",
       "description": "Виберіть модель транскрипції або завантажте додаткові моделі. Різні моделі пропонують різні рівні точності та швидкості.",
+      "yourModels": "Завантажені моделі",
+      "availableModels": "Доступні для завантаження",
       "downloaded": "Завантажено",
       "available": "Доступні для завантаження",
       "deleteConfirm": "Ви впевнені, що хочете видалити {{modelName}}? Вам потрібно буде завантажити її знову, щоб використовувати.",
@@ -185,18 +141,10 @@
         "translation": "Переклад",
         "allLanguages": "Усі мови"
       },
-      "noModelsMatch": "Жодна модель не відповідає цьому фільтру.",
-      "yourModels": "Завантажені моделі",
-      "availableModels": "Доступні для завантаження"
+      "noModelsMatch": "Жодна модель не відповідає цьому фільтру."
     },
     "sound": {
       "title": "Звук",
-      "microphone": {
-        "title": "Мікрофон",
-        "description": "Оберіть бажаний мікрофон",
-        "placeholder": "Оберіть мікрофон...",
-        "loading": "Завантаження..."
-      },
       "audioFeedback": {
         "label": "Звукове сповіщення",
         "description": "Відтворювати звук при початку та зупинці запису"
@@ -216,8 +164,22 @@
       "title": "Розширені",
       "groups": {
         "app": "Додаток",
+        "speech": "Speech",
         "history": "Історія",
         "experimental": "Експериментальне"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "Експериментальні функції",
@@ -243,11 +205,6 @@
           "bottom": "Внизу",
           "top": "Вгорі"
         }
-      },
-      "translateToEnglish": {
-        "label": "Перекласти на англійську",
-        "description": "Автоматично перекладати мовлення з інших мов англійською під час транскрипції.",
-        "descriptionUnsupported": "Переклад не підтримується моделлю {{model}}."
       },
       "modelUnload": {
         "title": "Вивантаження моделі",
@@ -308,22 +265,6 @@
         "months3": "Через 3 місяці",
         "placeholder": "Оберіть період зберігання..."
       },
-      "alwaysOnMicrophone": {
-        "label": "Постійно активний мікрофон",
-        "description": "Тримати мікрофон активним для швидшого відгуку"
-      },
-      "clamshellMicrophone": {
-        "title": "Мікрофон у закритому режимі",
-        "description": "Мікрофон для використання при закритій кришці ноутбука"
-      },
-      "muteWhileRecording": {
-        "label": "Вимкнути звук під час запису",
-        "description": "Вимикати системний звук під час запису"
-      },
-      "appendTrailingSpace": {
-        "label": "Додавати пробіл в кінці",
-        "description": "Додавати пробіл після вставленої транскрипції"
-      },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
         "description": "Choose the keyboard shortcut backend.",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "Подяки",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "Високопродуктивний інференс моделі автоматичного розпізнавання мовлення Whisper від OpenAI",
-          "details": "Parrot використовує Whisper.cpp для швидкої локальної обробки мовлення в текст. Дякуємо за чудову роботу Георгію Герганову та контриб'юторам."
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "Змінити мову інтерфейсу Parrot"
   },
   "overlay": {
-    "transcribing": "Обробка...",
-    "processing": "Постобробка..."
+    "speaking": "Speaking...",
+    "processing": "Постобробка...",
+    "reading": "Reading:"
   }
 }

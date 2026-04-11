@@ -25,56 +25,7 @@
       "accuracy": "精度",
       "speed": "速度"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "高速でそこそこ正確。"
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "良好な精度、中程度の速度"
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "精度と速度のバランスが良い。"
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "良好な精度、ただし低速。"
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "英語のみ。英語話者に最適なモデル。"
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "高速で正確"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "非常に高速、英語のみ。アクセントにも対応。"
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "超高速、英語のみ"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "高速、英語のみ。速度と精度のバランスが良い。"
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "英語のみ。高品質。"
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "台湾華語に最適化。コードスイッチングに対応。"
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "非常に高速。中国語、英語、日本語、韓国語、広東語。"
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "利用可能なモデルの読み込みに失敗しました",
       "downloadModel": "モデルのダウンロードに失敗しました: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "権限が必要です",
       "description": "Parrotが正常に動作するにはいくつかの権限が必要です。",
-      "microphone": {
-        "title": "マイクへのアクセス",
-        "description": "文字起こしのためにあなたの声を聞くために必要です。"
-      },
       "accessibility": {
         "title": "アクセシビリティへのアクセス",
         "description": "アプリケーションに文字起こしテキストを入力するために必要です。"
@@ -118,16 +65,14 @@
     "noModelDownloadRequired": "モデルなし - ダウンロードが必要",
     "deleteModel": "{{modelName}}を削除",
     "downloadSpeed": "{{speed}} MB/s",
+    "cancel": "キャンセル",
+    "cancelDownload": "ダウンロードをキャンセル",
     "capabilities": {
       "languageSelection": "複数の入力言語をサポート",
-      "multiLanguage": "多言語",
-      "translation": "英語への翻訳が可能",
-      "translate": "英語に翻訳",
       "singleLanguage": "この言語のみ対応",
+      "multiLanguage": "多言語",
       "languageOnly": "{{language}}のみ"
-    },
-    "cancel": "キャンセル",
-    "cancelDownload": "ダウンロードをキャンセル"
+    }
   },
   "settings": {
     "howToUseTitle": "使い方",
@@ -135,25 +80,16 @@
     "howToUseStep2": "<shortcut /> を押して読み上げ",
     "modelSettings": {
       "title": "{{model}} 設定",
-      "noSettingsNeeded": "このモデルは設定不要で自動的に動作します。"
-    },
-    "models": {
-      "title": "転写モデル",
-      "description": "転写モデルを選択するか、追加のモデルをダウンロードします。異なるモデルは精度と速度のレベルが異なります。",
-      "downloaded": "ダウンロード済み",
-      "available": "ダウンロード可能",
-      "deleteConfirm": "{{modelName}}を削除してもよろしいですか？再度使用するにはダウンロードが必要です。",
-      "deleteActiveConfirm": "{{modelName}}は現在使用中のモデルです。削除すると、新しいモデルを選択するまで文字起こしが停止します。本当に削除しますか？",
-      "deleteTitle": "モデルを削除",
-      "filters": {
-        "all": "すべて",
-        "multiLanguage": "多言語",
-        "translation": "翻訳",
-        "allLanguages": "すべての言語"
-      },
-      "noModelsMatch": "このフィルターに一致するモデルがありません。",
-      "yourModels": "ダウンロード済みモデル",
-      "availableModels": "ダウンロード可能"
+      "noSettingsNeeded": "このモデルは設定不要で自動的に動作します。",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "一般",
@@ -189,14 +125,26 @@
         "auto": "自動"
       }
     },
+    "models": {
+      "title": "転写モデル",
+      "description": "転写モデルを選択するか、追加のモデルをダウンロードします。異なるモデルは精度と速度のレベルが異なります。",
+      "yourModels": "ダウンロード済みモデル",
+      "availableModels": "ダウンロード可能",
+      "downloaded": "ダウンロード済み",
+      "available": "ダウンロード可能",
+      "deleteConfirm": "{{modelName}}を削除してもよろしいですか？再度使用するにはダウンロードが必要です。",
+      "deleteActiveConfirm": "{{modelName}}は現在使用中のモデルです。削除すると、新しいモデルを選択するまで文字起こしが停止します。本当に削除しますか？",
+      "deleteTitle": "モデルを削除",
+      "filters": {
+        "all": "すべて",
+        "multiLanguage": "多言語",
+        "translation": "翻訳",
+        "allLanguages": "すべての言語"
+      },
+      "noModelsMatch": "このフィルターに一致するモデルがありません。"
+    },
     "sound": {
       "title": "サウンド",
-      "microphone": {
-        "title": "マイク",
-        "description": "使用するマイクデバイスを選択",
-        "placeholder": "マイクを選択...",
-        "loading": "読み込み中..."
-      },
       "audioFeedback": {
         "label": "音声フィードバック",
         "description": "録音の開始と停止時にサウンドを再生"
@@ -216,8 +164,22 @@
       "title": "詳細設定",
       "groups": {
         "app": "アプリ",
+        "speech": "Speech",
         "history": "履歴",
         "experimental": "実験的"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "実験的機能",
@@ -243,11 +205,6 @@
           "bottom": "下",
           "top": "上"
         }
-      },
-      "translateToEnglish": {
-        "label": "英語に翻訳",
-        "description": "文字起こし中に他の言語から英語に自動的に翻訳。",
-        "descriptionUnsupported": "翻訳は{{model}}モデルではサポートされていません。"
       },
       "modelUnload": {
         "title": "モデルのアンロード",
@@ -308,22 +265,6 @@
         "months3": "3ヶ月後",
         "placeholder": "保持期間を選択..."
       },
-      "alwaysOnMicrophone": {
-        "label": "マイク常時オン",
-        "description": "より速い応答のためにマイクをアクティブに保つ"
-      },
-      "clamshellMicrophone": {
-        "title": "クラムシェルマイク",
-        "description": "ノートパソコンの蓋を閉じたときに使用するマイク"
-      },
-      "muteWhileRecording": {
-        "label": "録音中にミュート",
-        "description": "録音中にシステムオーディオをミュート"
-      },
-      "appendTrailingSpace": {
-        "label": "末尾にスペースを追加",
-        "description": "貼り付けた文字起こしの後にスペースを追加"
-      },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
         "description": "Choose the keyboard shortcut backend.",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "謝辞",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "OpenAIのWhisper自動音声認識モデルの高性能推論",
-          "details": "Parrotは高速でローカルな音声からテキストへの変換にWhisper.cppを使用しています。Georgi Gerganov氏と貢献者の皆様の素晴らしい仕事に感謝します。"
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "Parrotインターフェースの言語を変更"
   },
   "overlay": {
-    "transcribing": "文字起こし中...",
-    "processing": "処理中..."
+    "speaking": "Speaking...",
+    "processing": "処理中...",
+    "reading": "Reading:"
   }
 }

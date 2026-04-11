@@ -230,7 +230,11 @@ fn calculate_overlay_position(
 
 /// Resizes the overlay window and repositions it so the anchored edge
 /// (bottom or top, depending on settings) stays in the correct place.
-fn resize_and_reposition(app_handle: &AppHandle, overlay_window: &tauri::webview::WebviewWindow, height: f64) {
+fn resize_and_reposition(
+    app_handle: &AppHandle,
+    overlay_window: &tauri::webview::WebviewWindow,
+    height: f64,
+) {
     let _ = overlay_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
         width: OVERLAY_WIDTH,
         height,
@@ -242,8 +246,8 @@ fn resize_and_reposition(app_handle: &AppHandle, overlay_window: &tauri::webview
     }
 
     if let Some((x, y)) = calculate_overlay_position(app_handle, OVERLAY_WIDTH, height) {
-        let _ = overlay_window
-            .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
+        let _ =
+            overlay_window.set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
     }
 }
 
@@ -399,8 +403,7 @@ pub fn update_overlay_position(app_handle: &AppHandle) {
             })
             .unwrap_or(PROCESSING_HEIGHT);
 
-        if let Some((x, y)) =
-            calculate_overlay_position(app_handle, OVERLAY_WIDTH, current_height)
+        if let Some((x, y)) = calculate_overlay_position(app_handle, OVERLAY_WIDTH, current_height)
         {
             let _ = overlay_window
                 .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));

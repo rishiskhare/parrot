@@ -62,4 +62,3 @@ pub fn send_copy_ctrl_c(enigo: &mut Enigo) -> Result<(), String> {
 
     Ok(())
 }
-

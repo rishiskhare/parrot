@@ -20,8 +20,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_autostart::ManagerExt;
 
 use crate::settings::{
-    self, get_settings, KeyboardImplementation,
-    OverlayPosition, ShortcutBinding, SoundTheme,
+    self, get_settings, KeyboardImplementation, OverlayPosition, ShortcutBinding, SoundTheme,
 };
 use crate::tray;
 
@@ -280,9 +279,7 @@ pub fn change_keyboard_implementation_setting(
     settings::write_settings(&app, settings);
 
     // Initialize new implementation if needed (HandyKeys needs state)
-    if new_impl == KeyboardImplementation::HandyKeys
-        && initialize_handy_keys_with_rollback(&app)?
-    {
+    if new_impl == KeyboardImplementation::HandyKeys && initialize_handy_keys_with_rollback(&app)? {
         // Shortcuts already registered during init
         return Ok(ImplementationChangeResult {
             success: true,
@@ -698,10 +695,7 @@ pub fn change_tts_speed_setting(app: AppHandle, speed: f32) -> Result<(), String
 
 #[tauri::command]
 #[specta::specta]
-pub fn change_tts_shorten_first_chunk_setting(
-    app: AppHandle,
-    enabled: bool,
-) -> Result<(), String> {
+pub fn change_tts_shorten_first_chunk_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     settings.tts_shorten_first_chunk = enabled;
     settings::write_settings(&app, settings);

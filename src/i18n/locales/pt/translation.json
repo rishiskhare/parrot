@@ -25,56 +25,7 @@
       "accuracy": "precisão",
       "speed": "velocidade"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "Rápido e razoavelmente preciso."
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "Boa precisão, velocidade média"
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "Precisão e velocidade balanceadas."
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "Boa precisão, mas lento."
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "Apenas inglês. O melhor modelo para falantes de inglês."
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "Rápido e preciso"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "Muito rápido, apenas inglês. Lida bem com sotaques."
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "Ultrarrápido, apenas inglês"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "Rápido, apenas inglês. Bom equilíbrio entre velocidade e precisão."
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "Apenas inglês. Alta qualidade."
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "Otimizado para mandarim taiwanês. Suporte para alternância de código."
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "Muito rápido. Chinês, inglês, japonês, coreano, cantonês."
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "Falha ao carregar modelos disponíveis",
       "downloadModel": "Falha ao baixar modelo: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "Permissões Necessárias",
       "description": "O Parrot precisa de algumas permissões para funcionar corretamente.",
-      "microphone": {
-        "title": "Acesso ao Microfone",
-        "description": "Necessário para ouvir sua voz para transcrição."
-      },
       "accessibility": {
         "title": "Acesso à Acessibilidade",
         "description": "Necessário para digitar o texto transcrito em seus aplicativos."
@@ -103,6 +50,7 @@
   "modelSelector": {
     "custom": "Personalizado",
     "active": "Ativo",
+    "switching": "Alternando...",
     "noModelsAvailable": "Nenhum modelo disponível",
     "extracting": "Extraindo {{modelName}}...",
     "extractingMultiple": "Extraindo {{count}} modelos...",
@@ -116,18 +64,15 @@
     "modelUnloaded": "Modelo Descarregado",
     "noModelDownloadRequired": "Sem Modelo - Download Necessário",
     "deleteModel": "Excluir {{modelName}}",
-    "switching": "Alternando...",
     "downloadSpeed": "{{speed}} MB/s",
+    "cancel": "Cancelar",
+    "cancelDownload": "Cancelar download",
     "capabilities": {
       "languageSelection": "Suporta vários idiomas de entrada",
-      "multiLanguage": "Multi-idioma",
-      "translation": "Pode traduzir para inglês",
-      "translate": "Traduzir para inglês",
       "singleLanguage": "Suporta apenas este idioma",
+      "multiLanguage": "Multi-idioma",
       "languageOnly": "Apenas {{language}}"
-    },
-    "cancel": "Cancelar",
-    "cancelDownload": "Cancelar download"
+    }
   },
   "settings": {
     "howToUseTitle": "Como usar",
@@ -135,7 +80,16 @@
     "howToUseStep2": "Pressione <shortcut /> para ler em voz alta",
     "modelSettings": {
       "title": "Configurações de {{model}}",
-      "noSettingsNeeded": "Este modelo funciona automaticamente sem necessidade de configuração."
+      "noSettingsNeeded": "Este modelo funciona automaticamente sem necessidade de configuração.",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "Geral",
@@ -174,6 +128,8 @@
     "models": {
       "title": "Modelos de Transcrição",
       "description": "Selecione um modelo de transcrição ou baixe modelos adicionais. Diferentes modelos oferecem diferentes níveis de precisão e velocidade.",
+      "yourModels": "Modelos baixados",
+      "availableModels": "Disponíveis para download",
       "downloaded": "Baixados",
       "available": "Disponíveis para Download",
       "deleteConfirm": "Tem certeza de que deseja excluir {{modelName}}? Você precisará baixá-lo novamente para usá-lo.",
@@ -185,18 +141,10 @@
         "translation": "Tradução",
         "allLanguages": "Todos os Idiomas"
       },
-      "noModelsMatch": "Nenhum modelo corresponde a este filtro.",
-      "yourModels": "Modelos baixados",
-      "availableModels": "Disponíveis para download"
+      "noModelsMatch": "Nenhum modelo corresponde a este filtro."
     },
     "sound": {
       "title": "Som",
-      "microphone": {
-        "title": "Microfone",
-        "description": "Selecione seu dispositivo de microfone preferido",
-        "placeholder": "Selecionar microfone...",
-        "loading": "Carregando..."
-      },
       "audioFeedback": {
         "label": "Feedback de Áudio",
         "description": "Reproduzir som quando a gravação iniciar e parar"
@@ -216,8 +164,22 @@
       "title": "Avançado",
       "groups": {
         "app": "Aplicativo",
+        "speech": "Speech",
         "history": "Histórico",
         "experimental": "Experimental"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "Recursos Experimentais",
@@ -243,11 +205,6 @@
           "bottom": "Inferior",
           "top": "Superior"
         }
-      },
-      "translateToEnglish": {
-        "label": "Traduzir para Inglês",
-        "description": "Traduzir automaticamente fala de outros idiomas para inglês durante a transcrição.",
-        "descriptionUnsupported": "Tradução não é suportada pelo modelo {{model}}."
       },
       "modelUnload": {
         "title": "Descarregar Modelo",
@@ -308,22 +265,6 @@
         "months3": "Após 3 meses",
         "placeholder": "Selecionar período de retenção..."
       },
-      "alwaysOnMicrophone": {
-        "label": "Microfone Sempre Ativo",
-        "description": "Manter microfone ativo para resposta mais rápida"
-      },
-      "clamshellMicrophone": {
-        "title": "Microfone em Modo Fechado",
-        "description": "Microfone a usar quando a tampa do laptop está fechada"
-      },
-      "muteWhileRecording": {
-        "label": "Silenciar Durante Gravação",
-        "description": "Silenciar áudio do sistema durante a gravação"
-      },
-      "appendTrailingSpace": {
-        "label": "Adicionar Espaço Final",
-        "description": "Adicionar um espaço após a transcrição colada"
-      },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
         "description": "Choose the keyboard shortcut backend.",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "Agradecimentos",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "Inferência de alto desempenho do modelo de reconhecimento automático de fala Whisper da OpenAI",
-          "details": "O Parrot usa Whisper.cpp para processamento rápido e local de fala para texto. Agradecemos ao incrível trabalho de Georgi Gerganov e colaboradores."
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "Alterar o idioma da interface do Parrot"
   },
   "overlay": {
-    "transcribing": "Transcrevendo...",
-    "processing": "Processando..."
+    "speaking": "Speaking...",
+    "processing": "Processando...",
+    "reading": "Reading:"
   }
 }

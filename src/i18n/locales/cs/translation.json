@@ -25,56 +25,7 @@
       "accuracy": "přesnost",
       "speed": "rychlost"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "Rychlý a poměrně přesný."
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "Dobrá přesnost, střední rychlost"
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "Vyvážená přesnost a rychlost."
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "Dobrá přesnost, ale pomalý."
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "Pouze angličtina. Nejlepší model pro anglicky mluvící."
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "Rychlý a přesný"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "Velmi rychlý, pouze angličtina. Dobře zvládá přízvuky."
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "Ultrarychlý, pouze angličtina"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "Rychlý, pouze angličtina. Dobrý poměr rychlosti a přesnosti."
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "Pouze angličtina. Vysoká kvalita."
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "Optimalizováno pro tchajwanskou mandarínštinu. Podpora přepínání jazyků."
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "Velmi rychlý. Čínština, angličtina, japonština, korejština, kantonština."
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "Nepodařilo se načíst dostupné modely",
       "downloadModel": "Nepodařilo se stáhnout model: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "Vyžadována oprávnění",
       "description": "Parrot potřebuje několik oprávnění pro správné fungování.",
-      "microphone": {
-        "title": "Přístup k mikrofonu",
-        "description": "Potřebný pro zachycení vašeho hlasu k přepisu."
-      },
       "accessibility": {
         "title": "Přístup k usnadnění",
         "description": "Potřebný pro psaní přepsaného textu do vašich aplikací."
@@ -103,6 +50,7 @@
   "modelSelector": {
     "custom": "Vlastní",
     "active": "Aktivní",
+    "switching": "Přepínání...",
     "noModelsAvailable": "Nejsou dostupné žádné modely",
     "extracting": "Rozbaluji {{modelName}}...",
     "extractingMultiple": "Rozbaluji {{count}} modelů...",
@@ -116,18 +64,15 @@
     "modelUnloaded": "Model uvolněn",
     "noModelDownloadRequired": "Žádný model - je nutné stáhnout",
     "deleteModel": "Smazat {{modelName}}",
-    "switching": "Přepínání...",
     "downloadSpeed": "{{speed}} MB/s",
+    "cancel": "Zrušit",
+    "cancelDownload": "Zrušit stahování",
     "capabilities": {
       "languageSelection": "Podporuje více vstupních jazyků",
-      "multiLanguage": "Vícejazyčný",
-      "translation": "Umí překládat do angličtiny",
-      "translate": "Přeložit do angličtiny",
       "singleLanguage": "Podporuje pouze tento jazyk",
+      "multiLanguage": "Vícejazyčný",
       "languageOnly": "Pouze {{language}}"
-    },
-    "cancel": "Zrušit",
-    "cancelDownload": "Zrušit stahování"
+    }
   },
   "settings": {
     "howToUseTitle": "Jak používat",
@@ -135,25 +80,16 @@
     "howToUseStep2": "Stiskněte <shortcut /> pro přečtení nahlas",
     "modelSettings": {
       "title": "Nastavení {{model}}",
-      "noSettingsNeeded": "Tento model funguje automaticky bez nutnosti konfigurace."
-    },
-    "models": {
-      "title": "Modely přepisu",
-      "description": "Vyberte model přepisu nebo stáhněte další modely. Různé modely nabízejí různé úrovně přesnosti a rychlosti.",
-      "downloaded": "Staženo",
-      "available": "K dispozici ke stažení",
-      "deleteConfirm": "Opravdu chcete smazat {{modelName}}? Pro opětovné použití jej budete muset znovu stáhnout.",
-      "deleteActiveConfirm": "{{modelName}} je váš aktivní model. Jeho smazáním se zastaví přepisy, dokud nevyberete nový model. Opravdu chcete pokračovat?",
-      "deleteTitle": "Smazat model",
-      "filters": {
-        "all": "Vše",
-        "multiLanguage": "Vícejazyčný",
-        "translation": "Překlad",
-        "allLanguages": "Všechny jazyky"
-      },
-      "noModelsMatch": "Tomuto filtru neodpovídají žádné modely.",
-      "yourModels": "Stažené modely",
-      "availableModels": "Dostupné ke stažení"
+      "noSettingsNeeded": "Tento model funguje automaticky bez nutnosti konfigurace.",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "Obecné",
@@ -189,14 +125,26 @@
         "auto": "Auto"
       }
     },
+    "models": {
+      "title": "Modely přepisu",
+      "description": "Vyberte model přepisu nebo stáhněte další modely. Různé modely nabízejí různé úrovně přesnosti a rychlosti.",
+      "yourModels": "Stažené modely",
+      "availableModels": "Dostupné ke stažení",
+      "downloaded": "Staženo",
+      "available": "K dispozici ke stažení",
+      "deleteConfirm": "Opravdu chcete smazat {{modelName}}? Pro opětovné použití jej budete muset znovu stáhnout.",
+      "deleteActiveConfirm": "{{modelName}} je váš aktivní model. Jeho smazáním se zastaví přepisy, dokud nevyberete nový model. Opravdu chcete pokračovat?",
+      "deleteTitle": "Smazat model",
+      "filters": {
+        "all": "Vše",
+        "multiLanguage": "Vícejazyčný",
+        "translation": "Překlad",
+        "allLanguages": "Všechny jazyky"
+      },
+      "noModelsMatch": "Tomuto filtru neodpovídají žádné modely."
+    },
     "sound": {
       "title": "Zvuk",
-      "microphone": {
-        "title": "Mikrofon",
-        "description": "Vyberte preferované zařízení mikrofonu",
-        "placeholder": "Vyberte mikrofon...",
-        "loading": "Načítání..."
-      },
       "audioFeedback": {
         "label": "Zvuková odezva",
         "description": "Přehrát zvuk při zahájení a ukončení nahrávání"
@@ -216,8 +164,22 @@
       "title": "Pokročilé",
       "groups": {
         "app": "Aplikace",
+        "speech": "Speech",
         "history": "Historie",
         "experimental": "Experimentální"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "Experimentální funkce",
@@ -243,11 +205,6 @@
           "bottom": "Dole",
           "top": "Nahoře"
         }
-      },
-      "translateToEnglish": {
-        "label": "Překládat do angličtiny",
-        "description": "Během přepisu automaticky překládat řeč z jiných jazyků do angličtiny.",
-        "descriptionUnsupported": "Překlad není podporován modelem {{model}}."
       },
       "modelUnload": {
         "title": "Uvolnění modelu",
@@ -308,22 +265,6 @@
         "months3": "Po 3 měsících",
         "placeholder": "Vyberte dobu uchování..."
       },
-      "alwaysOnMicrophone": {
-        "label": "Vždy zapnutý mikrofon",
-        "description": "Udržovat mikrofon aktivní pro rychlejší odezvu"
-      },
-      "clamshellMicrophone": {
-        "title": "Mikrofon při zavřeném víku",
-        "description": "Mikrofon, který se použije při zavřeném víku notebooku"
-      },
-      "muteWhileRecording": {
-        "label": "Ztlumit při nahrávání",
-        "description": "Ztlumit systémový zvuk během nahrávání"
-      },
-      "appendTrailingSpace": {
-        "label": "Přidat koncovou mezeru",
-        "description": "Přidat mezeru po vloženém přepisu"
-      },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
         "description": "Choose the keyboard shortcut backend.",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "Poděkování",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "Vysoce výkonné inferenční zpracování modelu automatického rozpoznávání řeči Whisper od OpenAI",
-          "details": "Parrot používá Whisper.cpp pro rychlé lokální zpracování řeči na text. Díky skvělé práci Georgiho Gerganova a přispěvatelů."
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "Změňte jazyk rozhraní Parrot"
   },
   "overlay": {
-    "transcribing": "Přepisuji...",
-    "processing": "Zpracovávám..."
+    "speaking": "Speaking...",
+    "processing": "Zpracovávám...",
+    "reading": "Reading:"
   }
 }

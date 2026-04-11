@@ -65,14 +65,14 @@
     "noModelDownloadRequired": "Chưa Có Mô Hình - Cần Tải Xuống",
     "deleteModel": "Xóa {{modelName}}",
     "downloadSpeed": "{{speed}} MB/s",
+    "cancel": "Hủy",
+    "cancelDownload": "Hủy tải xuống",
     "capabilities": {
       "languageSelection": "Hỗ trợ nhiều ngôn ngữ đầu vào",
-      "multiLanguage": "Đa ngôn ngữ",
       "singleLanguage": "Chỉ hỗ trợ ngôn ngữ này",
+      "multiLanguage": "Đa ngôn ngữ",
       "languageOnly": "Chỉ {{language}}"
-    },
-    "cancel": "Hủy",
-    "cancelDownload": "Hủy tải xuống"
+    }
   },
   "settings": {
     "howToUseTitle": "Cách sử dụng",
@@ -90,24 +90,6 @@
         "noResults": "Không tìm thấy giọng nói",
         "loadError": "Không thể tải danh sách giọng nói."
       }
-    },
-    "models": {
-      "title": "Mô hình TTS",
-      "description": "Chọn mô hình chuyển đổi văn bản thành giọng nói hoặc tải thêm mô hình.",
-      "downloaded": "Đã tải xuống",
-      "available": "Có thể tải xuống",
-      "deleteConfirm": "Bạn có chắc chắn muốn xóa {{modelName}}? Bạn sẽ cần tải lại để sử dụng.",
-      "deleteActiveConfirm": "{{modelName}} là mô hình đang hoạt động của bạn. Xóa nó sẽ dừng phát giọng nói cho đến khi bạn chọn một mô hình mới. Bạn có chắc không?",
-      "deleteTitle": "Xóa mô hình",
-      "filters": {
-        "all": "Tất cả",
-        "multiLanguage": "Đa ngôn ngữ",
-        "translation": "Dịch thuật",
-        "allLanguages": "Tất cả ngôn ngữ"
-      },
-      "noModelsMatch": "Không có mô hình nào khớp với bộ lọc này.",
-      "yourModels": "Mô hình đã tải",
-      "availableModels": "Có sẵn để tải xuống"
     },
     "general": {
       "title": "Chung",
@@ -143,6 +125,24 @@
         "auto": "Tự động"
       }
     },
+    "models": {
+      "title": "Mô hình TTS",
+      "description": "Chọn mô hình chuyển đổi văn bản thành giọng nói hoặc tải thêm mô hình.",
+      "yourModels": "Mô hình đã tải",
+      "availableModels": "Có sẵn để tải xuống",
+      "downloaded": "Đã tải xuống",
+      "available": "Có thể tải xuống",
+      "deleteConfirm": "Bạn có chắc chắn muốn xóa {{modelName}}? Bạn sẽ cần tải lại để sử dụng.",
+      "deleteActiveConfirm": "{{modelName}} là mô hình đang hoạt động của bạn. Xóa nó sẽ dừng phát giọng nói cho đến khi bạn chọn một mô hình mới. Bạn có chắc không?",
+      "deleteTitle": "Xóa mô hình",
+      "filters": {
+        "all": "Tất cả",
+        "multiLanguage": "Đa ngôn ngữ",
+        "translation": "Dịch thuật",
+        "allLanguages": "Tất cả ngôn ngữ"
+      },
+      "noModelsMatch": "Không có mô hình nào khớp với bộ lọc này."
+    },
     "sound": {
       "title": "Âm thanh",
       "audioFeedback": {
@@ -164,8 +164,22 @@
       "title": "Nâng cao",
       "groups": {
         "app": "Ứng dụng",
+        "speech": "Speech",
         "history": "Lịch sử",
         "experimental": "Thử nghiệm"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "Tính năng thử nghiệm",
@@ -343,6 +357,7 @@
   },
   "overlay": {
     "speaking": "Đang phát giọng nói...",
-    "processing": "Đang xử lý..."
+    "processing": "Đang xử lý...",
+    "reading": "Reading:"
   }
 }

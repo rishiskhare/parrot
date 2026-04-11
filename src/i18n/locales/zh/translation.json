@@ -25,56 +25,7 @@
       "accuracy": "准确度",
       "speed": "速度"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "快速且相当准确。"
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "准确度高，速度适中"
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "准确度和速度均衡。"
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "准确度高，但速度较慢。"
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "仅支持英语。英语用户的最佳模型。"
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "快速且准确"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "非常快速，仅支持英语。口音处理良好。"
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "超快速，仅支持英语"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "快速，仅支持英语。速度与准确度的良好平衡。"
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "仅支持英语。高质量。"
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "针对台湾国语优化。支持语码转换。"
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "非常快速。支持中文、英语、日语、韩语、粤语。"
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "无法加载可用模型",
       "downloadModel": "模型下载失败: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "需要权限",
       "description": "Parrot 需要一些权限才能正常工作。",
-      "microphone": {
-        "title": "麦克风访问",
-        "description": "需要听取您的语音进行转录。"
-      },
       "accessibility": {
         "title": "辅助功能访问",
         "description": "需要将转录文本输入到您的应用程序中。"
@@ -118,16 +65,14 @@
     "noModelDownloadRequired": "无模型 - 需要下载",
     "deleteModel": "删除 {{modelName}}",
     "downloadSpeed": "{{speed}} MB/s",
+    "cancel": "取消",
+    "cancelDownload": "取消下载",
     "capabilities": {
       "languageSelection": "支持多种输入语言",
-      "multiLanguage": "多语言",
-      "translation": "可翻译为英语",
-      "translate": "翻译为英语",
       "singleLanguage": "仅支持此语言",
+      "multiLanguage": "多语言",
       "languageOnly": "仅 {{language}}"
-    },
-    "cancel": "取消",
-    "cancelDownload": "取消下载"
+    }
   },
   "settings": {
     "howToUseTitle": "使用方法",
@@ -135,25 +80,16 @@
     "howToUseStep2": "按 <shortcut /> 朗读",
     "modelSettings": {
       "title": "{{model}} 设置",
-      "noSettingsNeeded": "此模型自动运行，无需配置。"
-    },
-    "models": {
-      "title": "转录模型",
-      "description": "选择转录模型或下载其他模型。不同模型提供不同的准确度和速度。",
-      "downloaded": "已下载",
-      "available": "可下载",
-      "deleteConfirm": "确定要删除 {{modelName}} 吗？您需要重新下载才能使用。",
-      "deleteActiveConfirm": "{{modelName}} 是您当前使用的模型。删除后将停止转录，直到您选择新的模型。确定要删除吗？",
-      "deleteTitle": "删除模型",
-      "filters": {
-        "all": "全部",
-        "multiLanguage": "多语言",
-        "translation": "翻译",
-        "allLanguages": "所有语言"
-      },
-      "noModelsMatch": "没有符合此筛选条件的模型。",
-      "yourModels": "已下载的模型",
-      "availableModels": "可供下载"
+      "noSettingsNeeded": "此模型自动运行，无需配置。",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "通用",
@@ -189,14 +125,26 @@
         "auto": "自动"
       }
     },
+    "models": {
+      "title": "转录模型",
+      "description": "选择转录模型或下载其他模型。不同模型提供不同的准确度和速度。",
+      "yourModels": "已下载的模型",
+      "availableModels": "可供下载",
+      "downloaded": "已下载",
+      "available": "可下载",
+      "deleteConfirm": "确定要删除 {{modelName}} 吗？您需要重新下载才能使用。",
+      "deleteActiveConfirm": "{{modelName}} 是您当前使用的模型。删除后将停止转录，直到您选择新的模型。确定要删除吗？",
+      "deleteTitle": "删除模型",
+      "filters": {
+        "all": "全部",
+        "multiLanguage": "多语言",
+        "translation": "翻译",
+        "allLanguages": "所有语言"
+      },
+      "noModelsMatch": "没有符合此筛选条件的模型。"
+    },
     "sound": {
       "title": "声音",
-      "microphone": {
-        "title": "麦克风",
-        "description": "选择您偏好的麦克风设备",
-        "placeholder": "选择麦克风...",
-        "loading": "加载中..."
-      },
       "audioFeedback": {
         "label": "音频反馈",
         "description": "录制开始和停止时播放声音"
@@ -216,8 +164,22 @@
       "title": "高级",
       "groups": {
         "app": "应用",
+        "speech": "Speech",
         "history": "历史",
         "experimental": "实验性"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "实验性功能",
@@ -243,11 +205,6 @@
           "bottom": "底部",
           "top": "顶部"
         }
-      },
-      "translateToEnglish": {
-        "label": "翻译为英语",
-        "description": "在转录过程中自动将其他语言的语音翻译为英语。",
-        "descriptionUnsupported": "{{model}} 模型不支持翻译功能。"
       },
       "modelUnload": {
         "title": "卸载模型",
@@ -308,22 +265,6 @@
         "months3": "3 个月后",
         "placeholder": "选择保留期限..."
       },
-      "alwaysOnMicrophone": {
-        "label": "麦克风常开",
-        "description": "保持麦克风活跃以获得更快的响应"
-      },
-      "clamshellMicrophone": {
-        "title": "合盖麦克风",
-        "description": "笔记本电脑盖子关闭时使用的麦克风"
-      },
-      "muteWhileRecording": {
-        "label": "录制时静音",
-        "description": "录制期间静音系统音频"
-      },
-      "appendTrailingSpace": {
-        "label": "追加尾部空格",
-        "description": "在粘贴的转录后添加空格"
-      },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
         "description": "Choose the keyboard shortcut backend.",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "致谢",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "OpenAI Whisper 自动语音识别模型的高性能推理",
-          "details": "Parrot 使用 Whisper.cpp 进行快速的本地语音转文字处理。感谢 Georgi Gerganov 和贡献者们的出色工作。"
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "更改 Parrot 界面的语言"
   },
   "overlay": {
-    "transcribing": "正在转录...",
-    "processing": "处理中..."
+    "speaking": "Speaking...",
+    "processing": "处理中...",
+    "reading": "Reading:"
   }
 }

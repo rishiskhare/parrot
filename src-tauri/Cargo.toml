@@ -68,6 +68,7 @@ tts-rs = { version = "2026.2.3", features = ["kokoro"] }
 handy-keys = "0.2.0"
 ferrous-opencc = "0.2.3"
 clap = { version = "4", features = ["derive"] }
+pulldown-cmark = "0.13"
 specta = "=2.0.0-rc.22"
 specta-typescript = "0.0.9"
 tauri-specta = { version = "=2.0.0-rc.21", features = ["derive", "typescript"] }

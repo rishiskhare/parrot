@@ -151,25 +151,25 @@ Some languages have complex plural rules. For now, use a general form that works
 
 ## Currently Supported Languages
 
-| Language            | Code   | Status            |
-| ------------------- | ------ | ----------------- |
-| English             | `en`   | Complete (source) |
-| Arabic              | `ar`   | Complete          |
-| Chinese (Simplified)| `zh`   | Complete          |
-| Chinese (Traditional)| `zh-TW` | Complete       |
-| Czech               | `cs`   | Complete          |
-| French              | `fr`   | Complete          |
-| German              | `de`   | Complete          |
-| Italian             | `it`   | Complete          |
-| Japanese            | `ja`   | Complete          |
-| Korean              | `ko`   | Complete          |
-| Polish              | `pl`   | Complete          |
-| Portuguese          | `pt`   | Complete          |
-| Russian             | `ru`   | Complete          |
-| Spanish             | `es`   | Complete          |
-| Turkish             | `tr`   | Complete          |
-| Ukrainian           | `uk`   | Complete          |
-| Vietnamese          | `vi`   | Complete          |
+| Language              | Code    | Status            |
+| --------------------- | ------- | ----------------- |
+| English               | `en`    | Complete (source) |
+| Arabic                | `ar`    | Complete          |
+| Chinese (Simplified)  | `zh`    | Complete          |
+| Chinese (Traditional) | `zh-TW` | Complete          |
+| Czech                 | `cs`    | Complete          |
+| French                | `fr`    | Complete          |
+| German                | `de`    | Complete          |
+| Italian               | `it`    | Complete          |
+| Japanese              | `ja`    | Complete          |
+| Korean                | `ko`    | Complete          |
+| Polish                | `pl`    | Complete          |
+| Portuguese            | `pt`    | Complete          |
+| Russian               | `ru`    | Complete          |
+| Spanish               | `es`    | Complete          |
+| Turkish               | `tr`    | Complete          |
+| Ukrainian             | `uk`    | Complete          |
+| Vietnamese            | `vi`    | Complete          |
 
 ---
 

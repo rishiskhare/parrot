@@ -25,56 +25,7 @@
       "accuracy": "accuratezza",
       "speed": "velocità"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "Veloce e abbastanza accurato."
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "Buona accuratezza, velocità nella media"
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "Bilanciato fra accuratezza e velocità."
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "Buona accuratezza, ma lento."
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "Solo inglese. Il miglior modello per chi parla inglese."
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "Veloce e accurato"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "Molto veloce, solo inglese. Gestisce bene gli accenti."
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "Ultra-veloce, solo inglese"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "Veloce, solo inglese. Buon equilibrio tra velocità e precisione."
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "Solo inglese. Alta qualità."
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "Ottimizzato per il mandarino taiwanese. Supporto per il code-switching."
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "Molto veloce. Cinese, inglese, giapponese, coreano, cantonese."
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "Errore di caricamento dei modelli disponibili",
       "downloadModel": "Errore nel download del modello: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "Permessi Richiesti",
       "description": "Parrot ha bisogno di alcuni permessi per funzionare correttamente.",
-      "microphone": {
-        "title": "Accesso al Microfono",
-        "description": "Necessario per sentire la tua voce per la trascrizione."
-      },
       "accessibility": {
         "title": "Accesso all'Accessibilità",
         "description": "Necessario per digitare il testo trascritto nelle tue applicazioni."
@@ -118,16 +65,14 @@
     "noModelDownloadRequired": "Nessun Modello - Download Richiesto",
     "deleteModel": "Elimina {{modelName}}",
     "downloadSpeed": "{{speed}} MB/s",
+    "cancel": "Annulla",
+    "cancelDownload": "Annulla download",
     "capabilities": {
       "languageSelection": "Supporta più lingue di input",
-      "multiLanguage": "Multilingua",
-      "translation": "Può tradurre in inglese",
-      "translate": "Traduci in inglese",
       "singleLanguage": "Supporta solo questa lingua",
+      "multiLanguage": "Multilingua",
       "languageOnly": "Solo {{language}}"
-    },
-    "cancel": "Annulla",
-    "cancelDownload": "Annulla download"
+    }
   },
   "settings": {
     "howToUseTitle": "Come usare",
@@ -135,25 +80,16 @@
     "howToUseStep2": "Premi <shortcut /> per leggere ad alta voce",
     "modelSettings": {
       "title": "Impostazioni di {{model}}",
-      "noSettingsNeeded": "Questo modello funziona automaticamente senza bisogno di configurazione."
-    },
-    "models": {
-      "title": "Modelli di Trascrizione",
-      "description": "Seleziona un modello di trascrizione o scarica modelli aggiuntivi. Diversi modelli offrono diversi livelli di accuratezza e velocità.",
-      "downloaded": "Scaricati",
-      "available": "Disponibili per il Download",
-      "deleteConfirm": "Sei sicuro di voler eliminare {{modelName}}? Dovrai scaricarlo di nuovo per usarlo.",
-      "deleteActiveConfirm": "{{modelName}} è il tuo modello attivo. Eliminarlo interromperà le trascrizioni fino a quando non selezionerai un nuovo modello. Sei sicuro?",
-      "deleteTitle": "Elimina modello",
-      "filters": {
-        "all": "Tutti",
-        "multiLanguage": "Multilingua",
-        "translation": "Traduzione",
-        "allLanguages": "Tutte le lingue"
-      },
-      "noModelsMatch": "Nessun modello corrisponde a questo filtro.",
-      "yourModels": "Modelli scaricati",
-      "availableModels": "Disponibili per il download"
+      "noSettingsNeeded": "Questo modello funziona automaticamente senza bisogno di configurazione.",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "Generale",
@@ -189,14 +125,26 @@
         "auto": "Auto"
       }
     },
+    "models": {
+      "title": "Modelli di Trascrizione",
+      "description": "Seleziona un modello di trascrizione o scarica modelli aggiuntivi. Diversi modelli offrono diversi livelli di accuratezza e velocità.",
+      "yourModels": "Modelli scaricati",
+      "availableModels": "Disponibili per il download",
+      "downloaded": "Scaricati",
+      "available": "Disponibili per il Download",
+      "deleteConfirm": "Sei sicuro di voler eliminare {{modelName}}? Dovrai scaricarlo di nuovo per usarlo.",
+      "deleteActiveConfirm": "{{modelName}} è il tuo modello attivo. Eliminarlo interromperà le trascrizioni fino a quando non selezionerai un nuovo modello. Sei sicuro?",
+      "deleteTitle": "Elimina modello",
+      "filters": {
+        "all": "Tutti",
+        "multiLanguage": "Multilingua",
+        "translation": "Traduzione",
+        "allLanguages": "Tutte le lingue"
+      },
+      "noModelsMatch": "Nessun modello corrisponde a questo filtro."
+    },
     "sound": {
       "title": "Suono",
-      "microphone": {
-        "title": "Microfono",
-        "description": "Scegli il microfono preferito",
-        "placeholder": "Scegli microfono...",
-        "loading": "Caricamento..."
-      },
       "audioFeedback": {
         "label": "Feedback Audio",
         "description": "Riproduci un suono quando la registrazione inizia e finisce"
@@ -216,8 +164,22 @@
       "title": "Avanzate",
       "groups": {
         "app": "App",
+        "speech": "Speech",
         "history": "Cronologia",
         "experimental": "Sperimentale"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "Funzionalità Sperimentali",
@@ -243,11 +205,6 @@
           "bottom": "In basso",
           "top": "In alto"
         }
-      },
-      "translateToEnglish": {
-        "label": "Traduci in inglese",
-        "description": "Traduci automaticamente in inglese la voce in altre lingue durante la trascrizione.",
-        "descriptionUnsupported": "La traduzione non è supportata dal modello {{model}}."
       },
       "modelUnload": {
         "title": "Disattiva Model",
@@ -308,22 +265,6 @@
         "months3": "Dopo 3 Mesi",
         "placeholder": "Seleziona periodo di salvataggio..."
       },
-      "alwaysOnMicrophone": {
-        "label": "Microfono Sempre Attivo",
-        "description": "Tieni il microfono attivo per una risposta più rapida"
-      },
-      "clamshellMicrophone": {
-        "title": "Microfono a portatile chiuso",
-        "description": "Microfono da usare quando il portatile è chiuso"
-      },
-      "muteWhileRecording": {
-        "label": "Silenzia durante la registrazione",
-        "description": "Silenzia l'audio di sistema durante la registrazione"
-      },
-      "appendTrailingSpace": {
-        "label": "Aggiungi Spazio Finale",
-        "description": "Aggiungi uno spazio dopo la trascrizione incollata"
-      },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
         "description": "Choose the keyboard shortcut backend.",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "Ringraziamenti",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "Inferenza ad alte prestazioni del modello di riconoscimento vocale automatico Whisper di OpenAI",
-          "details": "Parrot usa Whisper.cpp per il riconoscimento vocale veloce in locale. Grazie a Georgi Gerganov e collaboratori per il fantastico lavoro."
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "Cambia la lingua dell'interfaccia di Parrot"
   },
   "overlay": {
-    "transcribing": "Trascrizione...",
-    "processing": "Elaborazione..."
+    "speaking": "Speaking...",
+    "processing": "Elaborazione...",
+    "reading": "Reading:"
   }
 }

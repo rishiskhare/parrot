@@ -10,7 +10,6 @@ use tauri::tray::TrayIcon;
 use tauri::{AppHandle, Manager, Theme};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 
-
 #[derive(Clone, Debug, PartialEq)]
 pub enum AppTheme {
     Dark,

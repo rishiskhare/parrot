@@ -122,6 +122,7 @@ We use GitHub Discussions for feature requests rather than issues. This keeps is
 ### Before Suggesting a Feature
 
 1. **Search existing discussions** at [github.com/rishiskhare/parrot/discussions](https://github.com/rishiskhare/parrot/discussions)
+
 ### Submitting a Feature Request
 
 1. Go to [Discussions](https://github.com/rishiskhare/parrot/discussions)

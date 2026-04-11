@@ -45,11 +45,11 @@ pub struct ModelInfo {
     pub partial_size: u64,
     pub is_directory: bool,
     pub engine_type: EngineType,
-    pub accuracy_score: f32,              // 0.0 to 1.0, higher is more accurate
-    pub speed_score: f32,                 // 0.0 to 1.0, higher is faster
-    pub is_recommended: bool,             // Whether this is the recommended model for new users
+    pub accuracy_score: f32,  // 0.0 to 1.0, higher is more accurate
+    pub speed_score: f32,     // 0.0 to 1.0, higher is faster
+    pub is_recommended: bool, // Whether this is the recommended model for new users
     pub supported_languages: Vec<String>, // Languages this model supports
-    pub is_custom: bool,                  // Whether this is a user-provided custom model
+    pub is_custom: bool,      // Whether this is a user-provided custom model
     /// For models that consist of multiple individual files rather than a single
     /// archive. When non-empty, `url` is ignored and each component is downloaded
     /// separately into the model directory.
@@ -967,4 +967,3 @@ impl ModelManager {
         Ok(())
     }
 }
-

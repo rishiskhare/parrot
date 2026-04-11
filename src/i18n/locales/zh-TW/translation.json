@@ -25,56 +25,7 @@
       "accuracy": "準確度",
       "speed": "速度"
     },
-    "models": {
-      "small": {
-        "name": "Whisper Small",
-        "description": "快速且相當準確"
-      },
-      "medium": {
-        "name": "Whisper Medium",
-        "description": "準確度高，速度適中"
-      },
-      "turbo": {
-        "name": "Whisper Turbo",
-        "description": "準確度和速度均衡"
-      },
-      "large": {
-        "name": "Whisper Large",
-        "description": "準確度高，但速度較慢"
-      },
-      "parakeet-tdt-0.6b-v2": {
-        "name": "Parakeet V2",
-        "description": "僅支援英語，英語使用者的最佳模型"
-      },
-      "parakeet-tdt-0.6b-v3": {
-        "name": "Parakeet V3",
-        "description": "快速且準確"
-      },
-      "moonshine-base": {
-        "name": "Moonshine Base",
-        "description": "速度極快，僅支援英語，擅長處理各種口音"
-      },
-      "moonshine-tiny-streaming-en": {
-        "name": "Moonshine V2 Tiny",
-        "description": "超快速，僅支援英語"
-      },
-      "moonshine-small-streaming-en": {
-        "name": "Moonshine V2 Small",
-        "description": "快速，僅支援英語。速度與準確度的良好平衡。"
-      },
-      "moonshine-medium-streaming-en": {
-        "name": "Moonshine V2 Medium",
-        "description": "僅支援英語。高品質。"
-      },
-      "breeze-asr": {
-        "name": "Breeze ASR",
-        "description": "針對臺灣華語最佳化。支援語碼轉換。"
-      },
-      "sense-voice-int8": {
-        "name": "SenseVoice",
-        "description": "速度極快。支援中文、英語、日語、韓語、粵語。"
-      }
-    },
+    "models": {},
     "errors": {
       "loadModels": "無法載入可用模型",
       "downloadModel": "模型下載失敗: {{error}}"
@@ -82,10 +33,6 @@
     "permissions": {
       "title": "需要權限",
       "description": "Parrot 需要一些權限才能正常運作",
-      "microphone": {
-        "title": "麥克風存取",
-        "description": "需要聽取您的語音進行轉錄"
-      },
       "accessibility": {
         "title": "輔助使用存取",
         "description": "需要將轉錄文字輸入到您的應用程式中"
@@ -124,9 +71,7 @@
       "languageSelection": "支援多種輸入語言",
       "singleLanguage": "僅支援此語言",
       "multiLanguage": "多語言",
-      "languageOnly": "僅 {{language}}",
-      "translation": "可翻譯為英語",
-      "translate": "翻譯為英語"
+      "languageOnly": "僅 {{language}}"
     }
   },
   "settings": {
@@ -135,7 +80,16 @@
     "howToUseStep2": "按 <shortcut /> 朗讀",
     "modelSettings": {
       "title": "{{model}} 設定",
-      "noSettingsNeeded": "此模型自動運行，無需設定"
+      "noSettingsNeeded": "此模型自動運行，無需設定",
+      "kokoroVoice": {
+        "title": "Voice",
+        "description": "Select which Kokoro voice to use. Auto follows the language setting.",
+        "auto": "Auto (By Language)",
+        "searchPlaceholder": "Search voices...",
+        "loading": "Loading voices...",
+        "noResults": "No voices found",
+        "loadError": "Could not load available voices."
+      }
     },
     "general": {
       "title": "一般",
@@ -191,12 +145,6 @@
     },
     "sound": {
       "title": "聲音",
-      "microphone": {
-        "title": "麥克風",
-        "description": "選擇您偏好的麥克風裝置",
-        "placeholder": "選擇麥克風...",
-        "loading": "載入中..."
-      },
       "audioFeedback": {
         "label": "聲音回饋",
         "description": "錄製開始和停止時播放聲音"
@@ -216,8 +164,22 @@
       "title": "進階",
       "groups": {
         "app": "應用程式",
+        "speech": "Speech",
         "history": "歷史",
         "experimental": "實驗性"
+      },
+      "ttsWorkers": {
+        "title": "TTS Workers",
+        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
+        "auto": "Auto"
+      },
+      "ttsSpeed": {
+        "title": "Speech Speed",
+        "description": "Playback speed for text-to-speech output."
+      },
+      "shortenFirstChunk": {
+        "title": "Fast First Response",
+        "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
       },
       "experimentalToggle": {
         "label": "實驗性功能",
@@ -243,11 +205,6 @@
           "bottom": "底部",
           "top": "頂部"
         }
-      },
-      "translateToEnglish": {
-        "label": "翻譯為英語",
-        "description": "在轉錄過程中自動將其他語言的語音翻譯為英語",
-        "descriptionUnsupported": "{{model}} 模型不支援翻譯功能"
       },
       "modelUnload": {
         "title": "卸載模型",
@@ -308,22 +265,6 @@
         "months3": "3 個月後",
         "placeholder": "選擇保留期限..."
       },
-      "alwaysOnMicrophone": {
-        "label": "麥克風常開",
-        "description": "保持麥克風啟用以獲得更快的回應"
-      },
-      "clamshellMicrophone": {
-        "title": "闔蓋麥克風",
-        "description": "筆記型電腦闔蓋時使用的麥克風"
-      },
-      "muteWhileRecording": {
-        "label": "錄製時靜音",
-        "description": "錄製期間靜音系統音訊"
-      },
-      "appendTrailingSpace": {
-        "label": "附加尾部空格",
-        "description": "在貼上的轉錄後新增空格"
-      },
       "keyboardImplementation": {
         "title": "鍵盤實作",
         "description": "選擇鍵盤快捷鍵的後端",
@@ -357,10 +298,10 @@
       },
       "acknowledgments": {
         "title": "致謝",
-        "whisper": {
-          "title": "Whisper.cpp",
-          "description": "針對 OpenAI Whisper 自動語音識別模型的高效能推理引擎",
-          "details": "Parrot 使用 Whisper.cpp 進行快速的本機語音轉文字處理。感謝 Georgi Gerganov 和貢獻者們的傑出工作"
+        "handy": {
+          "title": "Handy",
+          "description": "The original project that Parrot was forked from",
+          "details": "Parrot is a fork of Handy by CJ Pais. Thanks for building the foundation that made Parrot possible."
         }
       }
     }
@@ -415,7 +356,8 @@
     "description": "變更 Parrot 介面的語言"
   },
   "overlay": {
-    "transcribing": "正在轉錄...",
-    "processing": "處理中..."
+    "speaking": "Speaking...",
+    "processing": "處理中...",
+    "reading": "Reading:"
   }
 }
