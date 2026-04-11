@@ -210,24 +210,30 @@ impl SpeechTextRenderer {
     }
 
     fn push_text(&mut self, text: &str) {
+        let had_leading_whitespace = text.chars().next().map(char::is_whitespace).unwrap_or(false);
         let normalized = normalize_inline_whitespace(text);
         if normalized.is_empty() {
             return;
         }
 
         if let Some(image) = self.image_stack.last_mut() {
-            append_segment(&mut image.alt_text, &normalized);
+            append_segment(&mut image.alt_text, &normalized, had_leading_whitespace);
             return;
         }
 
         if let Some(link) = self.link_stack.last_mut() {
-            append_segment(&mut link.text, &normalized);
+            append_segment(&mut link.text, &normalized, had_leading_whitespace);
             return;
         }
 
         self.flush_breaks();
 
-        if needs_space_between(
+        if had_leading_whitespace
+            && !self.output.is_empty()
+            && !self.output.ends_with(char::is_whitespace)
+        {
+            self.output.push(' ');
+        } else if needs_space_between(
             self.output.chars().rev().nth(1),
             self.output.chars().next_back(),
             normalized.chars().next(),
@@ -315,12 +321,14 @@ impl SpeechTextRenderer {
     }
 }
 
-fn append_segment(buffer: &mut String, segment: &str) {
+fn append_segment(buffer: &mut String, segment: &str, had_leading_whitespace: bool) {
     if segment.is_empty() {
         return;
     }
 
-    if needs_space_between(
+    if had_leading_whitespace && !buffer.is_empty() && !buffer.ends_with(char::is_whitespace) {
+        buffer.push(' ');
+    } else if needs_space_between(
         buffer.chars().rev().nth(1),
         buffer.chars().next_back(),
         segment.chars().next(),
@@ -357,18 +365,7 @@ fn needs_space_between(prev_left: Option<char>, left: Option<char>, right: Optio
             false
         }
         (_, Some('&'), Some(right)) if right.is_alphanumeric() => false,
-        (prev_left, Some('\'' | '’'), Some(right)) if right.is_alphanumeric() => {
-            match prev_left {
-                None => false,
-                Some(ch)
-                    if ch.is_whitespace()
-                        || matches!(ch, '(' | '[' | '{' | '"' | ':' | ';' | '—' | '–') =>
-                {
-                    false
-                }
-                Some(_) => true,
-            }
-        }
+        (_, Some('\'' | '’'), Some(right)) if right.is_alphanumeric() => false,
         (_, Some(left), Some(right)) => {
             if (left.is_alphanumeric() && matches!(right, '&' | '\'' | '’'))
                 || (left == '&' && right.is_alphanumeric())
@@ -613,5 +610,15 @@ Keep &custom; visible and preserve dangling &entity text.
 
         let spoken = normalize_text_for_tts(markdown);
         assert!(spoken.contains("Keep &custom; visible and preserve dangling &entity text."));
+    }
+
+    #[test]
+    fn keeps_apostrophes_inside_words_without_inserting_spaces() {
+        let markdown = "Feedback doesn't live in one place. Feedback doesn’t live in one place.";
+
+        let spoken = normalize_text_for_tts(markdown);
+        assert!(spoken.contains("Feedback doesn’t live in one place."));
+        assert!(!spoken.contains("doesn 't"));
+        assert!(!spoken.contains("doesn ’t"));
     }
 }
