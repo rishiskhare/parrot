@@ -38,7 +38,7 @@
   "bundle": {
     "active": true,
     "createUpdaterArtifacts": true,
-    "targets": "all",
+    "targets": ["appimage", "deb", "dmg", "nsis", "rpm"],
     "resources": ["resources/**/*"],
     "license": "MIT",
     "icon": [
