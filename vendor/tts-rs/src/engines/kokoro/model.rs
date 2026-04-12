@@ -147,7 +147,12 @@ impl KokoroModel {
                 ids.len(),
                 MAX_PHONEME_LEN
             );
-            split_chunks(&ids)
+            // Compute punctuation IDs from the vocab instead of hardcoding them
+            let punct_ids: Vec<i64> = [';', ':', ',', '.', '!', '?']
+                .iter()
+                .filter_map(|c| self.vocab.get(c).copied())
+                .collect();
+            split_chunks_with_punct(&ids, &punct_ids)
         } else {
             vec![ids]
         };
@@ -335,7 +340,8 @@ fn detect_speed_type(session: &Session) -> bool {
 }
 
 /// Split phoneme IDs into chunks of at most `MAX_PHONEME_LEN`, preferring punctuation.
-fn split_chunks(ids: &[i64]) -> Vec<Vec<i64>> {
+/// Takes an explicit set of punctuation IDs instead of hardcoding them.
+fn split_chunks_with_punct(ids: &[i64], punct_ids: &[i64]) -> Vec<Vec<i64>> {
     let mut chunks = Vec::new();
     let mut start = 0;
 
@@ -347,13 +353,11 @@ fn split_chunks(ids: &[i64]) -> Vec<Vec<i64>> {
         }
 
         // Try to find a good split point (last punctuation before `end`).
-        // Punctuation IDs (hardcoded vocab): ';':1 ':':2 ',':3 '.':4 '!':5 '?':6
-        const PUNCT_IDS: &[i64] = &[1, 2, 3, 4, 5, 6];
         let split = ids[start..end]
             .iter()
             .enumerate()
             .rev()
-            .find(|(_, &id)| PUNCT_IDS.contains(&id))
+            .find(|(_, &id)| punct_ids.contains(&id))
             .map(|(i, _)| start + i + 1)
             .unwrap_or(end);
 
