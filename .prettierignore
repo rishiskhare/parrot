@@ -18,3 +18,6 @@ src/bindings.ts
 # Misc
 .DS_Store
 *.log
+
+# Vendored cargo metadata
+vendor/**/.cargo_vcs_info.json

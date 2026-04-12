@@ -28,8 +28,8 @@ pub struct EspeakConfig {
 /// Voice names follow the pattern `{prefix}_{name}` where the two-character
 /// prefix encodes the language.
 pub fn voice_lang(voice: &str) -> &'static str {
-    let prefix = &voice[..voice.len().min(2)];
-    match prefix {
+    let prefix: String = voice.chars().take(2).collect();
+    match prefix.as_str() {
         "af" | "am" => "en-us",
         "bf" | "bm" => "en-gb",
         "ef" | "em" => "es",

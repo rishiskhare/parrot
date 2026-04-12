@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -32,15 +33,23 @@ impl VoiceStore {
             })?;
 
             let raw_name = entry.name().to_string();
-            // Voice name is the entry name without the .npy extension
-            let voice_name = raw_name
-                .trim_end_matches('/')
-                .trim_end_matches(".npy")
-                .to_string();
 
-            if voice_name.is_empty() || raw_name.ends_with('/') {
+            // Skip directory entries
+            if raw_name.ends_with('/') {
                 continue;
             }
+
+            // Voice name is the basename without the .npy extension
+            let voice_name = Path::new(&raw_name)
+                .file_name()
+                .and_then(OsStr::to_str)
+                .map(|name| name.trim_end_matches(".npy"))
+                .filter(|name| !name.is_empty())
+                .map(str::to_string);
+
+            let Some(voice_name) = voice_name else {
+                continue;
+            };
 
             let mut data = Vec::new();
             entry
@@ -63,6 +72,12 @@ impl VoiceStore {
             .voices
             .get(voice)
             .ok_or_else(|| KokoroError::VoiceNotFound(voice.to_string()))?;
+
+        if styles.is_empty() {
+            return Err(KokoroError::VoiceParse(format!(
+                "Voice {voice} has no style vectors"
+            )));
+        }
 
         let clamped = idx.min(styles.len().saturating_sub(1));
         Ok(styles[clamped])
@@ -94,9 +109,34 @@ fn parse_npy(data: &[u8], name: &str) -> Result<Vec<[f32; 256]>, KokoroError> {
         )));
     }
 
-    // major version at [6], minor at [7], header_len at [8..10] (little-endian u16)
-    let header_len = u16::from_le_bytes([data[8], data[9]]) as usize;
-    let data_offset = 10 + header_len;
+    // major version at [6], minor at [7]
+    let major = data[6];
+    let minor = data[7];
+
+    // Read header_len based on numpy version
+    let (header_len, data_offset) = match major {
+        1 => {
+            // numpy 1.0: 2-byte little-endian u16 header_len at [8..10]
+            let header_len = u16::from_le_bytes([data[8], data[9]]) as usize;
+            (header_len, 10 + header_len)
+        }
+        2 => {
+            // numpy 2.0: 4-byte little-endian u32 header_len at [8..12]
+            if data.len() < 12 {
+                return Err(KokoroError::VoiceParse(format!(
+                    "{name}: file too short for numpy 2.0 header ({} bytes)",
+                    data.len()
+                )));
+            }
+            let header_len = u32::from_le_bytes([data[8], data[9], data[10], data[11]]) as usize;
+            (header_len, 12 + header_len)
+        }
+        _ => {
+            return Err(KokoroError::VoiceParse(format!(
+                "{name}: unsupported numpy version {major}.{minor}"
+            )));
+        }
+    };
 
     if data.len() < data_offset {
         return Err(KokoroError::VoiceParse(format!(

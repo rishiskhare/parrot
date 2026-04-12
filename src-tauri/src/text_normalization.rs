@@ -370,6 +370,30 @@ fn should_preserve_leading_space(had_leading_whitespace: bool, first: Option<cha
 
 fn normalize_quote_spacing(text: &str) -> String {
     let chars: Vec<char> = text.chars().collect();
+    let len = chars.len();
+
+    // Precompute nearest non-space character indices for O(1) lookup
+    let mut nearest_non_space_left: Vec<Option<usize>> = vec![None; len];
+    let mut nearest_non_space_right: Vec<Option<usize>> = vec![None; len];
+
+    // Fill left-to-right
+    let mut last_non_space = None;
+    for i in 0..len {
+        if !chars[i].is_whitespace() {
+            last_non_space = Some(i);
+        }
+        nearest_non_space_left[i] = last_non_space;
+    }
+
+    // Fill right-to-left
+    last_non_space = None;
+    for i in (0..len).rev() {
+        if !chars[i].is_whitespace() {
+            last_non_space = Some(i);
+        }
+        nearest_non_space_right[i] = last_non_space;
+    }
+
     let mut out = String::with_capacity(text.len());
 
     for (idx, &ch) in chars.iter().enumerate() {
@@ -377,26 +401,28 @@ fn normalize_quote_spacing(text: &str) -> String {
         let next = chars.get(idx + 1).copied();
 
         if ch == ' ' {
-            let prev_non_space = chars[..idx]
-                .iter()
-                .rev()
-                .copied()
-                .find(|c| !c.is_whitespace());
-            let next_non_space = chars[idx + 1..]
-                .iter()
-                .copied()
-                .find(|c| !c.is_whitespace());
+            let prev_non_space = if idx > 0 {
+                nearest_non_space_left[idx - 1].map(|i| chars[i])
+            } else {
+                None
+            };
+            let next_non_space = if idx + 1 < len {
+                nearest_non_space_right[idx + 1].map(|i| chars[i])
+            } else {
+                None
+            };
 
             if let Some(next_quote) = next_non_space.filter(|c| is_quote_char(*c)) {
-                let next_quote_idx = idx + 1
-                    + chars[idx + 1..]
-                        .iter()
-                        .position(|c| !c.is_whitespace())
-                        .unwrap_or(0);
-                let after_next_quote = chars[next_quote_idx + 1..]
-                    .iter()
-                    .copied()
-                    .find(|c| !c.is_whitespace());
+                let next_quote_idx = if idx + 1 < len {
+                    nearest_non_space_right[idx + 1].unwrap_or(idx)
+                } else {
+                    idx
+                };
+                let after_next_quote = if next_quote_idx + 1 < len {
+                    nearest_non_space_right[next_quote_idx + 1].map(|i| chars[i])
+                } else {
+                    None
+                };
 
                 if is_opening_quote(next_quote, prev_non_space, after_next_quote)
                     && prev_non_space
@@ -410,11 +436,11 @@ fn normalize_quote_spacing(text: &str) -> String {
             if prev
                 .filter(|c| is_quote_char(*c))
                 .map(|prev_quote| {
-                    let before_prev_quote = chars[..idx.saturating_sub(1)]
-                        .iter()
-                        .rev()
-                        .copied()
-                        .find(|c| !c.is_whitespace());
+                    let before_prev_quote = if idx >= 2 {
+                        nearest_non_space_left[idx - 2].map(|i| chars[i])
+                    } else {
+                        None
+                    };
                     is_opening_quote(prev_quote, before_prev_quote, next_non_space)
                 })
                 .unwrap_or(false)
@@ -424,7 +450,7 @@ fn normalize_quote_spacing(text: &str) -> String {
             }
         }
 
-        if matches!(ch, '‘' | '’')
+        if matches!(ch, ''' | ''' | '"' | '"')
             && next.map(|c| c.is_alphanumeric()).unwrap_or(false)
             && prev.map(|c| c == ':' || c == ';').unwrap_or(false)
             && !out.ends_with(' ')
@@ -435,10 +461,12 @@ fn normalize_quote_spacing(text: &str) -> String {
         out.push(ch);
     }
 
-    out.replace(":’", ": ’")
-        .replace("’and", "’ and")
-        .replace("a“", "a “")
-        .replace(" ”", "”")
+    out.replace(":'", ": '")
+        .replace("'and", "' and")
+        .replace("a"", "a "")
+        .replace(" "", """)
+        .replace(":"", ": "")
+        .replace(":\"", ": \"")
 }
 
 fn is_opening_quote(ch: char, prev: Option<char>, next: Option<char>) -> bool {

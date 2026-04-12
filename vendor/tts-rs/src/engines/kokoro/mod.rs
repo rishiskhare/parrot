@@ -50,7 +50,7 @@
 //! ## Basic Usage
 //!
 //! ```rust,no_run
-//! use transcribe_rs::{SynthesisEngine, engines::kokoro::{KokoroEngine, KokoroInferenceParams}};
+//! use tts_rs::{SynthesisEngine, engines::kokoro::{KokoroEngine, KokoroInferenceParams}};
 //! use std::path::PathBuf;
 //!
 //! let mut engine = KokoroEngine::new();
@@ -64,7 +64,7 @@
 //! ## With Custom Voice and Speed
 //!
 //! ```rust,no_run
-//! use transcribe_rs::{SynthesisEngine, engines::kokoro::{KokoroEngine, KokoroInferenceParams}};
+//! use tts_rs::{SynthesisEngine, engines::kokoro::{KokoroEngine, KokoroInferenceParams}};
 //! use std::path::PathBuf;
 //!
 //! let mut engine = KokoroEngine::new();

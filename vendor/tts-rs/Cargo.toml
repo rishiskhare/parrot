@@ -58,7 +58,7 @@ version = "0.17"
 optional = true
 
 [dependencies.ort]
-version = "2.0.0-rc.11"
+version = "2.0.0-rc.12"
 optional = true
 default-features = false
 features = [

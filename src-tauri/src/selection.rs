@@ -81,6 +81,7 @@ fn get_selected_text() -> Option<String> {
         ) -> Ptr;
         fn CFStringGetLength(s: Ptr) -> i64;
         fn CFStringGetCString(s: Ptr, buf: *mut c_char, buf_size: i64, encoding: u32) -> bool;
+        fn CFStringGetMaximumSizeForEncoding(length: i64, encoding: u32) -> i64;
     }
 
     unsafe fn cf_str(bytes: &[u8]) -> Ptr {
@@ -92,7 +93,7 @@ fn get_selected_text() -> Option<String> {
             return None;
         }
         let len = CFStringGetLength(ptr);
-        let buf_size = len * 4 + 1;
+        let buf_size = CFStringGetMaximumSizeForEncoding(len, UTF8) + 1;
         let mut buf = vec![0u8; buf_size as usize];
         let ok = CFStringGetCString(ptr, buf.as_mut_ptr() as *mut c_char, buf_size, UTF8);
         CFRelease(ptr);

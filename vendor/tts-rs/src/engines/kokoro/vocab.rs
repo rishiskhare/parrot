@@ -20,10 +20,15 @@ pub fn load_vocab(config_path: &Path) -> Result<HashMap<char, i64>, KokoroError>
 
     let mut map = HashMap::new();
     for (k, v) in vocab_obj {
-        let ch = k
-            .chars()
-            .next()
-            .ok_or_else(|| KokoroError::Config(format!("Empty key in vocab: {k:?}")))?;
+        if k.is_empty() {
+            return Err(KokoroError::Config(format!("Empty key in vocab: {k:?}")));
+        }
+        if k.chars().count() != 1 {
+            return Err(KokoroError::Config(format!(
+                "Vocab key must be a single character, got: {k:?}"
+            )));
+        }
+        let ch = k.chars().next().unwrap();
         let id = v
             .as_i64()
             .ok_or_else(|| KokoroError::Config(format!("Non-integer vocab value for key {k:?}")))?;

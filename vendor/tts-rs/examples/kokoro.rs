@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::time::Instant;
 
-use transcribe_rs::{
+use tts_rs::{
     engines::kokoro::{KokoroEngine, KokoroInferenceParams, KokoroModelParams},
     SynthesisEngine,
 };

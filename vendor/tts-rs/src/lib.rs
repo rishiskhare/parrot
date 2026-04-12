@@ -61,6 +61,9 @@ impl SynthesisResult {
 
     /// Duration of the audio in seconds.
     pub fn duration_secs(&self) -> f64 {
+        if self.sample_rate == 0 {
+            return 0.0;
+        }
         self.samples.len() as f64 / self.sample_rate as f64
     }
 }
