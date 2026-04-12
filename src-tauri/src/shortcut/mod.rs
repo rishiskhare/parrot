@@ -664,6 +664,55 @@ pub fn change_app_language_setting(app: AppHandle, language: String) -> Result<(
 
 #[tauri::command]
 #[specta::specta]
+pub fn change_selection_capture_method_setting(
+    app: AppHandle,
+    method: String,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.selection_capture_method = match method.as_str() {
+        "auto" => settings::SelectionCaptureMethod::Auto,
+        "accessibility" => settings::SelectionCaptureMethod::Accessibility,
+        "clipboard" => settings::SelectionCaptureMethod::Clipboard,
+        _ => return Err(format!("Invalid selection capture method: {}", method)),
+    };
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_clipboard_handling_setting(app: AppHandle, handling: String) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.clipboard_handling = match handling.as_str() {
+        "dont_modify" => settings::ClipboardHandling::DontModify,
+        "copy_to_clipboard" => settings::ClipboardHandling::CopyToClipboard,
+        _ => return Err(format!("Invalid clipboard handling mode: {}", handling)),
+    };
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_model_unload_timeout_setting(app: AppHandle, timeout: String) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.model_unload_timeout = match timeout.as_str() {
+        "never" => settings::ModelUnloadTimeout::Never,
+        "immediately" => settings::ModelUnloadTimeout::Immediately,
+        "min_2" => settings::ModelUnloadTimeout::Min2,
+        "min_5" => settings::ModelUnloadTimeout::Min5,
+        "min_10" => settings::ModelUnloadTimeout::Min10,
+        "min_15" => settings::ModelUnloadTimeout::Min15,
+        "hour_1" => settings::ModelUnloadTimeout::Hour1,
+        "sec_5" => settings::ModelUnloadTimeout::Sec5,
+        _ => return Err(format!("Invalid model unload timeout: {}", timeout)),
+    };
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn change_show_tray_icon_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     settings.show_tray_icon = enabled;

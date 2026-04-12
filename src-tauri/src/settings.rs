@@ -121,6 +121,21 @@ pub enum KeyboardImplementation {
     HandyKeys,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum SelectionCaptureMethod {
+    Auto,
+    Accessibility,
+    Clipboard,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum ClipboardHandling {
+    DontModify,
+    CopyToClipboard,
+}
+
 impl Default for KeyboardImplementation {
     fn default() -> Self {
         // Default to HandyKeys only on macOS where it's well-tested.
@@ -132,6 +147,20 @@ impl Default for KeyboardImplementation {
     }
 }
 
+impl Default for SelectionCaptureMethod {
+    fn default() -> Self {
+        #[cfg(target_os = "macos")]
+        return SelectionCaptureMethod::Auto;
+        #[cfg(not(target_os = "macos"))]
+        return SelectionCaptureMethod::Clipboard;
+    }
+}
+
+impl Default for ClipboardHandling {
+    fn default() -> Self {
+        ClipboardHandling::DontModify
+    }
+}
 impl ModelUnloadTimeout {
     pub fn to_minutes(self) -> Option<u64> {
         match self {
@@ -228,6 +257,10 @@ pub struct AppSettings {
     pub experimental_enabled: bool,
     #[serde(default)]
     pub keyboard_implementation: KeyboardImplementation,
+    #[serde(default)]
+    pub selection_capture_method: SelectionCaptureMethod,
+    #[serde(default)]
+    pub clipboard_handling: ClipboardHandling,
     #[serde(default = "default_show_tray_icon")]
     pub show_tray_icon: bool,
     #[serde(default = "default_tts_workers")]
@@ -375,6 +408,8 @@ pub fn get_default_settings() -> AppSettings {
         app_language: default_app_language(),
         experimental_enabled: false,
         keyboard_implementation: KeyboardImplementation::default(),
+        selection_capture_method: SelectionCaptureMethod::default(),
+        clipboard_handling: ClipboardHandling::default(),
         show_tray_icon: default_show_tray_icon(),
         tts_workers: default_tts_workers(),
         tts_speed: default_tts_speed(),
