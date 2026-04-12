@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use std::num::NonZero;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicU8, AtomicUsize, Ordering};
-use std::sync::{mpsc, Arc, Condvar, Mutex, TryLockError};
+use std::sync::{mpsc, Arc, Condvar, Mutex, OnceLock, TryLockError};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime};
 use tauri::path::BaseDirectory;
@@ -32,6 +32,7 @@ const ENGINE_LOCK_POLL_INTERVAL: Duration = Duration::from_millis(2);
 /// Number of samples to crossfade between text-level chunks (10ms @ 24kHz).
 /// Matches the crossfade length used by tts-rs for sub-chunk blending.
 const CROSSFADE_SAMPLES: usize = 240;
+static ORT_INIT_RESULT: OnceLock<std::result::Result<(), String>> = OnceLock::new();
 
 #[derive(Clone, Debug, Serialize)]
 pub struct ModelStateEvent {
@@ -83,6 +84,7 @@ pub struct TTSManager {
     shutdown_signal: Arc<AtomicBool>,
     espeak_ng_path: Option<PathBuf>,
     espeak_ng_data_path: Option<PathBuf>,
+    onnxruntime_path: Option<PathBuf>,
 }
 
 impl Drop for TTSManager {
@@ -96,6 +98,7 @@ impl TTSManager {
         app_handle: &AppHandle,
         model_manager: Arc<ModelManager>,
         espeak_paths: (Option<PathBuf>, Option<PathBuf>),
+        onnxruntime_path: Option<PathBuf>,
     ) -> Result<Self> {
         let engines = Arc::new(
             (0..MAX_PARALLEL_SYNTH_ENGINES)
@@ -177,6 +180,7 @@ impl TTSManager {
             shutdown_signal,
             espeak_ng_path: espeak_paths.0,
             espeak_ng_data_path: espeak_paths.1,
+            onnxruntime_path,
         })
     }
 
@@ -239,6 +243,7 @@ impl TTSManager {
         let model_manager = Arc::clone(&self.model_manager);
         let espeak_ng_path = self.espeak_ng_path.clone();
         let espeak_ng_data_path = self.espeak_ng_data_path.clone();
+        let onnxruntime_path = self.onnxruntime_path.clone();
 
         thread::spawn(move || {
             // Resolve human-readable name from ModelManager; fall back to ID if missing.
@@ -246,6 +251,14 @@ impl TTSManager {
                 .get_model_info(MODEL_ID)
                 .map(|info| info.name)
                 .unwrap_or_else(|| MODEL_ID.to_string());
+
+            if let Err(e) = ensure_onnxruntime_initialized(onnxruntime_path.as_ref()) {
+                error!("{}", e);
+                let _ = app_handle.emit("tts-error", e.clone());
+                *is_loading_arc.lock().unwrap() = false;
+                condvar.notify_all();
+                return;
+            }
 
             let model_dir = match resolve_kokoro_model_dir(&app_handle) {
                 Ok(dir) => dir,
@@ -1043,6 +1056,52 @@ impl TTSManager {
 
         Ok(())
     }
+}
+
+fn ensure_onnxruntime_initialized(
+    onnxruntime_path: Option<&PathBuf>,
+) -> std::result::Result<(), String> {
+    ORT_INIT_RESULT
+        .get_or_init(|| {
+            let builder = match onnxruntime_path {
+                Some(path) => {
+                    if !path.exists() {
+                        return Err(format!(
+                            "Bundled ONNX Runtime library not found at {}",
+                            path.display()
+                        ));
+                    }
+                    info!("Initializing ONNX Runtime from {}", path.display());
+                    ort::init_from(path).map_err(|e| {
+                        format!(
+                            "Failed to load bundled ONNX Runtime from {}: {}",
+                            path.display(),
+                            e
+                        )
+                    })?
+                }
+                None => {
+                    if let Some(path) = std::env::var_os("ORT_DYLIB_PATH") {
+                        info!("Initializing ONNX Runtime from ORT_DYLIB_PATH={:?}", path);
+                    } else {
+                        info!(
+                            "Bundled ONNX Runtime not found; falling back to system loader search"
+                        );
+                    }
+                    ort::init()
+                }
+            };
+
+            if builder.commit() {
+                Ok(())
+            } else {
+                Err(
+                    "ONNX Runtime was already initialized with a different configuration"
+                        .to_string(),
+                )
+            }
+        })
+        .clone()
 }
 
 /// Runs on a dedicated thread. Receives `(chunk_index, duration_secs)` from the

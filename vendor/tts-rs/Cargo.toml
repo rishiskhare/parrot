@@ -1,0 +1,40 @@
+[package]
+name = "tts-rs"
+version = "2026.2.3"
+edition = "2021"
+description = "A Rust library for text-to-speech synthesis using the Kokoro engine"
+license = "MIT"
+repository = "https://github.com/rishiskhare/tts-rs"
+
+[features]
+default = []
+kokoro = ["dep:ort", "dep:ndarray", "dep:zip"]
+
+[lib]
+name = "tts_rs"
+path = "src/lib.rs"
+
+[[example]]
+name = "kokoro"
+path = "examples/kokoro.rs"
+required-features = ["kokoro"]
+
+[dependencies]
+derive_builder = "0.20.2"
+env_logger = "0.10.0"
+hound = "3.5.1"
+log = "0.4.28"
+ndarray = { version = "0.17", optional = true }
+ort = { version = "2.0.0-rc.12", optional = true, default-features = false, features = [
+    "std",
+    "ndarray",
+    "load-dynamic",
+    "api-24",
+] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0.16"
+zip = { version = "2", optional = true, default-features = false, features = ["deflate"] }
+
+[dev-dependencies]
+tempfile = "3"

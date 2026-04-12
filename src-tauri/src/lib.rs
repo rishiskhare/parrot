@@ -8,6 +8,7 @@ mod helpers;
 mod input;
 mod managers;
 mod overlay;
+mod selection;
 mod settings;
 mod shortcut;
 mod signal_handle;
@@ -91,6 +92,60 @@ fn resolve_bundled_espeak_ng(
     (bin_path, data_path)
 }
 
+fn resolve_bundled_onnxruntime(app_handle: &AppHandle) -> Option<std::path::PathBuf> {
+    let resolver = app_handle.path();
+    let ort_dir = resolver
+        .resolve(
+            "resources/onnxruntime",
+            tauri::path::BaseDirectory::Resource,
+        )
+        .ok()
+        .filter(|p| p.is_dir())?;
+
+    #[cfg(target_os = "windows")]
+    let candidates = ["onnxruntime.dll"];
+    #[cfg(target_os = "macos")]
+    let candidates = ["libonnxruntime.dylib", "libonnxruntime.1.23.1.dylib"];
+    #[cfg(target_os = "linux")]
+    let candidates = ["libonnxruntime.so", "libonnxruntime.so.1.23.1"];
+
+    for candidate in candidates {
+        let path = ort_dir.join(candidate);
+        if path.exists() {
+            log::info!("Bundled ONNX Runtime library: {}", path.display());
+            return Some(path);
+        }
+    }
+
+    std::fs::read_dir(&ort_dir)
+        .ok()?
+        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .find(|path| {
+            path.is_file()
+                && path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .map(|name| {
+                        #[cfg(target_os = "windows")]
+                        {
+                            name.eq_ignore_ascii_case("onnxruntime.dll")
+                        }
+                        #[cfg(target_os = "macos")]
+                        {
+                            name.starts_with("libonnxruntime") && name.ends_with(".dylib")
+                        }
+                        #[cfg(target_os = "linux")]
+                        {
+                            name.starts_with("libonnxruntime.so")
+                        }
+                    })
+                    .unwrap_or(false)
+        })
+        .inspect(|path| {
+            log::info!("Bundled ONNX Runtime library: {}", path.display());
+        })
+}
+
 // Global atomic to store the file log level filter
 // We use u8 to store the log::LevelFilter as a number
 pub static FILE_LOG_LEVEL: AtomicU8 = AtomicU8::new(log::LevelFilter::Debug as u8);
@@ -154,6 +209,7 @@ fn show_main_window(app: &AppHandle) {
 fn initialize_core_logic(
     app_handle: &AppHandle,
     espeak_paths: (Option<std::path::PathBuf>, Option<std::path::PathBuf>),
+    onnxruntime_path: Option<std::path::PathBuf>,
 ) {
     // Note: Enigo (keyboard/mouse simulation) is NOT initialized here.
     // The frontend is responsible for calling the `initialize_enigo` command
@@ -166,8 +222,13 @@ fn initialize_core_logic(
     let history_manager =
         Arc::new(HistoryManager::new(app_handle).expect("Failed to initialize history manager"));
     let speech_manager = Arc::new(
-        TTSManager::new(app_handle, model_manager.clone(), espeak_paths)
-            .expect("Failed to initialize speech manager"),
+        TTSManager::new(
+            app_handle,
+            model_manager.clone(),
+            espeak_paths,
+            onnxruntime_path,
+        )
+        .expect("Failed to initialize speech manager"),
     );
 
     // Add managers to Tauri's managed state
@@ -315,6 +376,9 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_update_checks_setting,
         shortcut::change_keyboard_implementation_setting,
         shortcut::get_keyboard_implementation,
+        shortcut::change_selection_capture_method_setting,
+        shortcut::change_clipboard_handling_setting,
+        shortcut::change_model_unload_timeout_setting,
         shortcut::change_show_tray_icon_setting,
         shortcut::change_tts_workers_setting,
         shortcut::change_tts_speed_setting,
@@ -442,7 +506,8 @@ pub fn run(cli_args: CliArgs) {
             app.manage(ActionCoordinator::new(app_handle.clone()));
 
             let espeak_paths = resolve_bundled_espeak_ng(&app_handle);
-            initialize_core_logic(&app_handle, espeak_paths);
+            let onnxruntime_path = resolve_bundled_onnxruntime(&app_handle);
+            initialize_core_logic(&app_handle, espeak_paths, onnxruntime_path);
 
             // Hide tray icon if --no-tray was passed
             if cli_args.no_tray {
