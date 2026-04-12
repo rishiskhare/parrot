@@ -14,6 +14,8 @@ import { TtsSpeed } from "../TtsSpeed";
 import { ShortenFirstChunk } from "../ShortenFirstChunk";
 import { useSettings } from "../../../hooks/useSettings";
 import { KeyboardImplementationSelector } from "../debug/KeyboardImplementationSelector";
+import { SelectionCaptureMethodSetting } from "../SelectionCaptureMethod";
+import { SelectionClipboardHandlingSetting } from "../SelectionClipboardHandling";
 
 export const AdvancedSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -29,6 +31,17 @@ export const AdvancedSettings: React.FC = () => {
         <ShowOverlay descriptionMode="tooltip" grouped={true} />
         <ModelUnloadTimeoutSetting descriptionMode="tooltip" grouped={true} />
         <ExperimentalToggle descriptionMode="tooltip" grouped={true} />
+      </SettingsGroup>
+
+      <SettingsGroup title={t("settings.advanced.groups.output", "Output")}>
+        <SelectionCaptureMethodSetting
+          descriptionMode="tooltip"
+          grouped={true}
+        />
+        <SelectionClipboardHandlingSetting
+          descriptionMode="tooltip"
+          grouped={true}
+        />
       </SettingsGroup>
 
       <SettingsGroup title={t("settings.advanced.groups.speech")}>

@@ -77,11 +77,17 @@ const settingUpdaters: {
   overlay_position: (value) =>
     commands.changeOverlayPositionSetting(value as string),
   debug_mode: (value) => commands.changeDebugModeSetting(value as boolean),
+  model_unload_timeout: (value) =>
+    commands.changeModelUnloadTimeoutSetting(value as string),
   history_limit: (value) => commands.updateHistoryLimit(value as number),
   log_level: (value) => commands.setLogLevel(value as any),
   app_language: (value) => commands.changeAppLanguageSetting(value as string),
   experimental_enabled: (value) =>
     commands.changeExperimentalEnabledSetting(value as boolean),
+  selection_capture_method: (value) =>
+    commands.changeSelectionCaptureMethodSetting(value as string),
+  clipboard_handling: (value) =>
+    commands.changeClipboardHandlingSetting(value as string),
   show_tray_icon: (value) =>
     commands.changeShowTrayIconSetting(value as boolean),
   tts_workers: (value) => commands.changeTtsWorkersSetting(value as number),
