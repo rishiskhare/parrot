@@ -6,6 +6,16 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 const ACCESSIBILITY_RETRY_DELAYS_MS: [u64; 3] = [0, 40, 90];
 const CLIPBOARD_COPY_DELAY_MS: u64 = 120;
 
+#[derive(Debug)]
+enum ClipboardState {
+    /// Clipboard had readable text content
+    Text(String),
+    /// Clipboard had content but was unreadable (e.g., image, binary)
+    Unreadable,
+    /// Clipboard was empty
+    Empty,
+}
+
 pub fn capture_selected_text(app: &AppHandle) -> Option<String> {
     let settings = settings::get_settings(app);
 
@@ -136,7 +146,14 @@ fn get_selected_text() -> Option<String> {
 
 fn capture_via_clipboard(app: &AppHandle, handling: ClipboardHandling) -> Option<String> {
     let clipboard = app.clipboard();
-    let previous_clipboard = clipboard.read_text().ok();
+    let previous_clipboard = match clipboard.read_text() {
+        Ok(text) => ClipboardState::Text(text),
+        Err(_) => {
+            // Try to determine if clipboard has content but is unreadable (e.g., image)
+            // vs. truly empty. Since we can't reliably distinguish, assume unreadable.
+            ClipboardState::Unreadable
+        }
+    };
     let sentinel = format!(
         "__PARROT_SELECTION_PROBE_{}__",
         std::time::SystemTime::now()
@@ -153,14 +170,26 @@ fn capture_via_clipboard(app: &AppHandle, handling: ClipboardHandling) -> Option
 
     {
         use crate::input::{send_copy_ctrl_c, EnigoState};
-        let enigo_state = app.try_state::<EnigoState>()?;
-        let mut enigo = enigo_state.0.lock().ok()?;
+        let enigo_state = match app.try_state::<EnigoState>() {
+            Some(state) => state,
+            None => {
+                restore_clipboard(&clipboard, &previous_clipboard);
+                return None;
+            }
+        };
+        let mut enigo = match enigo_state.0.lock().ok() {
+            Some(enigo) => enigo,
+            None => {
+                restore_clipboard(&clipboard, &previous_clipboard);
+                return None;
+            }
+        };
         if let Err(err) = send_copy_ctrl_c(&mut enigo) {
             debug!(
                 "Failed to send copy shortcut for selection capture: {}",
                 err
             );
-            restore_clipboard(&clipboard, previous_clipboard.as_ref());
+            restore_clipboard(&clipboard, &previous_clipboard);
             return None;
         }
     }
@@ -175,10 +204,10 @@ fn capture_via_clipboard(app: &AppHandle, handling: ClipboardHandling) -> Option
         .map(str::to_owned);
 
     match handling {
-        ClipboardHandling::DontModify => restore_clipboard(&clipboard, previous_clipboard.as_ref()),
+        ClipboardHandling::DontModify => restore_clipboard(&clipboard, &previous_clipboard),
         ClipboardHandling::CopyToClipboard => {
             if captured.is_none() {
-                restore_clipboard(&clipboard, previous_clipboard.as_ref());
+                restore_clipboard(&clipboard, &previous_clipboard);
             }
         }
     }
@@ -192,14 +221,18 @@ fn capture_via_clipboard(app: &AppHandle, handling: ClipboardHandling) -> Option
 
 fn restore_clipboard<R: tauri::Runtime>(
     clipboard: &tauri_plugin_clipboard_manager::Clipboard<R>,
-    previous_text: Option<&String>,
+    previous_state: &ClipboardState,
 ) {
-    match previous_text {
-        Some(text) => {
+    match previous_state {
+        ClipboardState::Text(text) => {
             let _ = clipboard.write_text(text);
         }
-        None => {
+        ClipboardState::Empty => {
             let _ = clipboard.clear();
+        }
+        ClipboardState::Unreadable => {
+            // Don't modify the clipboard if we couldn't read it originally.
+            // Attempting to clear/write would destroy unreadable content (images, etc.)
         }
     }
 }

@@ -461,12 +461,43 @@ fn normalize_quote_spacing(text: &str) -> String {
         out.push(ch);
     }
 
-    out.replace(":'", ": '")
-        .replace("'and", "' and")
+    let out = out.replace(":'", ": '")
         .replace("a"", "a "")
         .replace(" "", """)
         .replace(":"", ": "")
-        .replace(":\"", ": \"")
+        .replace(":\"", ": \"");
+
+    // Fix "'and" only when it's a standalone token or at word boundaries
+    // to avoid corrupting words like "android"
+    let chars: Vec<char> = out.chars().collect();
+    let mut result = String::with_capacity(out.len());
+    let mut i = 0;
+    while i < chars.len() {
+        if i + 3 < chars.len()
+            && chars[i] == '\''
+            && chars[i + 1] == 'a'
+            && chars[i + 2] == 'n'
+            && chars[i + 3] == 'd'
+        {
+            // Check if this is a standalone "'and" token
+            let preceded_by_word_char = i > 0 && chars[i - 1].is_alphanumeric();
+            let followed_by_word_char = i + 4 < chars.len() && chars[i + 4].is_alphanumeric();
+
+            if !preceded_by_word_char && !followed_by_word_char {
+                // This is a standalone "'and" token, insert space
+                result.push('\'');
+                result.push(' ');
+                result.push('a');
+                result.push('n');
+                result.push('d');
+                i += 4;
+                continue;
+            }
+        }
+        result.push(chars[i]);
+        i += 1;
+    }
+    result
 }
 
 fn is_opening_quote(ch: char, prev: Option<char>, next: Option<char>) -> bool {
@@ -507,8 +538,8 @@ fn needs_space_between(prev_left: Option<char>, left: Option<char>, right: Optio
                 Some(_) => true,
             }
         }
-        (_, Some(left), Some(right @ ('"' | '”' | '’'))) if left.is_alphanumeric() => {
-            !matches!(right, '’')
+        (_, Some(left), Some(right @ ''')) if left.is_alphanumeric() => {
+            true
         }
         (_, Some(left), Some(right))
             if left.is_alphanumeric() && matches!(right, '&' | '\'') =>

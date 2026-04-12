@@ -108,13 +108,29 @@ enum TextPart {
 fn split_text_parts(text: &str) -> Vec<TextPart> {
     let mut parts = Vec::new();
     let mut current = String::new();
+    let chars: Vec<char> = text.chars().collect();
+    let mut i = 0;
 
-    for (idx, ch) in text.char_indices() {
+    while i < chars.len() {
+        let ch = chars[i];
+        // Calculate byte index for this character
+        let idx: usize = text.char_indices().nth(i).map(|(pos, _)| pos).unwrap_or(text.len());
         let ch_len = ch.len_utf8();
+
+        // Handle CRLF as a single boundary token
+        if ch == '\r' && i + 1 < chars.len() && chars[i + 1] == '\n' {
+            // Treat CRLF as a single period token
+            flush_text_part(&mut parts, &mut current);
+            parts.push(TextPart::Punct('.'));
+            i += 2; // Skip both \r and \n
+            continue;
+        }
+
         if let Some(punct) = map_boundary_punctuation(ch) {
             if !is_numeric_connector_between_digits(text, idx, ch_len, ch) {
                 flush_text_part(&mut parts, &mut current);
                 parts.push(TextPart::Punct(punct));
+                i += 1;
                 continue;
             }
         }
@@ -123,10 +139,12 @@ fn split_text_parts(text: &str) -> Vec<TextPart> {
             if !current.is_empty() && !current.ends_with(' ') {
                 current.push(' ');
             }
+            i += 1;
             continue;
         }
 
         current.push(ch);
+        i += 1;
     }
 
     flush_text_part(&mut parts, &mut current);
