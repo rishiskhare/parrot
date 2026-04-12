@@ -502,9 +502,9 @@ fn normalize_quote_spacing(text: &str) -> String {
 
 fn is_opening_quote(ch: char, prev: Option<char>, next: Option<char>) -> bool {
     match ch {
-        '“' | '‘' => true,
-        '”' => false,
-        '"' | '’' => {
+        '"' | ''' => true,
+        '"' => false,
+        '"' | ''' | '\'' => {
             !prev.map(is_quote_word_char).unwrap_or(false)
                 && next.map(is_quote_word_char).unwrap_or(false)
         }
@@ -513,7 +513,7 @@ fn is_opening_quote(ch: char, prev: Option<char>, next: Option<char>) -> bool {
 }
 
 fn is_quote_char(ch: char) -> bool {
-    matches!(ch, '"' | '“' | '”' | '‘' | '’')
+    matches!(ch, '"' | '"' | '"' | ''' | ''' | '\'')
 }
 
 fn is_quote_word_char(ch: char) -> bool {

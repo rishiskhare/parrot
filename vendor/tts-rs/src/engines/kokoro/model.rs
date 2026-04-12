@@ -46,6 +46,8 @@ pub enum KokoroError {
     Config(String),
     #[error("Failed to parse voice file: {0}")]
     VoiceParse(String),
+    #[error("espeak-ng process timed out after {0:?}")]
+    Timeout(std::time::Duration),
 }
 
 /// Internal Kokoro ONNX model state.

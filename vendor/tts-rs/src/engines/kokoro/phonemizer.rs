@@ -5,6 +5,7 @@ use std::io::Write;
 use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
+use std::time::Duration;
 
 use super::model::KokoroError;
 
@@ -225,7 +226,15 @@ fn run_espeak(input: &str, lang: &str, espeak: &EspeakConfig) -> Result<String, 
     // linker needs LD_LIBRARY_PATH to find them (RPATH may not be set).
     #[cfg(target_os = "linux")]
     if let Some(bin_dir) = espeak.bin_path.as_deref().and_then(|p| p.parent()) {
-        cmd.env("LD_LIBRARY_PATH", bin_dir);
+        let new_ld_library_path = if let Some(existing) = std::env::var_os("LD_LIBRARY_PATH") {
+            let mut path = bin_dir.as_os_str().to_owned();
+            path.push(":");
+            path.push(&existing);
+            path
+        } else {
+            bin_dir.as_os_str().to_owned()
+        };
+        cmd.env("LD_LIBRARY_PATH", new_ld_library_path);
     }
     #[cfg(target_os = "windows")]
     {
@@ -255,9 +264,13 @@ fn run_espeak(input: &str, lang: &str, espeak: &EspeakConfig) -> Result<String, 
         stdin
             .write_all(stdin_payload.as_bytes())
             .map_err(KokoroError::Io)?;
+        // Explicitly drop stdin to close the pipe before waiting
+        drop(stdin);
     }
 
-    let output = child.wait_with_output().map_err(KokoroError::Io)?;
+    // Hard timeout for espeak-ng child process (30 seconds)
+    let timeout = Duration::from_secs(30);
+    let output = wait_with_timeout(child, timeout)?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -268,6 +281,51 @@ fn run_espeak(input: &str, lang: &str, espeak: &EspeakConfig) -> Result<String, 
     }
 
     Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+}
+
+/// Wait for a child process with a timeout. If the timeout expires, kill the child.
+fn wait_with_timeout(
+    mut child: std::process::Child,
+    timeout: Duration,
+) -> Result<std::process::Output, KokoroError> {
+    use std::sync::{mpsc, Arc, Mutex};
+    use std::thread;
+
+    let child_id = child.id();
+    let child_arc = Arc::new(Mutex::new(Some(child)));
+    let child_clone = Arc::clone(&child_arc);
+
+    let (tx, rx) = mpsc::channel();
+
+    // Spawn a thread to wait for the child process
+    thread::spawn(move || {
+        let mut child_guard = child_clone.lock().unwrap();
+        if let Some(mut child) = child_guard.take() {
+            let result = child.wait_with_output();
+            let _ = tx.send(result);
+        }
+    });
+
+    // Wait for the result with a timeout
+    match rx.recv_timeout(timeout) {
+        Ok(Ok(output)) => Ok(output),
+        Ok(Err(e)) => Err(KokoroError::Io(e)),
+        Err(mpsc::RecvTimeoutError::Timeout) => {
+            // Timeout expired - try to kill the child process
+            let mut child_guard = child_arc.lock().unwrap();
+            if let Some(mut child) = child_guard.take() {
+                let _ = child.kill();
+                let _ = child.wait();
+            }
+            Err(KokoroError::Timeout(timeout))
+        }
+        Err(mpsc::RecvTimeoutError::Disconnected) => Err(KokoroError::Io(
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("espeak-ng process (PID {child_id}) channel disconnected"),
+            ),
+        )),
+    }
 }
 
 fn canonicalize_espeak_stdin_payload(input: &str) -> Cow<'_, str> {
