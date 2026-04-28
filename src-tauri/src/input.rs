@@ -47,6 +47,16 @@ pub fn send_copy_ctrl_c(enigo: &mut Enigo) -> Result<(), String> {
 
 #[cfg(not(target_os = "macos"))]
 pub fn send_copy_ctrl_c(enigo: &mut Enigo) -> Result<(), String> {
+    // Release Shift/Alt/Meta that may still be held from the trigger shortcut.
+    // Without this, Ctrl+Shift+P leaves Shift held, turning the injected
+    // Ctrl+C into Ctrl+Shift+C (which opens Windows Terminal).
+    // Ctrl is intentionally NOT released here: releasing it while the user
+    // physically holds it causes a brief up/down cycle that stops the focused
+    // app from registering the copy, resulting in "please select text" errors.
+    let _ = enigo.key(Key::Shift, enigo::Direction::Release);
+    let _ = enigo.key(Key::Alt, enigo::Direction::Release);
+    let _ = enigo.key(Key::Meta, enigo::Direction::Release);
+
     enigo
         .key(Key::Control, enigo::Direction::Press)
         .map_err(|e| format!("Failed to press Ctrl key: {}", e))?;
