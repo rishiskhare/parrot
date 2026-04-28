@@ -51,7 +51,7 @@ jobs:
     runs-on: ${{ inputs.platform }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ inputs.repository }}
           ref: ${{ inputs.ref }}
@@ -131,12 +131,42 @@ jobs:
           dpkg-query -W -f='${Status}\n' libgtk-layer-shell0 | grep -q "install ok installed"
           ldconfig -p | grep -q "libgtk-layer-shell.so.0"
 
-      - name: Install Vulkan SDK (Windows x64)
+      - name: Cache Vulkan SDK for Windows x64
         if: contains(inputs.platform, 'windows') && !contains(inputs.target, 'aarch64')
-        uses: humbletim/install-vulkan-sdk@v1.2
+        id: cache-vulkan-sdk-windows-x64
+        uses: actions/cache@v5
         with:
-          version: 1.4.309.0
-          cache: true
+          path: ~/.cache/parrot/vulkan-sdk-windows-x64
+          key: ${{ runner.os }}-${{ runner.arch }}-vulkan-sdk-1.4.309.0
+
+      - name: Prepare Vulkan SDK for Windows x64
+        if: contains(inputs.platform, 'windows') && !contains(inputs.target, 'aarch64')
+        shell: pwsh
+        env:
+          VULKAN_SDK_VERSION: "1.4.309.0"
+        run: |
+          $sdkCacheRoot = Join-Path $env:USERPROFILE ".cache\parrot\vulkan-sdk-windows-x64"
+          $sdkRoot = Join-Path $sdkCacheRoot $env:VULKAN_SDK_VERSION
+          $sdkBin = Join-Path $sdkRoot "Bin"
+          $sdkTool = Join-Path $sdkBin "glslangValidator.exe"
+          $sdkArchive = Join-Path $env:RUNNER_TEMP "vulkan_sdk_windows_x64.exe"
+          $sdkUrl = "https://sdk.lunarg.com/sdk/download/$env:VULKAN_SDK_VERSION/windows/VulkanSDK-$env:VULKAN_SDK_VERSION-Installer.exe?Human=true"
+
+          if (!(Test-Path $sdkTool)) {
+            Remove-Item -Recurse -Force $sdkRoot -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory -Force -Path $sdkRoot | Out-Null
+            Invoke-WebRequest -Uri $sdkUrl -OutFile $sdkArchive
+            $sevenZip = (Get-Command 7z.exe -ErrorAction Stop).Source
+            & $sevenZip x $sdkArchive "-o$sdkRoot" -aoa | Out-Null
+          }
+
+          if (!(Test-Path $sdkTool)) {
+            throw "glslangValidator.exe was not found under $sdkBin after extracting the Vulkan SDK"
+          }
+
+          Add-Content -Path $env:GITHUB_ENV -Value "VULKAN_SDK=$sdkRoot"
+          Add-Content -Path $env:GITHUB_PATH -Value $sdkBin
+          & $sdkTool --version
 
       # humbletim/install-vulkan-sdk@v1.2 cannot target Windows ARM64 yet.
       # Download prebuilt binaries (Bin) + build headers/libs from source.
@@ -171,13 +201,36 @@ jobs:
           Write-Host "Verifying glslc..."
           & (Join-Path $binPath "glslc.exe") --version
 
-      - name: Build Vulkan SDK headers and libs (Windows ARM64)
+      - name: Cache Vulkan SDK components (Windows ARM64)
         if: contains(inputs.platform, 'windows') && contains(inputs.target, 'aarch64')
+        id: cache-vulkan-sdk-windows-arm64
+        uses: actions/cache@v5
+        with:
+          path: VULKAN_SDK
+          key: ${{ runner.os }}-${{ runner.arch }}-vulkan-sdk-arm64-1.4.309.0-headers-loader
+
+      - name: Build Vulkan SDK headers and libs (Windows ARM64)
+        if: contains(inputs.platform, 'windows') && contains(inputs.target, 'aarch64') && steps.cache-vulkan-sdk-windows-arm64.outputs.cache-hit != 'true'
         uses: humbletim/setup-vulkan-sdk@v1.2.1
         with:
           vulkan-query-version: 1.4.309.0
           vulkan-components: Vulkan-Headers, Vulkan-Loader
-          vulkan-use-cache: true
+          vulkan-use-cache: false
+
+      - name: Restore Vulkan SDK env (Windows ARM64)
+        if: contains(inputs.platform, 'windows') && contains(inputs.target, 'aarch64') && steps.cache-vulkan-sdk-windows-arm64.outputs.cache-hit == 'true'
+        shell: pwsh
+        run: |
+          $sdkDir = $env:VULKAN_SDK
+          $sdkBin = Join-Path $sdkDir "bin"
+          $sdkEnv = Join-Path $sdkDir "sdk.env"
+
+          if (!(Test-Path $sdkEnv)) {
+            throw "sdk.env was not found in cached Windows ARM64 Vulkan SDK at $sdkDir"
+          }
+
+          Add-Content -Path $env:GITHUB_ENV -Value "VULKAN_SDK_VERSION=1.4.309.0"
+          Add-Content -Path $env:GITHUB_PATH -Value $sdkBin
 
       - name: Install trusted-signing-cli
         if: contains(inputs.platform, 'windows') && inputs.sign-binaries
@@ -192,12 +245,44 @@ jobs:
           sudo apt install vulkan-sdk -y
           sudo apt-get install -y mesa-vulkan-drivers
 
+      - name: Cache Vulkan SDK for Ubuntu ARM64
+        if: contains(inputs.platform, 'ubuntu') && contains(inputs.platform, 'arm')
+        id: cache-vulkan-sdk-ubuntu-arm64
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/parrot/vulkan-sdk-arm
+          key: ${{ runner.os }}-${{ runner.arch }}-vulkan-sdk-1.4.335.0-${{ inputs.platform }}
+
       - name: Prepare Vulkan SDK for Ubuntu ARM64
         if: contains(inputs.platform, 'ubuntu') && contains(inputs.platform, 'arm')
-        uses: jakoch/install-vulkan-sdk-action@v1
-        with:
-          vulkan_version: 1.4.335.0
-          cache: true
+        shell: bash
+        env:
+          VULKAN_SDK_VERSION: "1.4.335.0"
+          VULKAN_SDK_ASSET: ${{ contains(inputs.platform, '24.04') && 'vulkansdk-ubuntu-24.04-arm-1.4.335.0.tar.xz' || 'vulkansdk-ubuntu-22.04-arm-1.4.335.0.tar.xz' }}
+        run: |
+          set -euo pipefail
+
+          SDK_CACHE_ROOT="$HOME/.cache/parrot/vulkan-sdk-arm"
+          SDK_ROOT="$SDK_CACHE_ROOT/$VULKAN_SDK_VERSION/aarch64"
+          SDK_ARCHIVE="$RUNNER_TEMP/$VULKAN_SDK_ASSET"
+          SDK_DOWNLOAD_URL="https://github.com/jakoch/vulkan-sdk-arm/releases/download/$VULKAN_SDK_VERSION/$VULKAN_SDK_ASSET"
+
+          mkdir -p "$SDK_CACHE_ROOT"
+
+          if [ ! -x "$SDK_ROOT/bin/glslc" ]; then
+            rm -rf "$SDK_CACHE_ROOT/$VULKAN_SDK_VERSION"
+            curl -fsSL "$SDK_DOWNLOAD_URL" -o "$SDK_ARCHIVE"
+            tar -xJf "$SDK_ARCHIVE" -C "$SDK_CACHE_ROOT"
+          fi
+
+          test -x "$SDK_ROOT/bin/glslc"
+          "$SDK_ROOT/bin/glslc" --version
+
+          {
+            echo "VULKAN_SDK=$SDK_ROOT"
+            echo "VK_LAYER_PATH=$SDK_ROOT/share/vulkan/explicit_layer.d"
+            echo "LD_LIBRARY_PATH=$SDK_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          } >> "$GITHUB_ENV"
 
       - name: Install Vulkan runtime libraries (Ubuntu ARM64)
         if: contains(inputs.platform, 'ubuntu') && contains(inputs.platform, 'arm')
@@ -414,6 +499,91 @@ jobs:
           }
           Write-Host "Bundled espeak-ng from: $($bin.FullName)"
 
+      - name: Bundle ONNX Runtime shared library (Unix)
+        if: contains(inputs.platform, 'macos') || contains(inputs.platform, 'ubuntu')
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ORT_VERSION="1.23.1"
+          case "${{ inputs.target }}" in
+            x86_64-apple-darwin)
+              ASSET="onnxruntime-osx-x86_64-${ORT_VERSION}.tgz"
+              LIB_GLOB='libonnxruntime*.dylib'
+              ;;
+            aarch64-apple-darwin)
+              ASSET="onnxruntime-osx-arm64-${ORT_VERSION}.tgz"
+              LIB_GLOB='libonnxruntime*.dylib'
+              ;;
+            x86_64-unknown-linux-gnu)
+              ASSET="onnxruntime-linux-x64-${ORT_VERSION}.tgz"
+              LIB_GLOB='libonnxruntime.so*'
+              ;;
+            aarch64-unknown-linux-gnu)
+              ASSET="onnxruntime-linux-aarch64-${ORT_VERSION}.tgz"
+              LIB_GLOB='libonnxruntime.so*'
+              ;;
+            *)
+              echo "Unsupported target for ONNX Runtime bundling: ${{ inputs.target }}"
+              exit 1
+              ;;
+          esac
+
+          TMP_DIR="$(mktemp -d)"
+          ARCHIVE_PATH="${TMP_DIR}/${ASSET}"
+          DEST="src-tauri/resources/onnxruntime"
+          mkdir -p "$DEST"
+
+          curl -fsSL "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${ASSET}" -o "$ARCHIVE_PATH"
+          tar -xzf "$ARCHIVE_PATH" -C "$TMP_DIR"
+
+          LIB_DIR="$(find "$TMP_DIR" -type d \( -name lib -o -name lib64 \) | head -n 1)"
+          if [ -z "$LIB_DIR" ]; then
+            echo "Unable to find ONNX Runtime library directory in ${ASSET}"
+            exit 1
+          fi
+
+          find "$LIB_DIR" -maxdepth 1 -name "$LIB_GLOB" -exec cp -L {} "$DEST/" \;
+          if ! find "$DEST" -maxdepth 1 \( -type f -o -type l \) | grep -q .; then
+            echo "No ONNX Runtime libraries were copied for target ${{ inputs.target }}"
+            exit 1
+          fi
+
+          echo "Bundled ONNX Runtime files:"
+          ls -la "$DEST"
+
+      - name: Bundle ONNX Runtime shared library (Windows)
+        if: contains(inputs.platform, 'windows')
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $ortVersion = "1.23.1"
+          if ("${{ inputs.target }}" -like "*aarch64*") {
+            $asset = "onnxruntime-win-arm64-$ortVersion.zip"
+          } else {
+            $asset = "onnxruntime-win-x64-$ortVersion.zip"
+          }
+
+          $tmpDir = Join-Path $env:RUNNER_TEMP "onnxruntime"
+          Remove-Item -Recurse -Force $tmpDir -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
+
+          $archivePath = Join-Path $tmpDir $asset
+          Invoke-WebRequest -Uri "https://github.com/microsoft/onnxruntime/releases/download/v$ortVersion/$asset" -OutFile $archivePath
+          Expand-Archive -LiteralPath $archivePath -DestinationPath $tmpDir -Force
+
+          $dll = Get-ChildItem -Path $tmpDir -Recurse -Filter "onnxruntime.dll" | Select-Object -First 1
+          if (-not $dll) {
+            throw "onnxruntime.dll not found in $asset"
+          }
+
+          $dest = "src-tauri\resources\onnxruntime"
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Get-ChildItem -Path $dll.DirectoryName -Filter "onnxruntime*.dll" | ForEach-Object {
+            Copy-Item $_.FullName $dest
+            Write-Host "Bundled ONNX Runtime DLL: $($_.Name)"
+          }
+
       - name: Build with Tauri
         uses: tauri-apps/tauri-action@v0
         env:
@@ -441,7 +611,7 @@ jobs:
 
       - name: Upload artifacts (macOS)
         if: inputs.upload-artifacts && contains(inputs.platform, 'macos')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.asset-prefix }}-${{ inputs.target }}
           path: |
@@ -508,7 +678,7 @@ jobs:
 
       - name: Upload artifacts (Linux)
         if: inputs.upload-artifacts && contains(inputs.platform, 'ubuntu')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.asset-prefix }}-${{ inputs.platform }}-${{ inputs.target }}
           path: |
@@ -519,7 +689,7 @@ jobs:
 
       - name: Upload artifacts (Windows)
         if: inputs.upload-artifacts && contains(inputs.platform, 'windows')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.asset-prefix }}-${{ inputs.target }}
           # Default Windows builds place bundles under release/, but cross-compiles (ARM64) nest under target/<triple>/release.

@@ -210,24 +210,30 @@ impl SpeechTextRenderer {
     }
 
     fn push_text(&mut self, text: &str) {
+        let had_leading_whitespace = text.chars().next().map(char::is_whitespace).unwrap_or(false);
         let normalized = normalize_inline_whitespace(text);
         if normalized.is_empty() {
             return;
         }
 
         if let Some(image) = self.image_stack.last_mut() {
-            append_segment(&mut image.alt_text, &normalized);
+            append_segment(&mut image.alt_text, &normalized, had_leading_whitespace);
             return;
         }
 
         if let Some(link) = self.link_stack.last_mut() {
-            append_segment(&mut link.text, &normalized);
+            append_segment(&mut link.text, &normalized, had_leading_whitespace);
             return;
         }
 
         self.flush_breaks();
 
-        if needs_space_between(
+        if should_preserve_leading_space(had_leading_whitespace, normalized.chars().next())
+            && !self.output.is_empty()
+            && !self.output.ends_with(char::is_whitespace)
+        {
+            self.output.push(' ');
+        } else if needs_space_between(
             self.output.chars().rev().nth(1),
             self.output.chars().next_back(),
             normalized.chars().next(),
@@ -311,16 +317,21 @@ impl SpeechTextRenderer {
             result.push_str(line);
         }
 
-        result.trim().to_string()
+        normalize_quote_spacing(result.trim())
     }
 }
 
-fn append_segment(buffer: &mut String, segment: &str) {
+fn append_segment(buffer: &mut String, segment: &str, had_leading_whitespace: bool) {
     if segment.is_empty() {
         return;
     }
 
-    if needs_space_between(
+    if should_preserve_leading_space(had_leading_whitespace, segment.chars().next())
+        && !buffer.is_empty()
+        && !buffer.ends_with(char::is_whitespace)
+    {
+        buffer.push(' ');
+    } else if needs_space_between(
         buffer.chars().rev().nth(1),
         buffer.chars().next_back(),
         segment.chars().next(),
@@ -349,25 +360,197 @@ fn normalize_inline_whitespace(text: &str) -> String {
     normalized.trim().to_string()
 }
 
+fn should_preserve_leading_space(had_leading_whitespace: bool, first: Option<char>) -> bool {
+    had_leading_whitespace
+        && !matches!(
+            first,
+            Some(',' | '.' | '!' | '?' | ':' | ';' | ')' | ']' | '}' | '"' | '”' | '’')
+        )
+}
+
+fn normalize_quote_spacing(text: &str) -> String {
+    let chars: Vec<char> = text.chars().collect();
+    let len = chars.len();
+
+    // Precompute nearest non-space character indices for O(1) lookup
+    let mut nearest_non_space_left: Vec<Option<usize>> = vec![None; len];
+    let mut nearest_non_space_right: Vec<Option<usize>> = vec![None; len];
+
+    // Fill left-to-right
+    let mut last_non_space = None;
+    for i in 0..len {
+        if !chars[i].is_whitespace() {
+            last_non_space = Some(i);
+        }
+        nearest_non_space_left[i] = last_non_space;
+    }
+
+    // Fill right-to-left
+    last_non_space = None;
+    for i in (0..len).rev() {
+        if !chars[i].is_whitespace() {
+            last_non_space = Some(i);
+        }
+        nearest_non_space_right[i] = last_non_space;
+    }
+
+    let mut out = String::with_capacity(text.len());
+
+    for (idx, &ch) in chars.iter().enumerate() {
+        let prev = idx.checked_sub(1).and_then(|i| chars.get(i)).copied();
+        let next = chars.get(idx + 1).copied();
+
+        if ch == ' ' {
+            let prev_non_space = if idx > 0 {
+                nearest_non_space_left[idx - 1].map(|i| chars[i])
+            } else {
+                None
+            };
+            let next_non_space = if idx + 1 < len {
+                nearest_non_space_right[idx + 1].map(|i| chars[i])
+            } else {
+                None
+            };
+
+            if let Some(next_quote) = next_non_space.filter(|c| is_quote_char(*c)) {
+                let next_quote_idx = if idx + 1 < len {
+                    nearest_non_space_right[idx + 1].unwrap_or(idx)
+                } else {
+                    idx
+                };
+                let after_next_quote = if next_quote_idx + 1 < len {
+                    nearest_non_space_right[next_quote_idx + 1].map(|i| chars[i])
+                } else {
+                    None
+                };
+
+                if is_opening_quote(next_quote, prev_non_space, after_next_quote)
+                    && prev_non_space
+                        .map(should_trim_space_before_opening_quote)
+                        .unwrap_or(false)
+                {
+                    continue;
+                }
+            }
+
+            if prev
+                .filter(|c| is_quote_char(*c))
+                .map(|prev_quote| {
+                    let before_prev_quote = if idx >= 2 {
+                        nearest_non_space_left[idx - 2].map(|i| chars[i])
+                    } else {
+                        None
+                    };
+                    is_opening_quote(prev_quote, before_prev_quote, next_non_space)
+                })
+                .unwrap_or(false)
+                && next.map(|c| !c.is_whitespace()).unwrap_or(false)
+            {
+                continue;
+            }
+        }
+
+        if matches!(ch, ''' | ''' | '"' | '"')
+            && next.map(|c| c.is_alphanumeric()).unwrap_or(false)
+            && prev.map(|c| c == ':' || c == ';').unwrap_or(false)
+            && !out.ends_with(' ')
+        {
+            out.push(' ');
+        }
+
+        out.push(ch);
+    }
+
+    let out = out.replace(":'", ": '")
+        .replace("a"", "a "")
+        .replace(" "", """)
+        .replace(":"", ": "")
+        .replace(":\"", ": \"");
+
+    // Fix "'and" only when it's a standalone token or at word boundaries
+    // to avoid corrupting words like "android"
+    let chars: Vec<char> = out.chars().collect();
+    let mut result = String::with_capacity(out.len());
+    let mut i = 0;
+    while i < chars.len() {
+        if i + 3 < chars.len()
+            && chars[i] == '\''
+            && chars[i + 1] == 'a'
+            && chars[i + 2] == 'n'
+            && chars[i + 3] == 'd'
+        {
+            // Check if this is a standalone "'and" token
+            let preceded_by_word_char = i > 0 && chars[i - 1].is_alphanumeric();
+            let followed_by_word_char = i + 4 < chars.len() && chars[i + 4].is_alphanumeric();
+
+            if !preceded_by_word_char && !followed_by_word_char {
+                // This is a standalone "'and" token, insert space
+                result.push('\'');
+                result.push(' ');
+                result.push('a');
+                result.push('n');
+                result.push('d');
+                i += 4;
+                continue;
+            }
+        }
+        result.push(chars[i]);
+        i += 1;
+    }
+    result
+}
+
+fn is_opening_quote(ch: char, prev: Option<char>, next: Option<char>) -> bool {
+    match ch {
+        '"' | ''' => true,
+        '"' => false,
+        '"' | ''' | '\'' => {
+            !prev.map(is_quote_word_char).unwrap_or(false)
+                && next.map(is_quote_word_char).unwrap_or(false)
+        }
+        _ => false,
+    }
+}
+
+fn is_quote_char(ch: char) -> bool {
+    matches!(ch, '"' | '"' | '"' | ''' | ''' | '\'')
+}
+
+fn is_quote_word_char(ch: char) -> bool {
+    ch.is_alphanumeric()
+}
+
+fn should_trim_space_before_opening_quote(prev: char) -> bool {
+    matches!(prev, '"' | '“' | '‘' | '(' | '[' | '{')
+}
+
 fn needs_space_between(prev_left: Option<char>, left: Option<char>, right: Option<char>) -> bool {
     match (prev_left, left, right) {
-        (_, Some(left), Some(right))
-            if left.is_alphanumeric() && matches!(right, '&' | '\'' | '’') =>
-        {
-            false
-        }
-        (_, Some('&'), Some(right)) if right.is_alphanumeric() => false,
-        (prev_left, Some('\'' | '’'), Some(right)) if right.is_alphanumeric() => {
+        (prev_left, Some('"' | '“' | '‘'), Some(right)) if right.is_alphanumeric() => {
             match prev_left {
                 None => false,
                 Some(ch)
                     if ch.is_whitespace()
-                        || matches!(ch, '(' | '[' | '{' | '"' | ':' | ';' | '—' | '–') =>
+                        || matches!(ch, '(' | '[' | '{' | '"' | '“' | '‘' | ':' | ';' | '—' | '–') =>
                 {
                     false
                 }
                 Some(_) => true,
             }
+        }
+        (_, Some(left), Some(right @ ''')) if left.is_alphanumeric() => {
+            true
+        }
+        (_, Some(left), Some(right))
+            if left.is_alphanumeric() && matches!(right, '&' | '\'') =>
+        {
+            false
+        }
+        (_, Some('&'), Some(right)) if right.is_alphanumeric() => false,
+        (Some(prev_left), Some('\'' | '’'), Some(right))
+            if prev_left.is_alphanumeric() && right.is_alphanumeric() =>
+        {
+            false
         }
         (_, Some(left), Some(right)) => {
             if (left.is_alphanumeric() && matches!(right, '&' | '\'' | '’'))
@@ -376,7 +559,7 @@ fn needs_space_between(prev_left: Option<char>, left: Option<char>, right: Optio
                 false
             } else {
                 !left.is_whitespace()
-                    && !matches!(right, ',' | '.' | '!' | '?' | ':' | ';' | ')' | ']' | '}')
+                    && !matches!(right, ',' | '.' | '!' | '?' | ':' | ';' | ')' | ']' | '}' | '"' | '”' | '’')
                     && !matches!(left, '(' | '[' | '{' | '/' | '\n')
             }
         }
@@ -613,5 +796,37 @@ Keep &custom; visible and preserve dangling &entity text.
 
         let spoken = normalize_text_for_tts(markdown);
         assert!(spoken.contains("Keep &custom; visible and preserve dangling &entity text."));
+    }
+
+    #[test]
+    fn keeps_apostrophes_inside_words_without_inserting_spaces() {
+        let markdown = "Feedback doesn't live in one place. Feedback doesn’t live in one place.";
+
+        let spoken = normalize_text_for_tts(markdown);
+        assert!(spoken.contains("Feedback doesn’t live in one place."));
+        assert!(!spoken.contains("doesn 't"));
+        assert!(!spoken.contains("doesn ’t"));
+    }
+
+    #[test]
+    fn keeps_quoted_phrases_tight_without_inserting_inner_quote_spaces() {
+        let markdown = r#""This isn't a "nice to have""#;
+
+        let spoken = normalize_text_for_tts(markdown);
+        assert!(spoken.contains(r#"“This isn’t a “nice to have”."#));
+        assert!(!spoken.contains("“ This"));
+        assert!(!spoken.contains("“ nice"));
+        assert!(!spoken.contains("have ”"));
+    }
+
+    #[test]
+    fn preserves_spaces_around_adjacent_quoted_terms() {
+        let markdown =
+            r#"**'Navigate to Settings/Integrations:** Look for "CSV" or "NPS" settings."#;
+
+        let spoken = normalize_text_for_tts(markdown);
+        assert!(spoken.contains(r#"Navigate to Settings/Integrations: Look for “CSV” or “NPS” settings."#));
+        assert!(!spoken.contains("”or“"));
+        assert!(!spoken.contains("”settings"));
     }
 }

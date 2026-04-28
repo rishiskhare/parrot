@@ -65,6 +65,7 @@ rusqlite = { version = "0.37", features = ["bundled"] }
 tar = "0.4.44"
 flate2 = "1.0"
 tts-rs = { version = "2026.2.3", features = ["kokoro"] }
+ort = { version = "2.0.0-rc.12", default-features = false, features = ["std", "load-dynamic"] }
 handy-keys = "0.2.0"
 ferrous-opencc = "0.2.3"
 clap = { version = "4", features = ["derive"] }
@@ -99,6 +100,8 @@ tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.
 gtk-layer-shell = { version = "0.8", features = ["v0_6"] }
 gtk = "0.18"
 
+[patch.crates-io]
+tts-rs = { path = "../vendor/tts-rs" }
 
 [dev-dependencies]
 tempfile = "3"
