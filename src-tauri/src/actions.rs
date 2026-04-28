@@ -247,7 +247,6 @@ impl ShortcutAction for SpeakAction {
         };
 
         speech.initiate_model_load();
-        show_processing_overlay(app);
         let app_handle = app.clone();
         std::thread::spawn(move || {
             std::thread::sleep(std::time::Duration::from_millis(SHORTCUT_SETTLE_DELAY_MS));
@@ -257,6 +256,11 @@ impl ShortcutAction for SpeakAction {
                     if !speech.is_request_active(request_id) {
                         return;
                     }
+                    // Show overlay only after grabbing text — showing it before
+                    // the copy causes WM_ACTIVATE to steal focus from the source
+                    // app on Windows, so the injected Ctrl+C lands in the overlay
+                    // instead of the text the user had selected.
+                    show_processing_overlay(&app_handle);
                     debug!("Speaking {} chars via TTS", text.len());
                     speech.speak(text, request_id);
                 }
