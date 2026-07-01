@@ -193,6 +193,12 @@ fn run_espeak(input: &str, lang: &str, espeak: &EspeakConfig) -> Result<String, 
         .map(|p| p.as_os_str().to_owned())
         .unwrap_or_else(|| std::ffi::OsString::from("espeak-ng"));
     let mut cmd = Command::new(&bin);
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
     cmd.args(["--ipa", "--stdin", "-q", "-v", lang]);
     if let Some(data_path) = espeak.data_path.as_deref() {
         cmd.arg("--path").arg(data_path);

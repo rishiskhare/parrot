@@ -48,7 +48,6 @@ rusqlite_migration = "2.3"
 tauri-plugin-fs = "2.4.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-rdev = { git = "https://github.com/rustdesk-org/rdev" }
 cpal = "0.17.1"
 anyhow = "1.0.95"
 rubato = "0.16.2"
@@ -65,7 +64,7 @@ rusqlite = { version = "0.37", features = ["bundled"] }
 tar = "0.4.44"
 flate2 = "1.0"
 tts-rs = { path = "crates/tts-rs", features = ["kokoro"] }
-handy-keys = "0.2.0"
+handy-keys = "0.2.4"
 pulldown-cmark = "0.13"
 specta = "=2.0.0-rc.22"
 specta-typescript = "0.0.9"
