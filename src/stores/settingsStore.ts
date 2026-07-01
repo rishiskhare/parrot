@@ -76,6 +76,8 @@ const settingUpdaters: {
     commands.changeKokoroVoiceSetting((value as string | null) ?? null),
   overlay_position: (value) =>
     commands.changeOverlayPositionSetting(value as string),
+  model_unload_timeout: (value) =>
+    commands.changeModelUnloadTimeoutSetting(value as string),
   debug_mode: (value) => commands.changeDebugModeSetting(value as boolean),
   history_limit: (value) => commands.updateHistoryLimit(value as number),
   log_level: (value) => commands.setLogLevel(value as any),

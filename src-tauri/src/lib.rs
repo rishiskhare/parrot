@@ -304,6 +304,7 @@ pub fn run() {
         shortcut::change_selected_language_setting,
         shortcut::change_kokoro_voice_setting,
         shortcut::change_overlay_position_setting,
+        shortcut::change_model_unload_timeout_setting,
         shortcut::change_debug_mode_setting,
         shortcut::change_show_close_button_setting,
         shortcut::change_experimental_enabled_setting,

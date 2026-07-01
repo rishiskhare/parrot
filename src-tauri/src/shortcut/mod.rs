@@ -20,7 +20,8 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_autostart::ManagerExt;
 
 use crate::settings::{
-    self, get_settings, KeyboardImplementation, OverlayPosition, ShortcutBinding, SoundTheme,
+    self, get_settings, KeyboardImplementation, ModelUnloadTimeout, OverlayPosition,
+    ShortcutBinding, SoundTheme,
 };
 use crate::tray;
 
@@ -554,6 +555,29 @@ pub fn change_overlay_position_setting(app: AppHandle, position: String) -> Resu
     // Update overlay position without recreating window
     crate::utils::update_overlay_position(&app);
 
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_model_unload_timeout_setting(
+    app: AppHandle,
+    timeout: String,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    let parsed = match timeout.as_str() {
+        "never" => ModelUnloadTimeout::Never,
+        "immediately" => ModelUnloadTimeout::Immediately,
+        "min2" => ModelUnloadTimeout::Min2,
+        "min5" => ModelUnloadTimeout::Min5,
+        "min10" => ModelUnloadTimeout::Min10,
+        "min15" => ModelUnloadTimeout::Min15,
+        "hour1" => ModelUnloadTimeout::Hour1,
+        "sec5" => ModelUnloadTimeout::Sec5,
+        _ => return Err(format!("Invalid model unload timeout: {}", timeout)),
+    };
+    settings.model_unload_timeout = parsed;
+    settings::write_settings(&app, settings);
     Ok(())
 }
 

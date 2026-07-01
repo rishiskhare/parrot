@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../../hooks/useSettings";
-import { commands, type ModelUnloadTimeout } from "@/bindings";
+import { type ModelUnloadTimeout } from "@/bindings";
 import { Dropdown } from "../ui/Dropdown";
 import { SettingContainer } from "../ui/SettingContainer";
 
@@ -15,7 +15,7 @@ export const ModelUnloadTimeoutSetting: React.FC<ModelUnloadTimeoutProps> = ({
   grouped = false,
 }) => {
   const { t } = useTranslation();
-  const { settings, getSetting, updateSetting } = useSettings();
+  const { settings, getSetting, updateSetting, isUpdating } = useSettings();
 
   const timeoutOptions = [
     {
@@ -56,17 +56,6 @@ export const ModelUnloadTimeoutSetting: React.FC<ModelUnloadTimeoutProps> = ({
     },
   ];
 
-  const handleChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newTimeout = event.target.value as ModelUnloadTimeout;
-
-    try {
-      await commands.setModelUnloadTimeout(newTimeout);
-      updateSetting("model_unload_timeout", newTimeout);
-    } catch (error) {
-      console.error("Failed to update model unload timeout:", error);
-    }
-  };
-
   const currentValue = getSetting("model_unload_timeout") ?? "never";
 
   const options = useMemo(() => {
@@ -84,11 +73,9 @@ export const ModelUnloadTimeoutSetting: React.FC<ModelUnloadTimeoutProps> = ({
         options={options}
         selectedValue={currentValue}
         onSelect={(value) =>
-          handleChange({
-            target: { value },
-          } as React.ChangeEvent<HTMLSelectElement>)
+          updateSetting("model_unload_timeout", value as ModelUnloadTimeout)
         }
-        disabled={false}
+        disabled={isUpdating("model_unload_timeout")}
       />
     </SettingContainer>
   );
