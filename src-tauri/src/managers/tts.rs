@@ -681,6 +681,12 @@ impl TTSManager {
                     crossfade_tail = Some(samples[split..].to_vec());
                     samples.truncate(split);
                 }
+                // Use the post-trim sample count (what's actually appended to
+                // the sink now) rather than chunk_audio_seconds (pre-trim) so
+                // the overlay text updater's sleep timing doesn't drift ahead
+                // of real playback by CROSSFADE_SAMPLES on every chunk.
+                let appended_audio_seconds =
+                    samples.len() as f32 / synthesis.sample_rate as f32;
                 shared_sink.append(SamplesBuffer::new(
                     NonZero::new(1u16).unwrap(),
                     NonZero::new(synthesis.sample_rate).unwrap(),
@@ -688,7 +694,7 @@ impl TTSManager {
                 ));
                 // Feed the overlay text updater thread so it can schedule
                 // when to show each chunk's text during playback.
-                let _ = chunk_dur_tx.send((chunk_index, chunk_audio_seconds));
+                let _ = chunk_dur_tx.send((chunk_index, appended_audio_seconds));
 
                 if !started_playback {
                     if !request_is_active(&generation, &active_request, request_id) {

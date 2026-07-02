@@ -2,6 +2,8 @@ use crate::input;
 use crate::settings;
 use crate::settings::OverlayPosition;
 use serde::Serialize;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
 
 #[derive(Serialize, Clone)]
@@ -45,6 +47,64 @@ const OVERLAY_WIDTH: f64 = 572.0;
 // Each height = CSS content height + 10px top padding for close-button overflow.
 const PROCESSING_HEIGHT: f64 = 46.0;
 const SPEAKING_HEIGHT: f64 = 114.0;
+
+// Duration and step count for animated window resizes, matching the existing
+// 300ms CSS width/padding transition on `.speaking-overlay` so the
+// Rust-animated height and CSS-animated width finish together.
+const RESIZE_ANIM_DURATION_MS: u64 = 300;
+const RESIZE_ANIM_FRAME_MS: u64 = 16;
+const RESIZE_ANIM_MIN_DELTA: f64 = 0.5;
+
+// Guards in-flight resize animation threads: each new animation increments
+// this, and any older animation still running checks it every frame and
+// aborts as soon as it detects a newer resize has superseded it. Ensures
+// rapid successive resize calls (e.g. content height changing as streamed
+// text wraps) don't queue up competing animations — only the latest wins.
+static OVERLAY_RESIZE_GENERATION: AtomicU64 = AtomicU64::new(0);
+
+// cubic-bezier(0.22, 0.61, 0.36, 1) evaluator, matching the easing curve
+// already used for the width/padding/border-radius CSS transitions in
+// SpeakingOverlay.css, for visual consistency between the Rust-animated
+// height and the CSS-animated width during state transitions.
+fn ease_cubic_bezier(t: f64) -> f64 {
+    const P1X: f64 = 0.22;
+    const P1Y: f64 = 0.61;
+    const P2X: f64 = 0.36;
+    const P2Y: f64 = 1.0;
+
+    if t <= 0.0 {
+        return 0.0;
+    }
+    if t >= 1.0 {
+        return 1.0;
+    }
+
+    let bezier_x = |u: f64| -> f64 {
+        let mu = 1.0 - u;
+        3.0 * mu * mu * u * P1X + 3.0 * mu * u * u * P2X + u * u * u
+    };
+    let bezier_y = |u: f64| -> f64 {
+        let mu = 1.0 - u;
+        3.0 * mu * mu * u * P1Y + 3.0 * mu * u * u * P2Y + u * u * u
+    };
+
+    let mut lo = 0.0;
+    let mut hi = 1.0;
+    let mut u = t;
+    for _ in 0..20 {
+        let x = bezier_x(u);
+        if (x - t).abs() < 1e-6 {
+            break;
+        }
+        if x < t {
+            lo = u;
+        } else {
+            hi = u;
+        }
+        u = (lo + hi) / 2.0;
+    }
+    bezier_y(u)
+}
 
 #[cfg(target_os = "macos")]
 const OVERLAY_TOP_OFFSET: f64 = 46.0;
@@ -251,6 +311,79 @@ fn resize_and_reposition(
     }
 }
 
+/// Animates the overlay window's height from its current value to
+/// `target_height` over ~300ms using an eased tween, calling
+/// `resize_and_reposition()` each frame so the anchored edge stays fixed.
+/// Superseded by any newer call to this function (generation-counter
+/// cancellation) so rapid successive resize requests don't queue up
+/// competing animations.
+fn animate_resize_to(
+    app_handle: &AppHandle,
+    overlay_window: &tauri::webview::WebviewWindow,
+    target_height: f64,
+) {
+    let start_height = overlay_window
+        .inner_size()
+        .ok()
+        .map(|s| {
+            let scale = overlay_window.scale_factor().unwrap_or(1.0);
+            s.height as f64 / scale
+        })
+        .unwrap_or(target_height);
+
+    if (target_height - start_height).abs() < RESIZE_ANIM_MIN_DELTA {
+        return;
+    }
+
+    let my_generation = OVERLAY_RESIZE_GENERATION.fetch_add(1, Ordering::SeqCst) + 1;
+
+    let app_handle = app_handle.clone();
+    let overlay_window = overlay_window.clone();
+
+    std::thread::spawn(move || {
+        let total_duration = Duration::from_millis(RESIZE_ANIM_DURATION_MS);
+        let frame_duration = Duration::from_millis(RESIZE_ANIM_FRAME_MS);
+        let start_time = Instant::now();
+
+        loop {
+            if OVERLAY_RESIZE_GENERATION.load(Ordering::SeqCst) != my_generation {
+                return; // Superseded by a newer resize request.
+            }
+
+            let elapsed = start_time.elapsed();
+            if elapsed >= total_duration {
+                break;
+            }
+
+            let t = elapsed.as_secs_f64() / total_duration.as_secs_f64();
+            let eased = ease_cubic_bezier(t);
+            let height = start_height + (target_height - start_height) * eased;
+
+            let app_handle_frame = app_handle.clone();
+            let overlay_window_frame = overlay_window.clone();
+            let _ = overlay_window.run_on_main_thread(move || {
+                if OVERLAY_RESIZE_GENERATION.load(Ordering::SeqCst) != my_generation {
+                    return;
+                }
+                resize_and_reposition(&app_handle_frame, &overlay_window_frame, height);
+            });
+
+            std::thread::sleep(frame_duration);
+        }
+
+        // Final snap-to-exact-target to correct any floating-point drift,
+        // still generation-checked in case a newer resize started during
+        // the last sleep.
+        let overlay_window_final = overlay_window.clone();
+        let _ = overlay_window.run_on_main_thread(move || {
+            if OVERLAY_RESIZE_GENERATION.load(Ordering::SeqCst) != my_generation {
+                return;
+            }
+            resize_and_reposition(&app_handle, &overlay_window_final, target_height);
+        });
+    });
+}
+
 /// Creates the speaking overlay window and keeps it hidden by default
 #[cfg(not(target_os = "macos"))]
 pub fn create_speaking_overlay(app_handle: &AppHandle) {
@@ -356,8 +489,18 @@ fn show_overlay_state(app_handle: &AppHandle, state: &str, text: Option<String>)
     if let Some(overlay_window) = app_handle.get_webview_window("speaking_overlay") {
         // Resize the window to fit the current state and reposition so the
         // anchored edge (bottom/top) stays at the correct screen location.
+        // If the overlay is already visible, this is a live state
+        // transition (e.g. processing -> speaking) and should animate. If
+        // it's not yet visible, this is the initial reveal, which should
+        // snap instantly rather than animate from stale previous dimensions
+        // (matching the frontend's noTransition/wasVisibleRef suppression).
         let height = height_for_state(state);
-        resize_and_reposition(app_handle, &overlay_window, height);
+        let was_visible = overlay_window.is_visible().unwrap_or(false);
+        if was_visible {
+            animate_resize_to(app_handle, &overlay_window, height);
+        } else {
+            resize_and_reposition(app_handle, &overlay_window, height);
+        }
 
         let _ = overlay_window.show();
 
@@ -419,7 +562,7 @@ pub fn resize_overlay_to_content(app_handle: &AppHandle, content_height: f64) {
     let window_height = content_height + 10.0;
 
     if let Some(overlay_window) = app_handle.get_webview_window("speaking_overlay") {
-        resize_and_reposition(app_handle, &overlay_window, window_height);
+        animate_resize_to(app_handle, &overlay_window, window_height);
     }
 }
 
