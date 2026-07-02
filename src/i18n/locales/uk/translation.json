@@ -165,8 +165,7 @@
       "groups": {
         "app": "Додаток",
         "speech": "Speech",
-        "history": "Історія",
-        "experimental": "Експериментальне"
+        "history": "Історія"
       },
       "ttsSpeed": {
         "title": "Speech Speed",
@@ -175,10 +174,6 @@
       "shortenFirstChunk": {
         "title": "Fast First Response",
         "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
-      },
-      "experimentalToggle": {
-        "label": "Експериментальні функції",
-        "description": "Увімкнути експериментальні функції, які ще в розробці."
       },
       "startHidden": {
         "label": "Запуск у фоні",

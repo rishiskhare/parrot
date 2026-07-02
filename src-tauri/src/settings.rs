@@ -225,8 +225,6 @@ pub struct AppSettings {
     #[serde(default = "default_app_language")]
     pub app_language: String,
     #[serde(default)]
-    pub experimental_enabled: bool,
-    #[serde(default)]
     pub keyboard_implementation: KeyboardImplementation,
     #[serde(default = "default_show_tray_icon")]
     pub show_tray_icon: bool,
@@ -367,7 +365,6 @@ pub fn get_default_settings() -> AppSettings {
         history_limit: default_history_limit(),
         history_retention_period: default_history_retention_period(),
         app_language: default_app_language(),
-        experimental_enabled: false,
         keyboard_implementation: KeyboardImplementation::default(),
         show_tray_icon: default_show_tray_icon(),
         tts_speed: default_tts_speed(),

@@ -1,8 +1,8 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { SettingContainer } from "../../ui/SettingContainer";
-import { Dropdown, type DropdownOption } from "../../ui/Dropdown";
-import { useSettings } from "../../../hooks/useSettings";
+import { SettingContainer } from "../ui/SettingContainer";
+import { Dropdown, type DropdownOption } from "../ui/Dropdown";
+import { useSettings } from "../../hooks/useSettings";
 import { commands } from "@/bindings";
 import { toast } from "sonner";
 

@@ -165,8 +165,7 @@
       "groups": {
         "app": "Aplikace",
         "speech": "Speech",
-        "history": "Historie",
-        "experimental": "Experimentální"
+        "history": "Historie"
       },
       "ttsSpeed": {
         "title": "Speech Speed",
@@ -175,10 +174,6 @@
       "shortenFirstChunk": {
         "title": "Fast First Response",
         "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
-      },
-      "experimentalToggle": {
-        "label": "Experimentální funkce",
-        "description": "Povolit experimentální funkce, které jsou stále ve vývoji."
       },
       "startHidden": {
         "label": "Spouštět skrytě",

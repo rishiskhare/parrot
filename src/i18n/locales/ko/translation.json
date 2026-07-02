@@ -165,8 +165,7 @@
       "groups": {
         "app": "앱",
         "speech": "Speech",
-        "history": "히스토리",
-        "experimental": "실험적"
+        "history": "히스토리"
       },
       "ttsSpeed": {
         "title": "Speech Speed",
@@ -175,10 +174,6 @@
       "shortenFirstChunk": {
         "title": "Fast First Response",
         "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
-      },
-      "experimentalToggle": {
-        "label": "실험적 기능",
-        "description": "개발 중인 실험적 기능을 활성화합니다."
       },
       "startHidden": {
         "label": "숨김으로 시작",

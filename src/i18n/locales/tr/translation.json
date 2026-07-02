@@ -165,8 +165,7 @@
       "groups": {
         "app": "Uygulama",
         "speech": "Speech",
-        "history": "Geçmiş",
-        "experimental": "Deneysel"
+        "history": "Geçmiş"
       },
       "ttsSpeed": {
         "title": "Speech Speed",
@@ -175,10 +174,6 @@
       "shortenFirstChunk": {
         "title": "Fast First Response",
         "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
-      },
-      "experimentalToggle": {
-        "label": "Deneysel Özellikler",
-        "description": "Hala geliştirme aşamasında olan deneysel özellikleri etkinleştir."
       },
       "startHidden": {
         "label": "Gizli Başlat",

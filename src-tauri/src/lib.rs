@@ -307,7 +307,6 @@ pub fn run() {
         shortcut::change_model_unload_timeout_setting,
         shortcut::change_debug_mode_setting,
         shortcut::change_show_close_button_setting,
-        shortcut::change_experimental_enabled_setting,
         shortcut::suspend_binding,
         shortcut::resume_binding,
         shortcut::change_app_language_setting,

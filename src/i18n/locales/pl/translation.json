@@ -165,8 +165,7 @@
       "groups": {
         "app": "Aplikacja",
         "speech": "Speech",
-        "history": "Historia",
-        "experimental": "Eksperymentalne"
+        "history": "Historia"
       },
       "ttsSpeed": {
         "title": "Speech Speed",
@@ -175,10 +174,6 @@
       "shortenFirstChunk": {
         "title": "Fast First Response",
         "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
-      },
-      "experimentalToggle": {
-        "label": "Funkcje Eksperymentalne",
-        "description": "Włącz funkcje eksperymentalne, które są jeszcze w fazie rozwoju."
       },
       "startHidden": {
         "label": "Uruchom ukryty",

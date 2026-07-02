@@ -165,8 +165,7 @@
       "groups": {
         "app": "应用",
         "speech": "Speech",
-        "history": "历史",
-        "experimental": "实验性"
+        "history": "历史"
       },
       "ttsSpeed": {
         "title": "Speech Speed",
@@ -175,10 +174,6 @@
       "shortenFirstChunk": {
         "title": "Fast First Response",
         "description": "Synthesize a shorter first chunk for faster time-to-speech, then use longer chunks."
-      },
-      "experimentalToggle": {
-        "label": "实验性功能",
-        "description": "启用仍在开发中的实验性功能。"
       },
       "startHidden": {
         "label": "隐藏启动",
