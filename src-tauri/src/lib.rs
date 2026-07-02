@@ -315,7 +315,6 @@ pub fn run() {
         shortcut::change_keyboard_implementation_setting,
         shortcut::get_keyboard_implementation,
         shortcut::change_show_tray_icon_setting,
-        shortcut::change_tts_workers_setting,
         shortcut::change_tts_speed_setting,
         shortcut::change_tts_shorten_first_chunk_setting,
         shortcut::handy_keys::start_handy_keys_recording,

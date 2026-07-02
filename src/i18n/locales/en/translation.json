@@ -168,11 +168,6 @@
         "history": "History",
         "experimental": "Experimental"
       },
-      "ttsWorkers": {
-        "title": "TTS Workers",
-        "description": "Number of parallel synthesis engines. Auto uses your CPU core count to decide.",
-        "auto": "Auto"
-      },
       "ttsSpeed": {
         "title": "Speech Speed",
         "description": "Playback speed for text-to-speech output."

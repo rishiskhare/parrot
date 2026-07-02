@@ -4,10 +4,9 @@ use log::{debug, error, info, warn};
 use rodio::buffer::SamplesBuffer;
 use rodio::{DeviceSinkBuilder, MixerDeviceSink, Player};
 use serde::Serialize;
-use std::collections::BTreeMap;
 use std::num::NonZero;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, AtomicU64, AtomicU8, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicU8, Ordering};
 use std::sync::{mpsc, Arc, Condvar, Mutex, TryLockError};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime};
@@ -27,7 +26,6 @@ use crate::utils::{hide_speaking_overlay, show_processing_overlay, show_speaking
 
 /// The model ID managed by this TTS manager.
 pub const MODEL_ID: &str = "kokoro";
-const MAX_PARALLEL_SYNTH_ENGINES: usize = 2;
 const ENGINE_LOCK_POLL_INTERVAL: Duration = Duration::from_millis(2);
 /// Number of samples to crossfade between text-level chunks (10ms @ 24kHz).
 /// Matches the crossfade length used by tts-rs for sub-chunk blending.
@@ -55,22 +53,8 @@ struct ActiveSink {
     sink: Arc<Player>,
 }
 
-struct ChunkSynthesisResult {
-    index: usize,
-    synth_elapsed_secs: f32,
-    sample_rate: u32,
-    samples: Vec<f32>,
-    error: Option<String>,
-}
-
-#[derive(Clone, Copy, Debug)]
-struct InferenceTuning {
-    target_workers: usize,
-    threads_per_worker: usize,
-}
-
 pub struct TTSManager {
-    engines: Arc<Vec<Arc<Mutex<Option<KokoroEngine>>>>>,
+    engine: Arc<Mutex<Option<KokoroEngine>>>,
     app_handle: AppHandle,
     model_manager: Arc<ModelManager>,
     is_loading: Arc<Mutex<bool>>,
@@ -97,11 +81,7 @@ impl TTSManager {
         model_manager: Arc<ModelManager>,
         espeak_paths: (Option<PathBuf>, Option<PathBuf>),
     ) -> Result<Self> {
-        let engines = Arc::new(
-            (0..MAX_PARALLEL_SYNTH_ENGINES)
-                .map(|_| Arc::new(Mutex::new(None)))
-                .collect::<Vec<_>>(),
-        );
+        let engine = Arc::new(Mutex::new(None));
         let is_loading = Arc::new(Mutex::new(false));
         let loading_condvar = Arc::new(Condvar::new());
         let generation = Arc::new(AtomicU64::new(0));
@@ -113,7 +93,7 @@ impl TTSManager {
 
         // Spawn idle watcher thread
         {
-            let engines_clone = Arc::clone(&engines);
+            let engine_clone = Arc::clone(&engine);
             let app_handle_clone = app_handle.clone();
             let last_activity_clone = Arc::clone(&last_activity);
             let shutdown_signal_clone = Arc::clone(&shutdown_signal);
@@ -139,12 +119,10 @@ impl TTSManager {
                         let now = now_ms();
 
                         if now.saturating_sub(last) > limit_seconds * 1000 {
-                            let is_loaded = loaded_engine_count(&engines_clone) > 0;
+                            let is_loaded = engine_is_loaded(&engine_clone);
                             if is_loaded {
                                 debug!("Unloading TTS model due to inactivity");
-                                for slot in engines_clone.iter() {
-                                    *slot.lock().unwrap() = None;
-                                }
+                                *engine_clone.lock().unwrap() = None;
                                 let _ = app_handle_clone.emit(
                                     "model-state-changed",
                                     ModelStateEvent {
@@ -164,7 +142,7 @@ impl TTSManager {
         }
 
         Ok(Self {
-            engines,
+            engine,
             app_handle: app_handle.clone(),
             model_manager,
             is_loading,
@@ -227,12 +205,12 @@ impl TTSManager {
     /// Kick off model loading in the background. No-op if already loading or loaded.
     pub fn initiate_model_load(&self) {
         let mut is_loading = self.is_loading.lock().unwrap();
-        if *is_loading || loaded_engine_count(&self.engines) > 0 {
+        if *is_loading || engine_is_loaded(&self.engine) {
             return;
         }
         *is_loading = true;
 
-        let engines = Arc::clone(&self.engines);
+        let engine = Arc::clone(&self.engine);
         let is_loading_arc = Arc::clone(&self.is_loading);
         let condvar = Arc::clone(&self.loading_condvar);
         let app_handle = self.app_handle.clone();
@@ -277,82 +255,38 @@ impl TTSManager {
                 let _ = std::fs::create_dir_all(&cache_dir);
                 cache_dir.join("kokoro-optimized.onnx")
             });
-            let tts_settings = get_settings(&app_handle);
-            let tuning = if tts_settings.tts_workers > 0 {
-                let manual_workers = tts_settings.tts_workers.min(MAX_PARALLEL_SYNTH_ENGINES);
-                let cpu_count = std::thread::available_parallelism()
-                    .map(|n| n.get())
-                    .unwrap_or(2);
-                let threads_per_worker = (cpu_count / manual_workers).max(1);
-                InferenceTuning {
-                    target_workers: manual_workers,
-                    threads_per_worker,
-                }
-            } else {
-                infer_kokoro_tuning()
-            };
-            info!(
-                "Kokoro tuning: target_workers={}, threads_per_worker={} (manual={})",
-                tuning.target_workers,
-                tuning.threads_per_worker,
-                tts_settings.tts_workers > 0
+            let num_threads = infer_kokoro_thread_count();
+            info!("Kokoro tuning: num_threads={}", num_threads);
+
+            let mut kokoro =
+                KokoroEngine::with_espeak(espeak_ng_path.clone(), espeak_ng_data_path.clone());
+            let load_result = kokoro.load_model_with_params(
+                &model_dir,
+                KokoroModelParams {
+                    num_threads: Some(num_threads),
+                    optimized_model_cache_path: optimized_cache_path.clone(),
+                },
             );
 
-            let mut loaded_workers = 0usize;
-            let mut first_error: Option<String> = None;
-            let target_workers = tuning.target_workers.min(engines.len());
+            let load_error = if let Err(e) = &load_result {
+                let engine_error = format!(
+                    "Failed to load {} from {}: {}",
+                    model_name,
+                    model_dir.display(),
+                    e
+                );
+                error!("{}", engine_error);
+                *engine.lock().unwrap() = None;
+                Some(engine_error)
+            } else {
+                info!("Warming up {} pipeline (espeak-ng + ORT)...", model_name);
+                let _ = kokoro.synthesize("Hello.", None);
+                *engine.lock().unwrap() = Some(kokoro);
+                None
+            };
 
-            for (worker_index, slot) in engines.iter().enumerate() {
-                if worker_index >= target_workers {
-                    *slot.lock().unwrap() = None;
-                    continue;
-                }
-
-                let mut kokoro =
-                    KokoroEngine::with_espeak(espeak_ng_path.clone(), espeak_ng_data_path.clone());
-                match kokoro.load_model_with_params(
-                    &model_dir,
-                    KokoroModelParams {
-                        num_threads: Some(tuning.threads_per_worker),
-                        optimized_model_cache_path: optimized_cache_path.clone(),
-                    },
-                ) {
-                    Ok(()) => {
-                        info!(
-                            "Warming up {} pipeline worker {}/{} (espeak-ng + ORT)...",
-                            model_name,
-                            worker_index + 1,
-                            target_workers
-                        );
-                        let _ = kokoro.synthesize("Hello.", None);
-                        *slot.lock().unwrap() = Some(kokoro);
-                        loaded_workers += 1;
-                    }
-                    Err(e) => {
-                        let worker_error = format!(
-                            "Failed to load {} worker {}/{} from {}: {}",
-                            model_name,
-                            worker_index + 1,
-                            target_workers,
-                            model_dir.display(),
-                            e
-                        );
-                        error!("{}", worker_error);
-                        first_error.get_or_insert(worker_error);
-                        *slot.lock().unwrap() = None;
-                    }
-                }
-            }
-
-            if loaded_workers == 0 {
+            if let Some(error_msg) = load_error {
                 hide_speaking_overlay(&app_handle);
-                let error_msg = first_error.unwrap_or_else(|| {
-                    format!(
-                        "Failed to load {} model from {}",
-                        model_name,
-                        model_dir.display()
-                    )
-                });
                 let _ = app_handle.emit(
                     "model-state-changed",
                     ModelStateEvent {
@@ -364,10 +298,7 @@ impl TTSManager {
                 );
                 let _ = app_handle.emit("tts-error", error_msg);
             } else {
-                info!(
-                    "{} model loaded successfully with {}/{} synthesis workers",
-                    model_name, loaded_workers, target_workers
-                );
+                info!("{} model loaded successfully", model_name);
                 let _ = app_handle.emit(
                     "model-state-changed",
                     ModelStateEvent {
@@ -394,7 +325,7 @@ impl TTSManager {
     }
 
     pub fn is_model_loaded(&self) -> bool {
-        loaded_engine_count(&self.engines) > 0
+        engine_is_loaded(&self.engine)
     }
 
     pub fn is_model_loading(&self) -> bool {
@@ -409,14 +340,13 @@ impl TTSManager {
             self.wait_for_pending_model_load()?;
         }
 
-        let synthesis_engines = loaded_engine_slots(&self.engines);
-        if synthesis_engines.is_empty() {
+        if !engine_is_loaded(&self.engine) {
             return Err(anyhow!(
                 "Kokoro model is not loaded. Install model files and try again."
             ));
         }
 
-        let voices = collect_available_voices(&synthesis_engines);
+        let voices = collect_available_voices(&self.engine);
 
         if voices.is_empty() {
             return Err(anyhow!("No Kokoro voices were found in the loaded model."));
@@ -437,9 +367,7 @@ impl TTSManager {
     /// Unload the Kokoro engine from memory and emit a model-state-changed event.
     pub fn unload_model(&self) -> Result<()> {
         debug!("Unloading TTS model");
-        for slot in self.engines.iter() {
-            *slot.lock().unwrap() = None;
-        }
+        *self.engine.lock().unwrap() = None;
         let _ = self.app_handle.emit(
             "model-state-changed",
             ModelStateEvent {
@@ -495,7 +423,7 @@ impl TTSManager {
         // Record activity timestamp for idle watcher
         self.last_activity.store(now_ms(), Ordering::Relaxed);
 
-        let engines = Arc::clone(&self.engines);
+        let engine = Arc::clone(&self.engine);
         let is_loading = Arc::clone(&self.is_loading);
         let condvar = Arc::clone(&self.loading_condvar);
         let generation = Arc::clone(&self.generation);
@@ -520,7 +448,7 @@ impl TTSManager {
                 return;
             }
 
-            if loaded_engine_count(&engines) == 0 {
+            if !engine_is_loaded(&engine) {
                 let message = "Kokoro model is not loaded. Install model files and try again.";
                 error!("{}", message);
                 if set_idle_and_cleanup_for_request(
@@ -603,8 +531,7 @@ impl TTSManager {
                 });
             }
 
-            let synthesis_engines = loaded_engine_slots(&engines);
-            if synthesis_engines.is_empty() {
+            if !engine_is_loaded(&engine) {
                 let message = "Kokoro model is not loaded. Install model files and try again.";
                 error!("{}", message);
                 if set_idle_and_cleanup_for_request(
@@ -630,174 +557,90 @@ impl TTSManager {
                 Some(tts_settings.selected_language.clone())
             };
             let selected_voice_override = tts_settings.selected_kokoro_voice.as_deref();
-            let max_active_workers = total_chunks.max(1).min(synthesis_engines.len());
-            let synthesis_engines: Vec<_> = synthesis_engines
-                .into_iter()
-                .take(max_active_workers)
-                .collect();
-            let available_voices = collect_available_voices(&synthesis_engines);
+            let available_voices = collect_available_voices(&engine);
             let selected_voice = select_kokoro_voice_for_text(
                 resolved_language.as_deref(),
                 selected_voice_override,
                 &available_voices,
             );
-            let worker_count = synthesis_engines.len();
             let mut total_synth_secs = 0.0_f32;
             let mut started_playback = false;
             let mut buffered_seconds = 0.0_f32;
             let mut total_audio_seconds = 0.0_f32;
             debug!(
-                "TTS split into {} chunks ({} chars) using {} synthesis workers (style_index={}, voice={})",
-                total_chunks, total_chars, worker_count, shared_style_index, selected_voice
+                "TTS split into {} chunks ({} chars) (style_index={}, voice={})",
+                total_chunks, total_chars, shared_style_index, selected_voice
             );
 
             let mut collected_samples: Vec<f32> = Vec::new();
             let mut collected_sample_rate: u32 = 24000;
-
-            let next_chunk_to_synthesize = Arc::new(AtomicUsize::new(0));
-            let channel_capacity = worker_count.saturating_mul(2).max(1);
-            let (result_tx, result_rx) =
-                mpsc::sync_channel::<ChunkSynthesisResult>(channel_capacity);
-
-            for synthesis_engine in synthesis_engines {
-                let chunks_for_worker = Arc::clone(&chunks);
-                let next_chunk_for_worker = Arc::clone(&next_chunk_to_synthesize);
-                let generation_for_worker = Arc::clone(&generation);
-                let active_request_for_worker = Arc::clone(&active_request);
-                let tx_for_worker = result_tx.clone();
-                let style_index_for_worker = shared_style_index;
-                let voice_for_worker = selected_voice.clone();
-                let speed_for_worker = tts_speed;
-
-                thread::spawn(move || loop {
-                    if !request_is_active(
-                        &generation_for_worker,
-                        &active_request_for_worker,
-                        request_id,
-                    ) {
-                        break;
-                    }
-
-                    let chunk_index = next_chunk_for_worker.fetch_add(1, Ordering::SeqCst);
-                    if chunk_index >= chunks_for_worker.len() {
-                        break;
-                    }
-
-                    let chunk = &chunks_for_worker[chunk_index];
-                    let synth_start = Instant::now();
-
-                    // Take the engine out of its slot so the mutex is released
-                    // during the (potentially long) synthesize() call. This lets
-                    // new requests acquire the engine immediately after cancel.
-                    let mut engine = match take_engine_for_active_request(
-                        &synthesis_engine,
-                        &generation_for_worker,
-                        &active_request_for_worker,
-                        request_id,
-                    ) {
-                        Some(e) => e,
-                        None => break,
-                    };
-
-                    if !request_is_active(
-                        &generation_for_worker,
-                        &active_request_for_worker,
-                        request_id,
-                    ) {
-                        return_engine_to_slot(&synthesis_engine, engine);
-                        break;
-                    }
-
-                    // Synthesize WITHOUT holding the mutex lock.
-                    let synth_result = engine
-                        .synthesize(
-                            chunk,
-                            Some(KokoroInferenceParams {
-                                voice: voice_for_worker.clone(),
-                                style_index: Some(style_index_for_worker),
-                                speed: speed_for_worker,
-                            }),
-                        )
-                        .map_err(|e| format!("TTS synthesis failed: {}", e));
-
-                    // Put engine back (brief lock, just a swap).
-                    return_engine_to_slot(&synthesis_engine, engine);
-
-                    let synth_elapsed_secs = synth_start.elapsed().as_secs_f32();
-                    let result = match synth_result {
-                        Ok(synthesis) => ChunkSynthesisResult {
-                            index: chunk_index,
-                            synth_elapsed_secs,
-                            sample_rate: synthesis.sample_rate,
-                            samples: synthesis.samples,
-                            error: None,
-                        },
-                        Err(err) => ChunkSynthesisResult {
-                            index: chunk_index,
-                            synth_elapsed_secs,
-                            sample_rate: 0,
-                            samples: vec![],
-                            error: Some(err),
-                        },
-                    };
-
-                    if !request_is_active(
-                        &generation_for_worker,
-                        &active_request_for_worker,
-                        request_id,
-                    ) {
-                        break;
-                    }
-
-                    if tx_for_worker.send(result).is_err() {
-                        break;
-                    }
-                });
-            }
-            drop(result_tx);
-
-            let mut pending_results: BTreeMap<usize, ChunkSynthesisResult> = BTreeMap::new();
-            let mut next_chunk_to_append = 0usize;
             let mut crossfade_tail: Option<Vec<f32>> = None;
             // Channel for sending (chunk_index, duration_secs) to the overlay
             // text updater thread as chunks are appended to the audio sink.
             let (chunk_dur_tx, chunk_dur_rx) = mpsc::channel::<(usize, f32)>();
             let mut chunk_dur_rx = Some(chunk_dur_rx);
 
-            while next_chunk_to_append < total_chunks {
-                if generation.load(Ordering::SeqCst) != request_id
-                    || active_request.load(Ordering::SeqCst) != request_id
-                {
+            for (chunk_index, chunk) in chunks.iter().enumerate() {
+                if !request_is_active(&generation, &active_request, request_id) {
                     shared_sink.stop();
                     clear_active_request_if_owned(&active_request, request_id);
                     clear_sink_if_owned_by_request(&current_sink, request_id);
                     return;
                 }
 
-                let chunk_result = match result_rx.recv_timeout(Duration::from_millis(50)) {
-                    Ok(result) => result,
-                    Err(mpsc::RecvTimeoutError::Timeout) => continue,
-                    Err(mpsc::RecvTimeoutError::Disconnected) => {
-                        let message = "TTS synthesis workers disconnected unexpectedly.";
-                        error!("{}", message);
-                        if set_idle_and_cleanup_for_request(
-                            &generation,
-                            &active_request,
-                            request_id,
-                            &lifecycle_state,
-                            &current_sink,
-                            &app_handle,
-                        ) {
-                            let _ = app_handle.emit("tts-error", message);
-                        }
+                let synth_start = Instant::now();
+
+                // Take the engine out of its slot so the mutex is released
+                // during the (potentially long) synthesize() call. This lets
+                // new requests acquire the engine immediately after cancel.
+                let mut kokoro_engine = match take_engine_for_active_request(
+                    &engine,
+                    &generation,
+                    &active_request,
+                    request_id,
+                ) {
+                    Some(e) => e,
+                    None => {
+                        clear_active_request_if_owned(&active_request, request_id);
+                        clear_sink_if_owned_by_request(&current_sink, request_id);
                         return;
                     }
                 };
 
-                pending_results.insert(chunk_result.index, chunk_result);
+                if !request_is_active(&generation, &active_request, request_id) {
+                    return_engine_to_slot(&engine, kokoro_engine);
+                    clear_active_request_if_owned(&active_request, request_id);
+                    clear_sink_if_owned_by_request(&current_sink, request_id);
+                    return;
+                }
 
-                while let Some(chunk_result) = pending_results.remove(&next_chunk_to_append) {
-                    if let Some(err) = chunk_result.error {
+                // Synthesize WITHOUT holding the mutex lock.
+                let synth_result = kokoro_engine
+                    .synthesize(
+                        chunk,
+                        Some(KokoroInferenceParams {
+                            voice: selected_voice.clone(),
+                            style_index: Some(shared_style_index),
+                            speed: tts_speed,
+                        }),
+                    )
+                    .map_err(|e| format!("TTS synthesis failed: {}", e));
+
+                // Put engine back (brief lock, just a swap).
+                return_engine_to_slot(&engine, kokoro_engine);
+
+                let synth_elapsed_secs = synth_start.elapsed().as_secs_f32();
+
+                if !request_is_active(&generation, &active_request, request_id) {
+                    shared_sink.stop();
+                    clear_active_request_if_owned(&active_request, request_id);
+                    clear_sink_if_owned_by_request(&current_sink, request_id);
+                    return;
+                }
+
+                let synthesis = match synth_result {
+                    Ok(synthesis) => synthesis,
+                    Err(err) => {
                         error!("{}", err);
                         if set_idle_and_cleanup_for_request(
                             &generation,
@@ -811,110 +654,95 @@ impl TTSManager {
                         }
                         return;
                     }
+                };
 
-                    total_synth_secs += chunk_result.synth_elapsed_secs;
+                total_synth_secs += synth_elapsed_secs;
 
-                    if generation.load(Ordering::SeqCst) != request_id
-                        || active_request.load(Ordering::SeqCst) != request_id
-                    {
+                if synthesis.samples.is_empty() {
+                    continue;
+                }
+
+                let chunk_audio_seconds =
+                    synthesis.samples.len() as f32 / synthesis.sample_rate as f32;
+                total_audio_seconds += chunk_audio_seconds;
+                buffered_seconds += chunk_audio_seconds;
+                collected_sample_rate = synthesis.sample_rate;
+                collected_samples.extend_from_slice(&synthesis.samples);
+
+                // Crossfade with the previous chunk's tail to eliminate clicks
+                // at chunk boundaries (10ms @ 24kHz = 240 samples).
+                let mut samples = synthesis.samples;
+                if let Some(prev_tail) = crossfade_tail.take() {
+                    apply_crossfade(&prev_tail, &mut samples);
+                }
+                // Hold back the last CROSSFADE_SAMPLES for blending with the next chunk
+                if samples.len() > CROSSFADE_SAMPLES {
+                    let split = samples.len() - CROSSFADE_SAMPLES;
+                    crossfade_tail = Some(samples[split..].to_vec());
+                    samples.truncate(split);
+                }
+                shared_sink.append(SamplesBuffer::new(
+                    NonZero::new(1u16).unwrap(),
+                    NonZero::new(synthesis.sample_rate).unwrap(),
+                    samples,
+                ));
+                // Feed the overlay text updater thread so it can schedule
+                // when to show each chunk's text during playback.
+                let _ = chunk_dur_tx.send((chunk_index, chunk_audio_seconds));
+
+                if !started_playback {
+                    if !request_is_active(&generation, &active_request, request_id) {
                         shared_sink.stop();
                         clear_active_request_if_owned(&active_request, request_id);
                         clear_sink_if_owned_by_request(&current_sink, request_id);
                         return;
                     }
+                    started_playback = true;
+                    lifecycle_state.store(TtsLifecycleState::Speaking as u8, Ordering::SeqCst);
+                    show_speaking_overlay(&app_handle, chunks.first().cloned());
+                    crate::shortcut::register_play_pause_shortcut(&app_handle);
+                    audio_feedback::play_sound(&app_handle, audio_feedback::SoundType::Start);
+                    shared_sink.play();
 
-                    if chunk_result.samples.is_empty() {
-                        next_chunk_to_append += 1;
-                        continue;
+                    // Spawn overlay text updater: sleeps through each chunk's
+                    // audio duration and emits the next chunk's text at the
+                    // right moment, pausing the timer when TTS is paused.
+                    if let Some(rx) = chunk_dur_rx.take() {
+                        let overlay_chunks = Arc::clone(&chunks);
+                        let overlay_lifecycle = Arc::clone(&lifecycle_state);
+                        let overlay_generation = Arc::clone(&generation);
+                        let overlay_app = app_handle.clone();
+                        thread::spawn(move || {
+                            overlay_text_updater(
+                                rx,
+                                &overlay_chunks,
+                                &overlay_lifecycle,
+                                &overlay_generation,
+                                request_id,
+                                &overlay_app,
+                            );
+                        });
                     }
 
-                    let chunk_audio_seconds =
-                        chunk_result.samples.len() as f32 / chunk_result.sample_rate as f32;
-                    total_audio_seconds += chunk_audio_seconds;
-                    buffered_seconds += chunk_audio_seconds;
-                    collected_sample_rate = chunk_result.sample_rate;
-                    collected_samples.extend_from_slice(&chunk_result.samples);
-
-                    // Crossfade with the previous chunk's tail to eliminate clicks
-                    // at chunk boundaries (10ms @ 24kHz = 240 samples).
-                    let mut samples = chunk_result.samples;
-                    if let Some(prev_tail) = crossfade_tail.take() {
-                        apply_crossfade(&prev_tail, &mut samples);
-                    }
-                    // Hold back the last CROSSFADE_SAMPLES for blending with the next chunk
-                    if samples.len() > CROSSFADE_SAMPLES {
-                        let split = samples.len() - CROSSFADE_SAMPLES;
-                        crossfade_tail = Some(samples[split..].to_vec());
-                        samples.truncate(split);
-                    }
-                    shared_sink.append(SamplesBuffer::new(
-                        NonZero::new(1u16).unwrap(),
-                        NonZero::new(chunk_result.sample_rate).unwrap(),
-                        samples,
-                    ));
-                    // Feed the overlay text updater thread so it can schedule
-                    // when to show each chunk's text during playback.
-                    let _ = chunk_dur_tx.send((next_chunk_to_append, chunk_audio_seconds));
-
-                    if !started_playback {
-                        if generation.load(Ordering::SeqCst) != request_id
-                            || active_request.load(Ordering::SeqCst) != request_id
-                        {
-                            shared_sink.stop();
-                            clear_active_request_if_owned(&active_request, request_id);
-                            clear_sink_if_owned_by_request(&current_sink, request_id);
-                            return;
-                        }
-                        started_playback = true;
-                        lifecycle_state.store(TtsLifecycleState::Speaking as u8, Ordering::SeqCst);
-                        show_speaking_overlay(&app_handle, chunks.first().cloned());
-                        crate::shortcut::register_play_pause_shortcut(&app_handle);
-                        audio_feedback::play_sound(&app_handle, audio_feedback::SoundType::Start);
-                        shared_sink.play();
-
-                        // Spawn overlay text updater: sleeps through each chunk's
-                        // audio duration and emits the next chunk's text at the
-                        // right moment, pausing the timer when TTS is paused.
-                        if let Some(rx) = chunk_dur_rx.take() {
-                            let overlay_chunks = Arc::clone(&chunks);
-                            let overlay_lifecycle = Arc::clone(&lifecycle_state);
-                            let overlay_generation = Arc::clone(&generation);
-                            let overlay_app = app_handle.clone();
-                            thread::spawn(move || {
-                                overlay_text_updater(
-                                    rx,
-                                    &overlay_chunks,
-                                    &overlay_lifecycle,
-                                    &overlay_generation,
-                                    request_id,
-                                    &overlay_app,
-                                );
-                            });
-                        }
-
-                        let overall_rtf = total_synth_secs / buffered_seconds.max(0.001);
-                        info!(
-                            "TTS playback started in {}ms (buffered={:.2}s, rtf={:.2}, chunks={}/{}, workers={})",
-                            started_at.elapsed().as_millis(),
-                            buffered_seconds,
-                            overall_rtf,
-                            next_chunk_to_append + 1,
-                            total_chunks,
-                            worker_count,
-                        );
-                    }
-
-                    debug!(
-                        "TTS chunk {}/{} synthesized in {}ms ({:.2}s audio, rtf={:.2})",
-                        next_chunk_to_append + 1,
+                    let overall_rtf = total_synth_secs / buffered_seconds.max(0.001);
+                    info!(
+                        "TTS playback started in {}ms (buffered={:.2}s, rtf={:.2}, chunks={}/{})",
+                        started_at.elapsed().as_millis(),
+                        buffered_seconds,
+                        overall_rtf,
+                        chunk_index + 1,
                         total_chunks,
-                        (chunk_result.synth_elapsed_secs * 1000.0) as u64,
-                        chunk_audio_seconds,
-                        chunk_result.synth_elapsed_secs / chunk_audio_seconds.max(0.001),
                     );
-
-                    next_chunk_to_append += 1;
                 }
+
+                debug!(
+                    "TTS chunk {}/{} synthesized in {}ms ({:.2}s audio, rtf={:.2})",
+                    chunk_index + 1,
+                    total_chunks,
+                    (synth_elapsed_secs * 1000.0) as u64,
+                    chunk_audio_seconds,
+                    synth_elapsed_secs / chunk_audio_seconds.max(0.001),
+                );
             }
 
             // Drop the sender so the overlay updater thread knows no more chunks are coming.
@@ -1151,66 +979,36 @@ fn now_ms() -> u64 {
         .as_millis() as u64
 }
 
-fn infer_kokoro_tuning() -> InferenceTuning {
+fn infer_kokoro_thread_count() -> usize {
     let cpu_count = std::thread::available_parallelism()
         .map(|n| n.get())
         .unwrap_or(2);
-    infer_kokoro_tuning_for_cpu_count(cpu_count)
+    infer_kokoro_thread_count_for_cpu_count(cpu_count)
 }
 
-fn infer_kokoro_tuning_for_cpu_count(cpu_count: usize) -> InferenceTuning {
+fn infer_kokoro_thread_count_for_cpu_count(cpu_count: usize) -> usize {
     // Keep one core free on larger systems so UI/audio and background tasks remain smooth.
     let reserved_cores = if cpu_count >= 4 { 1 } else { 0 };
-    let compute_budget = cpu_count.saturating_sub(reserved_cores).max(1);
-
-    // On constrained hardware, use one worker to avoid contention. On stronger systems,
-    // scale up to MAX_PARALLEL_SYNTH_ENGINES workers for low-latency overlap.
-    let target_workers = if compute_budget < 3 {
-        1
-    } else {
-        MAX_PARALLEL_SYNTH_ENGINES.min(compute_budget)
-    };
-    let threads_per_worker = (compute_budget / target_workers).max(1);
-
-    InferenceTuning {
-        target_workers,
-        threads_per_worker,
-    }
+    cpu_count.saturating_sub(reserved_cores).max(1)
 }
 
-fn loaded_engine_count(engines: &Arc<Vec<Arc<Mutex<Option<KokoroEngine>>>>>) -> usize {
-    engines
-        .iter()
-        .filter(|slot| slot.lock().map(|guard| guard.is_some()).unwrap_or(false))
-        .count()
+fn engine_is_loaded(engine: &Arc<Mutex<Option<KokoroEngine>>>) -> bool {
+    engine.lock().map(|guard| guard.is_some()).unwrap_or(false)
 }
 
-fn loaded_engine_slots(
-    engines: &Arc<Vec<Arc<Mutex<Option<KokoroEngine>>>>>,
-) -> Vec<Arc<Mutex<Option<KokoroEngine>>>> {
-    let mut loaded = Vec::new();
-    for slot in engines.iter() {
-        if slot.lock().map(|guard| guard.is_some()).unwrap_or(false) {
-            loaded.push(Arc::clone(slot));
-        }
-    }
-    loaded
-}
-
-fn collect_available_voices(synthesis_engines: &[Arc<Mutex<Option<KokoroEngine>>>]) -> Vec<String> {
+fn collect_available_voices(engine: &Arc<Mutex<Option<KokoroEngine>>>) -> Vec<String> {
     let mut voices = Vec::new();
 
-    for engine_slot in synthesis_engines {
-        let guard = engine_slot.lock().unwrap_or_else(|p| p.into_inner());
-        if let Some(engine) = guard.as_ref() {
-            voices.extend(
-                engine
-                    .list_voices()
-                    .into_iter()
-                    .map(|voice| voice.to_string()),
-            );
-        }
+    let guard = engine.lock().unwrap_or_else(|p| p.into_inner());
+    if let Some(engine) = guard.as_ref() {
+        voices.extend(
+            engine
+                .list_voices()
+                .into_iter()
+                .map(|voice| voice.to_string()),
+        );
     }
+    drop(guard);
 
     voices.sort_unstable();
     voices.dedup();
@@ -1883,10 +1681,10 @@ fn split_breaks_numeric_connector(text: &str, idx: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        estimate_kokoro_style_index, find_split_index, infer_kokoro_tuning_for_cpu_count,
+        estimate_kokoro_style_index, find_split_index, infer_kokoro_thread_count_for_cpu_count,
         normalize_kokoro_language_code, request_is_active, select_kokoro_voice_for_text,
         select_voice_for_language, split_into_sentences, split_text_for_playback,
-        take_engine_for_active_request, MAX_PARALLEL_SYNTH_ENGINES,
+        take_engine_for_active_request,
     };
     use std::sync::atomic::{AtomicU64, Ordering};
     use std::sync::{Arc, Mutex};
@@ -1973,18 +1771,15 @@ mod tests {
     }
 
     #[test]
-    fn kokoro_tuning_uses_single_worker_on_constrained_cpu() {
-        let tuning = infer_kokoro_tuning_for_cpu_count(2);
-        assert_eq!(tuning.target_workers, 1);
-        assert!(tuning.threads_per_worker >= 1);
+    fn kokoro_tuning_uses_all_cores_on_constrained_cpu() {
+        // 2 CPUs → no cores reserved → all 2 threads available
+        assert_eq!(infer_kokoro_thread_count_for_cpu_count(2), 2);
     }
 
     #[test]
-    fn kokoro_tuning_scales_workers_on_larger_cpu() {
-        let tuning = infer_kokoro_tuning_for_cpu_count(8);
-        // 8 CPUs → 7 compute budget → min(MAX_PARALLEL_SYNTH_ENGINES, 7) = 2 workers
-        assert_eq!(tuning.target_workers, MAX_PARALLEL_SYNTH_ENGINES);
-        assert!(tuning.threads_per_worker >= 1);
+    fn kokoro_tuning_reserves_one_core_on_larger_cpu() {
+        // 8 CPUs → 1 core reserved for UI/audio → 7 threads available
+        assert_eq!(infer_kokoro_thread_count_for_cpu_count(8), 7);
     }
 
     #[test]

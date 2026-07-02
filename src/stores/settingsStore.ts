@@ -86,7 +86,6 @@ const settingUpdaters: {
     commands.changeExperimentalEnabledSetting(value as boolean),
   show_tray_icon: (value) =>
     commands.changeShowTrayIconSetting(value as boolean),
-  tts_workers: (value) => commands.changeTtsWorkersSetting(value as number),
   tts_speed: (value) => commands.changeTtsSpeedSetting(value as number),
   tts_shorten_first_chunk: (value) =>
     commands.changeTtsShortenFirstChunkSetting(value as boolean),

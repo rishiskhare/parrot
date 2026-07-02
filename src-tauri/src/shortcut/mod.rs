@@ -701,15 +701,6 @@ pub fn change_show_tray_icon_setting(app: AppHandle, enabled: bool) -> Result<()
 
 #[tauri::command]
 #[specta::specta]
-pub fn change_tts_workers_setting(app: AppHandle, workers: usize) -> Result<(), String> {
-    let mut settings = settings::get_settings(&app);
-    settings.tts_workers = workers.min(4);
-    settings::write_settings(&app, settings);
-    Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
 pub fn change_tts_speed_setting(app: AppHandle, speed: f32) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     settings.tts_speed = speed.clamp(0.5, 2.0);

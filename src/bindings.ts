@@ -184,14 +184,6 @@ async changeShowTrayIconSetting(enabled: boolean) : Promise<Result<null, string>
     else return { status: "error", error: e  as any };
 }
 },
-async changeTtsWorkersSetting(workers: number) : Promise<Result<null, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("change_tts_workers_setting", { workers }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async changeTtsSpeedSetting(speed: number) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_tts_speed_setting", { speed }) };
@@ -555,7 +547,7 @@ async isLaptop() : Promise<Result<boolean, string>> {
 
 /** user-defined types **/
 
-export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; update_checks_enabled?: boolean; selected_model?: string; selected_output_device?: string | null; selected_language?: string; selected_kokoro_voice?: string | null; show_close_button?: boolean; overlay_position?: OverlayPosition; debug_mode?: boolean; log_level?: LogLevel; model_unload_timeout?: ModelUnloadTimeout; history_limit?: number; history_retention_period?: HistoryRetentionPeriod; app_language?: string; experimental_enabled?: boolean; keyboard_implementation?: KeyboardImplementation; show_tray_icon?: boolean; tts_workers?: number; tts_speed?: number; tts_shorten_first_chunk?: boolean }
+export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; update_checks_enabled?: boolean; selected_model?: string; selected_output_device?: string | null; selected_language?: string; selected_kokoro_voice?: string | null; show_close_button?: boolean; overlay_position?: OverlayPosition; debug_mode?: boolean; log_level?: LogLevel; model_unload_timeout?: ModelUnloadTimeout; history_limit?: number; history_retention_period?: HistoryRetentionPeriod; app_language?: string; experimental_enabled?: boolean; keyboard_implementation?: KeyboardImplementation; show_tray_icon?: boolean; tts_speed?: number; tts_shorten_first_chunk?: boolean }
 export type AudioDevice = { index: string; name: string; is_default: boolean }
 export type BindingResponse = { success: boolean; binding: ShortcutBinding | null; error: string | null }
 export type CustomSounds = { start: boolean; stop: boolean }

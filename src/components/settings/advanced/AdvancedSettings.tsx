@@ -9,7 +9,6 @@ import { ShowTrayIcon } from "../ShowTrayIcon";
 import { HistoryLimit } from "../HistoryLimit";
 import { HistoryRetentionPeriodSelector } from "../HistoryRetentionPeriod";
 import { ExperimentalToggle } from "../ExperimentalToggle";
-import { TtsWorkers } from "../TtsWorkers";
 import { TtsSpeed } from "../TtsSpeed";
 import { ShortenFirstChunk } from "../ShortenFirstChunk";
 import { useSettings } from "../../../hooks/useSettings";
@@ -32,7 +31,6 @@ export const AdvancedSettings: React.FC = () => {
       </SettingsGroup>
 
       <SettingsGroup title={t("settings.advanced.groups.speech")}>
-        <TtsWorkers descriptionMode="tooltip" grouped={true} />
         <TtsSpeed descriptionMode="tooltip" grouped={true} />
         <ShortenFirstChunk descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>

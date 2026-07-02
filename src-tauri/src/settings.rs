@@ -230,8 +230,6 @@ pub struct AppSettings {
     pub keyboard_implementation: KeyboardImplementation,
     #[serde(default = "default_show_tray_icon")]
     pub show_tray_icon: bool,
-    #[serde(default = "default_tts_workers")]
-    pub tts_workers: usize,
     #[serde(default = "default_tts_speed")]
     pub tts_speed: f32,
     #[serde(default = "default_tts_shorten_first_chunk")]
@@ -303,10 +301,6 @@ fn default_show_tray_icon() -> bool {
     true
 }
 
-fn default_tts_workers() -> usize {
-    0
-}
-
 fn default_tts_speed() -> f32 {
     1.0
 }
@@ -376,7 +370,6 @@ pub fn get_default_settings() -> AppSettings {
         experimental_enabled: false,
         keyboard_implementation: KeyboardImplementation::default(),
         show_tray_icon: default_show_tray_icon(),
-        tts_workers: default_tts_workers(),
         tts_speed: default_tts_speed(),
         tts_shorten_first_chunk: default_tts_shorten_first_chunk(),
         show_close_button: default_show_close_button(),
