@@ -17,5 +17,16 @@ jobs:
       - name: Check translation consistency
         run: bun run check:translations
 
+      - name: Check version consistency
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          CARGO_VERSION=$(grep -m1 '^version' src-tauri/Cargo.toml | sed -E 's/version = "(.*)"/\1/')
+          TAURI_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          if [ "$PKG_VERSION" != "$CARGO_VERSION" ] || [ "$PKG_VERSION" != "$TAURI_VERSION" ]; then
+            echo "Version mismatch: package.json=$PKG_VERSION, Cargo.toml=$CARGO_VERSION, tauri.conf.json=$TAURI_VERSION"
+            exit 1
+          fi
+          echo "Versions consistent: $PKG_VERSION"
+
       - name: Run ESLint
         run: bun run lint

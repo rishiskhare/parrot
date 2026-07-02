@@ -97,33 +97,6 @@ The pause/resume shortcut is only active while Parrot is playing. It can be cust
 | **History**            | Browse, replay, copy, and delete past utterances                           |
 | **Debug**              | Log level, keyboard implementation, diagnostics                            |
 
-## Command-Line Interface
-
-Parrot supports CLI flags for scripting and window manager integration. Remote control flags are delivered to the already-running instance; you do not need to keep a second instance running.
-
-```
-parrot [FLAGS]
-```
-
-| Flag                     | Description                                           |
-| ------------------------ | ----------------------------------------------------- |
-| `--toggle-transcription` | Toggle TTS on/off in the running instance             |
-| `--start-hidden`         | Launch without showing the main window                |
-| `--no-tray`              | Launch without a tray icon (closing the window quits) |
-| `--debug`                | Enable verbose trace logging                          |
-
-**Example: bind to a window manager shortcut:**
-
-```sh
-parrot --toggle-transcription
-```
-
-> **macOS:** When using the app bundle, invoke the binary directly:
->
-> ```sh
-> /Applications/Parrot.app/Contents/MacOS/Parrot --toggle-transcription
-> ```
-
 ## Linux Notes
 
 ### Text Input Tools
@@ -140,28 +113,28 @@ For reliable text pasting on Linux, install the appropriate tool for your displa
 
 ### Global Shortcuts on Wayland
 
-Parrot's built-in global shortcut capture has limited support on Wayland. The recommended approach is to configure your desktop environment or window manager to invoke the CLI flag instead.
+Parrot's built-in global shortcut capture has limited support on Wayland. The recommended approach is to configure your desktop environment or window manager to send Parrot a signal instead (see [Unix Signal Control](#unix-signal-control) below).
 
 **GNOME:**
 
 1. Open **Settings > Keyboard > Keyboard Shortcuts > Custom Shortcuts**
-2. Add a new shortcut with the command `parrot --toggle-transcription`
+2. Add a new shortcut with the command `pkill -USR2 -n parrot`
 
 **KDE Plasma:**
 
 1. Open **System Settings > Shortcuts > Custom Shortcuts**
-2. Create a new **Command/URL** shortcut with `parrot --toggle-transcription`
+2. Create a new **Command/URL** shortcut with `pkill -USR2 -n parrot`
 
 **Sway / i3:**
 
 ```ini
-bindsym $mod+o exec parrot --toggle-transcription
+bindsym $mod+o exec pkill -USR2 -n parrot
 ```
 
 **Hyprland:**
 
 ```ini
-bind = $mainMod, O, exec, parrot --toggle-transcription
+bind = $mainMod, O, exec, pkill -USR2 -n parrot
 ```
 
 ### Unix Signal Control

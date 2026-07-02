@@ -129,7 +129,7 @@ pub async fn get_current_model(
 
 #[tauri::command]
 #[specta::specta]
-pub async fn get_transcription_model_status(
+pub async fn get_tts_model_status(
     tts_manager: State<'_, Arc<TTSManager>>,
 ) -> Result<Option<String>, String> {
     Ok(tts_manager.get_current_model())

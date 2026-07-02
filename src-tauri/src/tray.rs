@@ -159,11 +159,11 @@ pub fn copy_last_text(app: &AppHandle) {
     let entry = match history_manager.get_latest_entry() {
         Ok(Some(entry)) => entry,
         Ok(None) => {
-            warn!("No transcription history entries available for tray copy.");
+            warn!("No history entries available for tray copy.");
             return;
         }
         Err(err) => {
-            error!("Failed to fetch last transcription entry: {}", err);
+            error!("Failed to fetch last history entry: {}", err);
             return;
         }
     };
@@ -193,7 +193,7 @@ mod tests {
     }
 
     #[test]
-    fn returns_transcription_text() {
+    fn returns_transcript_text() {
         let entry = build_entry("raw");
         assert_eq!(last_transcript_text(&entry), "raw");
     }

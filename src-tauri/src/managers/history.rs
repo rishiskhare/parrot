@@ -187,8 +187,8 @@ impl HistoryManager {
         Ok(Connection::open(&self.db_path)?)
     }
 
-    /// Save a transcription to history (both database and WAV file)
-    pub fn save_transcription(
+    /// Save synthesized speech to history (both database and WAV file)
+    pub fn save_synthesis(
         &self,
         audio_samples: Vec<f32>,
         transcription_text: String,

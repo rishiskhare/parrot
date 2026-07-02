@@ -386,9 +386,9 @@ async getCurrentModel() : Promise<Result<string, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getTranscriptionModelStatus() : Promise<Result<string | null, string>> {
+async getTtsModelStatus() : Promise<Result<string | null, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_transcription_model_status") };
+    return { status: "ok", data: await TAURI_INVOKE("get_tts_model_status") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

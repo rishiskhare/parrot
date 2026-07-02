@@ -975,7 +975,7 @@ impl TTSManager {
                 // Save to history
                 if !collected_samples.is_empty() {
                     let history_manager = app_handle.state::<Arc<HistoryManager>>();
-                    if let Err(e) = history_manager.save_transcription(
+                    if let Err(e) = history_manager.save_synthesis(
                         collected_samples,
                         text.clone(),
                         collected_sample_rate,

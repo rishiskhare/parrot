@@ -54,7 +54,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onError }) => {
     const checkStatus = async () => {
       if (currentModel) {
         try {
-          const statusResult = await commands.getTranscriptionModelStatus();
+          const statusResult = await commands.getTtsModelStatus();
           if (statusResult.status === "ok") {
             setModelStatus(
               statusResult.data === currentModel ? "ready" : "unloaded",
