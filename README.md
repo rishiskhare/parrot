@@ -91,11 +91,11 @@ The pause/resume shortcut is only active while Parrot is playing. It can be cust
 | ---------------------- | -------------------------------------------------------------------------- |
 | **General**            | Shortcuts, TTS language, voice, output device, audio feedback              |
 | **Models**             | Download, switch, and delete TTS models                                    |
-| **Advanced → App**     | Start hidden, autostart, tray icon, overlay position, model unload timeout |
-| **Advanced → Speech**  | Worker threads, playback speed, fast first response                        |
+| **Advanced → App**     | Start hidden, autostart, tray icon, overlay position, model unload timeout, keyboard implementation |
+| **Advanced → Speech**  | Playback speed, fast first response                                        |
 | **Advanced → History** | Entry limit, auto-delete period                                            |
 | **History**            | Browse, replay, copy, and delete past utterances                           |
-| **Debug**              | Log level, keyboard implementation, diagnostics                            |
+| **Debug**              | Log level, diagnostics                                                     |
 
 ## Linux Notes
 
@@ -209,7 +209,7 @@ src/
 └── stores/settingsStore.ts  # Zustand state management
 ```
 
-**Key dependencies:** `tts-rs` (Kokoro TTS), `rodio` (audio playback), `cpal` (audio devices), `tauri-specta` (type-safe IPC)
+**Key dependencies:** vendored `tts-rs` (Kokoro TTS, in `src-tauri/crates/tts-rs`), `rodio` (audio playback), `cpal` (audio devices), `tauri-specta` (type-safe IPC)
 
 ## Acknowledgments
 

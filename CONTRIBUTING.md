@@ -44,19 +44,14 @@ Before you begin, ensure you have the following installed:
    bun install
    ```
 
-5. **Download required models**:
-
-   ```bash
-   mkdir -p src-tauri/resources/models
-   curl -o src-tauri/resources/models/silero_vad_v4.onnx https://blob.handy.computer/silero_vad_v4.onnx
-   ```
-
-6. **Run in development mode**:
+5. **Run in development mode**:
    ```bash
    bun run tauri dev
    # On macOS if you encounter cmake errors:
    CMAKE_POLICY_VERSION_MINIMUM=3.5 bun run tauri dev
    ```
+
+No model download is required for development. On first launch, Parrot prompts you to download the TTS model (~115 MB) in the app.
 
 For detailed platform-specific setup instructions, see [BUILD.md](BUILD.md).
 
@@ -89,9 +84,8 @@ For more details, see the Architecture section in [README.md](README.md).
 ### Before Submitting a Bug Report
 
 1. **Search existing issues** at [github.com/rishiskhare/parrot/issues](https://github.com/rishiskhare/parrot/issues)
-2. **Check discussions** at [github.com/rishiskhare/parrot/discussions](https://github.com/rishiskhare/parrot/discussions)
-3. **Try the latest release** to see if the issue has been fixed
-4. **Enable debug mode** (`Cmd/Ctrl+Shift+D`) to gather diagnostic information
+2. **Try the latest release** to see if the issue has been fixed
+3. **Enable debug mode** (`Cmd/Ctrl+Shift+D`) to gather diagnostic information
 
 ### Submitting a Bug Report
 
@@ -117,18 +111,16 @@ Use the [Bug Report template](.github/ISSUE_TEMPLATE/bug_report.md) when creatin
 
 ## 💡 Suggesting Features
 
-We use GitHub Discussions for feature requests rather than issues. This keeps issues focused on bugs and actionable tasks while allowing more open-ended conversations about features.
+Feature ideas belong in GitHub Issues. Use the [Feature Request template](.github/ISSUE_TEMPLATE/feature_request.md) so bugs stay easy to scan.
 
 ### Before Suggesting a Feature
 
-1. **Search existing discussions** at [github.com/rishiskhare/parrot/discussions](https://github.com/rishiskhare/parrot/discussions)
+1. **Search existing issues** at [github.com/rishiskhare/parrot/issues](https://github.com/rishiskhare/parrot/issues) (open and closed)
 
 ### Submitting a Feature Request
 
-1. Go to [Discussions](https://github.com/rishiskhare/parrot/discussions)
-2. Click "New discussion"
-3. Choose the appropriate category (Ideas, Feature Requests, etc.)
-4. Describe your feature idea including:
+1. Open a new issue with the Feature Request template
+2. Describe your idea including:
    - The problem you're trying to solve
    - Your proposed solution
    - Any alternatives you've considered
@@ -148,10 +140,9 @@ We use GitHub Discussions for feature requests rather than issues. This keeps is
 
 2. **If something was previously closed** - If you want to revisit a closed issue or PR, you need to:
    - Provide a strong argument for why it should be reconsidered
-   - Gather community feedback first via [Discussions](https://github.com/rishiskhare/parrot/discussions)
-   - Link to that discussion in your PR
+   - Link to the original issue or PR in your description
 
-3. **Get community feedback for features** - PRs with demonstrated community interest are **much more likely to be merged**. Start a discussion, get feedback, and link to it in your PR. This helps ensure Parrot stays focused and useful for the most people without becoming bloated.
+3. **Get community feedback for features** - PRs that build on an existing issue are **much more likely to be merged**. Open or link an issue first. This helps keep Parrot focused without becoming bloated.
 
 Community feedback is essential to keeping Parrot the best it can be for everyone. It helps prioritize what matters most and prevents feature creep.
 
@@ -175,7 +166,7 @@ Community feedback is essential to keeping Parrot the best it can be for everyon
    - Test on your target platform(s)
    - Verify existing functionality still works
    - Test edge cases and error conditions
-   - Use debug mode to verify audio/transcription behavior
+   - Use debug mode to verify TTS and overlay behavior
 
 4. **Commit your changes**:
 
@@ -213,13 +204,12 @@ Community feedback is essential to keeping Parrot the best it can be for everyon
    - Select your fork and branch
    - Fill out the PR template completely, including:
      - Clear description of changes
-     - Links to related issues or discussions
-     - **Community feedback** (especially important for features)
+     - Links to related issues
      - How you tested the changes
      - Screenshots/videos if applicable
      - Breaking changes (if any)
 
-   **Remember:** PRs with community support are prioritized. If you haven't already, start a [discussion](https://github.com/rishiskhare/parrot/discussions) to gather feedback before or alongside your PR. It is not explicitly required to gather feedback, but it certainly helps your PR get merged faster.
+   **Remember:** PRs that fix a reported issue or build on an existing feature request are prioritized. Link the issue in your PR. It is not required, but it helps the PR get merged faster.
 
 ### AI Assistance Disclosure
 
@@ -290,7 +280,7 @@ Documentation improvements are highly valued! You can contribute by:
 - **Be patient** - This is maintained by a small team, responses may take time
 - **Be constructive** - Focus on solutions and improvements
 - **Be collaborative** - Help others and share knowledge
-- **Search first** - Check existing issues/discussions before creating new ones
+- **Search first** - Check existing issues before creating new ones
 
 ## 🎯 Good First Issues
 
@@ -302,8 +292,7 @@ Look for issues labeled `good first issue` or `help wanted` if you're new to the
 
 ## 📞 Getting Help
 
-- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/rishiskhare/parrot/discussions)
-- **Issues**: File bugs at [GitHub Issues](https://github.com/rishiskhare/parrot/issues)
+- **Issues**: File bugs and questions at [GitHub Issues](https://github.com/rishiskhare/parrot/issues)
 
 ## 📜 License
 
@@ -311,4 +300,4 @@ By contributing to Parrot, you agree that your contributions will be licensed un
 
 ---
 
-**Thank you for contributing to Parrot!** Your efforts help make speech-to-text technology more accessible, private, and extensible for everyone.
+**Thank you for contributing to Parrot!** Your efforts help make private, on-device text-to-speech more accessible and extensible for everyone.

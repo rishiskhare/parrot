@@ -27,23 +27,23 @@ export const ModelUnloadTimeoutSetting: React.FC<ModelUnloadTimeoutProps> = ({
       label: t("settings.advanced.modelUnload.options.immediately"),
     },
     {
-      value: "min2" as ModelUnloadTimeout,
+      value: "min_2" as ModelUnloadTimeout,
       label: t("settings.advanced.modelUnload.options.min2"),
     },
     {
-      value: "min5" as ModelUnloadTimeout,
+      value: "min_5" as ModelUnloadTimeout,
       label: t("settings.advanced.modelUnload.options.min5"),
     },
     {
-      value: "min10" as ModelUnloadTimeout,
+      value: "min_10" as ModelUnloadTimeout,
       label: t("settings.advanced.modelUnload.options.min10"),
     },
     {
-      value: "min15" as ModelUnloadTimeout,
+      value: "min_15" as ModelUnloadTimeout,
       label: t("settings.advanced.modelUnload.options.min15"),
     },
     {
-      value: "hour1" as ModelUnloadTimeout,
+      value: "hour_1" as ModelUnloadTimeout,
       label: t("settings.advanced.modelUnload.options.hour1"),
     },
   ];
@@ -51,7 +51,7 @@ export const ModelUnloadTimeoutSetting: React.FC<ModelUnloadTimeoutProps> = ({
   const debugTimeoutOptions = [
     ...timeoutOptions,
     {
-      value: "sec5" as ModelUnloadTimeout,
+      value: "sec_5" as ModelUnloadTimeout,
       label: t("settings.advanced.modelUnload.options.sec5"),
     },
   ];

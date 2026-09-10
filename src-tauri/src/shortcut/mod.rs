@@ -565,18 +565,7 @@ pub fn change_model_unload_timeout_setting(
     timeout: String,
 ) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
-    let parsed = match timeout.as_str() {
-        "never" => ModelUnloadTimeout::Never,
-        "immediately" => ModelUnloadTimeout::Immediately,
-        "min2" => ModelUnloadTimeout::Min2,
-        "min5" => ModelUnloadTimeout::Min5,
-        "min10" => ModelUnloadTimeout::Min10,
-        "min15" => ModelUnloadTimeout::Min15,
-        "hour1" => ModelUnloadTimeout::Hour1,
-        "sec5" => ModelUnloadTimeout::Sec5,
-        _ => return Err(format!("Invalid model unload timeout: {}", timeout)),
-    };
-    settings.model_unload_timeout = parsed;
+    settings.model_unload_timeout = ModelUnloadTimeout::from_setting_value(&timeout)?;
     settings::write_settings(&app, settings);
     Ok(())
 }

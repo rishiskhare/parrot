@@ -96,11 +96,19 @@ pub enum ModelUnloadTimeout {
     #[default]
     Never,
     Immediately,
+    // Serde's snake_case turns Min5 into "min5", but specta/TS use "min_5".
+    // Rename to the specta form and alias the compact leftover so both round-trip.
+    #[serde(rename = "min_2", alias = "min2")]
     Min2,
+    #[serde(rename = "min_5", alias = "min5")]
     Min5,
+    #[serde(rename = "min_10", alias = "min10")]
     Min10,
+    #[serde(rename = "min_15", alias = "min15")]
     Min15,
+    #[serde(rename = "hour_1", alias = "hour1")]
     Hour1,
+    #[serde(rename = "sec_5", alias = "sec5")]
     Sec5, // Debug mode only
 }
 
@@ -133,6 +141,15 @@ impl Default for KeyboardImplementation {
 }
 
 impl ModelUnloadTimeout {
+    /// Parse a UI or stored timeout value.
+    ///
+    /// Accepts both serde snake_case (`min_5`) and the compact UI leftovers
+    /// (`min5`) so a settings write round-trips after restart.
+    pub fn from_setting_value(value: &str) -> Result<Self, String> {
+        serde_json::from_value(serde_json::Value::String(value.to_string()))
+            .map_err(|_| format!("Invalid model unload timeout: {value}"))
+    }
+
     pub fn to_minutes(self) -> Option<u64> {
         match self {
             ModelUnloadTimeout::Never => None,
@@ -487,4 +504,52 @@ pub fn get_history_limit(app: &AppHandle) -> usize {
 pub fn get_history_retention_period(app: &AppHandle) -> HistoryRetentionPeriod {
     let settings = get_settings(app);
     settings.history_retention_period
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ModelUnloadTimeout;
+
+    #[test]
+    fn serializes_unload_timeout_as_snake_case() {
+        let json = serde_json::to_string(&ModelUnloadTimeout::Min5).unwrap();
+        assert_eq!(json, "\"min_5\"");
+    }
+
+    #[test]
+    fn deserializes_unload_timeout_snake_case() {
+        let timeout: ModelUnloadTimeout = serde_json::from_str("\"min_5\"").unwrap();
+        assert_eq!(timeout, ModelUnloadTimeout::Min5);
+    }
+
+    #[test]
+    fn deserializes_legacy_compact_unload_timeout_aliases() {
+        let timeout: ModelUnloadTimeout = serde_json::from_str("\"min5\"").unwrap();
+        assert_eq!(timeout, ModelUnloadTimeout::Min5);
+        assert_eq!(
+            serde_json::from_str::<ModelUnloadTimeout>("\"min2\"").unwrap(),
+            ModelUnloadTimeout::Min2
+        );
+        assert_eq!(
+            serde_json::from_str::<ModelUnloadTimeout>("\"hour1\"").unwrap(),
+            ModelUnloadTimeout::Hour1
+        );
+        assert_eq!(
+            serde_json::from_str::<ModelUnloadTimeout>("\"sec5\"").unwrap(),
+            ModelUnloadTimeout::Sec5
+        );
+    }
+
+    #[test]
+    fn parses_unload_timeout_setting_from_either_form() {
+        assert_eq!(
+            ModelUnloadTimeout::from_setting_value("min_5").unwrap(),
+            ModelUnloadTimeout::Min5
+        );
+        assert_eq!(
+            ModelUnloadTimeout::from_setting_value("min5").unwrap(),
+            ModelUnloadTimeout::Min5
+        );
+        assert!(ModelUnloadTimeout::from_setting_value("min3").is_err());
+    }
 }

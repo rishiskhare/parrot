@@ -8,7 +8,7 @@
 **If this is a feature or change that was previously closed/rejected:**
 
 - [ ] I have explained in the description below why this should be reconsidered
-- [ ] I have gathered community feedback (link to discussion below)
+- [ ] I have linked the original issue or PR
 
 ## Human Written Description
 
@@ -22,26 +22,22 @@ This section should be YOUR thinking, not AI-generated text. Even if AI helped w
 include a human-written description.
 -->
 
-## Related Issues/Discussions
+## Related Issues
 
-<!-- Link to related issues, discussions, or previous PRs -->
+<!-- Link to related issues or previous PRs -->
 <!-- If reopening something previously closed, explain why this should be reconsidered -->
 
 Fixes #
-Discussion:
 
 ## Community Feedback
 
 <!--
-PRs with community support are much more likely to be merged.
+PRs that fix a reported issue are easier to review.
 
-For features: Link to a discussion where community members have expressed interest.
+For features: Link to the issue where others have expressed interest.
 For bug fixes: Link to the issue where others have confirmed the bug.
 
-If you haven't gathered feedback yet, consider starting a discussion first:
-https://github.com/rishiskhare/parrot/discussions
-
-It is not explicitly required to gather feedback, but it certainly helps your PR get merged.
+It is not required, but it helps the PR get merged.
 -->
 
 ## Testing
