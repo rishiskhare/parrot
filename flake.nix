@@ -84,13 +84,6 @@
                 --replace-fail \
                   "libayatana-appindicator3.so.1" \
                   "${pkgs.libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
-
-              # Disable cbindgen in ferrous-opencc (calls cargo metadata which fails in sandbox)
-              # Upstream removed this call in v0.3.1+
-              substituteInPlace $cargoDepsCopy/ferrous-opencc-0.2.3/build.rs \
-                --replace-fail '.expect("Unable to generate bindings")' '.ok();'
-              substituteInPlace $cargoDepsCopy/ferrous-opencc-0.2.3/build.rs \
-                --replace-fail '.write_to_file("opencc.h");' '// skipped'
             '';
 
             preBuild = ''
