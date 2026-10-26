@@ -196,8 +196,33 @@ fn get_selected_text_with_fallback(app: &AppHandle) -> Option<String> {
     }
 }
 
+/// Read the X11/Wayland PRIMARY selection, which holds the currently highlighted
+/// text without needing a synthetic Ctrl+C (unreliable on Wayland, and sends
+/// SIGINT in terminals).
+#[cfg(target_os = "linux")]
+fn get_primary_selection() -> Option<String> {
+    use arboard::{Clipboard, GetExtLinux, LinuxClipboardKind};
+
+    let mut clipboard = Clipboard::new()
+        .map_err(|e| debug!("Failed to open clipboard for PRIMARY selection: {}", e))
+        .ok()?;
+    clipboard
+        .get()
+        .clipboard(LinuxClipboardKind::Primary)
+        .text()
+        .map_err(|e| debug!("Failed to read PRIMARY selection: {}", e))
+        .ok()
+        .map(|text| text.trim().to_string())
+        .filter(|text| !text.is_empty())
+}
+
 #[cfg(not(target_os = "macos"))]
 fn get_selected_text_with_fallback(app: &AppHandle) -> Option<String> {
+    #[cfg(target_os = "linux")]
+    if let Some(text) = get_primary_selection() {
+        return Some(text);
+    }
+
     let clipboard = app.clipboard();
     let previous_clipboard = clipboard.read_text().ok();
     let restore_clipboard = |value: Option<String>| {
