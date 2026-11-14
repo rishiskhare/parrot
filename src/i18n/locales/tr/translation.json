@@ -142,14 +142,7 @@
         "allLanguages": "Tüm Diller"
       },
       "noModelsMatch": "Bu filtreyle eşleşen model yok.",
-      "searchPlaceholder": "Model ara",
-      "huggingFace": {
-        "title": "Hugging Face'ten ekle",
-        "placeholder": "owner/model veya huggingface.co URL'si",
-        "add": "Ekle",
-        "adding": "Ekleniyor...",
-        "hint": "Piper sesleri (.onnx + .onnx.json) ve Kokoro ONNX modelleri (.onnx + voices .bin) desteklenir."
-      }
+      "searchPlaceholder": "Model ara"
     },
     "sound": {
       "title": "Ses",

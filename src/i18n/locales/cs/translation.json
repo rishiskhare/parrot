@@ -142,14 +142,7 @@
         "allLanguages": "Všechny jazyky"
       },
       "noModelsMatch": "Tomuto filtru neodpovídají žádné modely.",
-      "searchPlaceholder": "Hledat modely",
-      "huggingFace": {
-        "title": "Přidat z Hugging Face",
-        "placeholder": "owner/model nebo URL huggingface.co",
-        "add": "Přidat",
-        "adding": "Přidávání...",
-        "hint": "Podporuje hlasy Piper (.onnx + .onnx.json) a modely Kokoro ONNX (.onnx + voices .bin)."
-      }
+      "searchPlaceholder": "Hledat modely"
     },
     "sound": {
       "title": "Zvuk",

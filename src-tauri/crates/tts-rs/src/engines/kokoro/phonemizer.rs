@@ -1,7 +1,8 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::ffi::OsString;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 use super::model::KokoroError;
@@ -192,6 +193,19 @@ fn phonemize_segments_batch(
     Ok(lines.iter().map(|line| ipa_to_ids(line, vocab)).collect())
 }
 
+/// espeak-ng keeps its data path in a 160-byte buffer on macOS and Linux and
+/// silently falls back to its compiled-in default when the path is longer
+/// (e.g. macOS App Translocation paths). Run it from the data directory's
+/// parent and pass the short directory name instead.
+fn espeak_data_path_arg(data_path: &Path) -> (Option<&Path>, OsString) {
+    match (data_path.parent(), data_path.file_name()) {
+        (Some(parent), Some(name)) if !parent.as_os_str().is_empty() => {
+            (Some(parent), name.to_owned())
+        }
+        _ => (None, data_path.as_os_str().to_owned()),
+    }
+}
+
 fn run_espeak(input: &str, lang: &str, espeak: &EspeakConfig) -> Result<String, KokoroError> {
     let bin = espeak
         .bin_path
@@ -207,7 +221,11 @@ fn run_espeak(input: &str, lang: &str, espeak: &EspeakConfig) -> Result<String, 
     }
     cmd.args(["--ipa", "--stdin", "-q", "-v", lang]);
     if let Some(data_path) = espeak.data_path.as_deref() {
-        cmd.arg("--path").arg(data_path);
+        let (dir, arg) = espeak_data_path_arg(data_path);
+        if let Some(dir) = dir {
+            cmd.current_dir(dir);
+        }
+        cmd.arg("--path").arg(arg);
     }
     // When using a bundled binary, shared libraries (libespeak-ng.so,
     // libpcaudio.so) are placed next to the binary.  On Linux, the dynamic
@@ -282,14 +300,57 @@ fn ipa_to_ids(ipa: &str, vocab: &HashMap<char, i64>) -> Vec<i64> {
 #[cfg(test)]
 mod tests {
     use super::{
-        canonicalize_espeak_stdin_payload, ipa_to_ids, phonemize, phonemize_segments_batch,
-        run_espeak, split_text_parts, EspeakConfig, TextPart, ESPEAK_SEGMENT_SEPARATOR,
+        canonicalize_espeak_stdin_payload, espeak_data_path_arg, ipa_to_ids, phonemize,
+        phonemize_segments_batch, run_espeak, split_text_parts, EspeakConfig, TextPart,
+        ESPEAK_SEGMENT_SEPARATOR,
     };
     use crate::engines::kokoro::vocab::hardcoded_vocab;
     use std::process::Command;
 
     fn espeak_available() -> bool {
         Command::new("espeak-ng").arg("--version").output().is_ok()
+    }
+
+    #[test]
+    fn passes_long_espeak_data_paths_relative_to_their_parent() {
+        let long = std::path::PathBuf::from(format!(
+            "/private/var/folders/{}/AppTranslocation/Parrot.app/Contents/Resources/resources/espeak-ng-data",
+            "x".repeat(120)
+        ));
+        let (dir, arg) = espeak_data_path_arg(&long);
+        assert_eq!(dir, long.parent());
+        assert_eq!(arg, "espeak-ng-data");
+
+        let (dir, arg) = espeak_data_path_arg(std::path::Path::new("espeak-ng-data"));
+        assert_eq!((dir, arg.to_str()), (None, Some("espeak-ng-data")));
+    }
+
+    #[test]
+    fn uses_bundled_data_from_a_path_longer_than_espeak_allows() {
+        if !espeak_available() {
+            return;
+        }
+        let bundled = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../resources/espeak-ng-data")
+            .canonicalize()
+            .unwrap();
+        let long_dir = std::env::temp_dir()
+            .join("x".repeat(80))
+            .join("y".repeat(80));
+        std::fs::create_dir_all(&long_dir).unwrap();
+        let data = long_dir.join("espeak-ng-data");
+        let _ = std::fs::remove_file(&data);
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(&bundled, &data).unwrap();
+        #[cfg(not(unix))]
+        return;
+        assert!(data.as_os_str().len() > 160);
+        let espeak = EspeakConfig {
+            bin_path: None,
+            data_path: Some(data),
+        };
+        let ipa = run_espeak("hello", "en-us", &espeak).unwrap();
+        assert!(ipa.contains("həl"), "{ipa}");
     }
 
     #[test]

@@ -6,7 +6,6 @@
 //! history and the Models UI work unchanged.
 
 mod kokoro;
-mod piper;
 
 use std::path::{Path, PathBuf};
 
@@ -50,10 +49,6 @@ pub struct HfRepo<'a> {
 }
 
 impl HfRepo<'_> {
-    pub fn has_file(&self, path: &str) -> bool {
-        self.files.iter().any(|f| f.rfilename == path)
-    }
-
     pub fn paths(&self) -> impl Iterator<Item = &str> {
         self.files.iter().map(|f| f.rfilename.as_str())
     }
@@ -89,7 +84,8 @@ pub trait ModelFamily: Sync {
 }
 
 /// Registered families, in detection priority order.
-pub static FAMILIES: &[&dyn ModelFamily] = &[&piper::Piper, &kokoro::Kokoro];
+/// Piper is disabled until it has had more testing.
+pub static FAMILIES: &[&dyn ModelFamily] = &[&kokoro::Kokoro];
 
 pub fn family_for(engine_type: &EngineType) -> &'static dyn ModelFamily {
     *FAMILIES
@@ -119,7 +115,7 @@ mod tests {
 
     #[test]
     fn every_engine_type_has_a_family() {
-        for engine_type in [EngineType::Kokoro, EngineType::Piper] {
+        for engine_type in [EngineType::Kokoro] {
             assert_eq!(family_for(&engine_type).engine_type(), engine_type);
         }
     }

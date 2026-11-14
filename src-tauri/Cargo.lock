@@ -3792,7 +3792,7 @@ dependencies = [
 
 [[package]]
 name = "parrot"
-version = "26.10.1"
+version = "26.11.1"
 dependencies = [
  "anyhow",
  "arboard",

@@ -161,30 +161,24 @@ const ModelCard: React.FC<ModelCardProps> = ({
           </p>
         </div>
         {(model.accuracy_score > 0 || model.speed_score > 0) && (
-          <div className="hidden sm:flex items-center ml-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-text/60 w-14 text-right">
-                  {t("onboarding.modelCard.accuracy")}
-                </p>
-                <div className="w-16 h-1.5 bg-mid-gray/20 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-logo-primary rounded-full"
-                    style={{ width: `${model.accuracy_score * 100}%` }}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-text/60 w-14 text-right">
-                  {t("onboarding.modelCard.speed")}
-                </p>
-                <div className="w-16 h-1.5 bg-mid-gray/20 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-logo-primary rounded-full"
-                    style={{ width: `${model.speed_score * 100}%` }}
-                  />
-                </div>
-              </div>
+          <div className="hidden sm:grid grid-cols-[auto_4rem] items-center gap-x-2 gap-y-1 ml-4 shrink-0">
+            <p className="text-xs text-text/60 text-right whitespace-nowrap">
+              {t("onboarding.modelCard.accuracy")}
+            </p>
+            <div className="h-1.5 bg-mid-gray/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-logo-primary rounded-full"
+                style={{ width: `${model.accuracy_score * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-text/60 text-right whitespace-nowrap">
+              {t("onboarding.modelCard.speed")}
+            </p>
+            <div className="h-1.5 bg-mid-gray/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-logo-primary rounded-full"
+                style={{ width: `${model.speed_score * 100}%` }}
+              />
             </div>
           </div>
         )}

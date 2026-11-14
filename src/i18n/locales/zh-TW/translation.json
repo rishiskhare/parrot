@@ -142,14 +142,7 @@
         "allLanguages": "所有語言"
       },
       "noModelsMatch": "沒有符合此篩選條件的模型",
-      "searchPlaceholder": "搜尋模型",
-      "huggingFace": {
-        "title": "從 Hugging Face 新增",
-        "placeholder": "owner/model 或 huggingface.co 網址",
-        "add": "新增",
-        "adding": "正在新增...",
-        "hint": "支援 Piper 語音（.onnx + .onnx.json）與 Kokoro ONNX 模型（.onnx + voices .bin）。"
-      }
+      "searchPlaceholder": "搜尋模型"
     },
     "sound": {
       "title": "聲音",

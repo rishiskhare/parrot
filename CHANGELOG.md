@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [26.11.1] - 2026-11-06
+
+### Fixed
+
+- Run espeak-ng from long app paths on macOS (e.g. when opened from Downloads via App Translocation)
+- German model-card rating labels no longer overlap their bars
+- Deleted or missing imported models no longer reappear in the Models list
+- Overlay on Windows and Linux floats 15 px above the taskbar/dock, sizes to its content and has no scrollbar
+- Overlay on Sway/Hyprland snaps between sizes instead of animating, which left stale frames
+
+### Removed
+
+- Piper voices, the model search bar and "Add from Hugging Face" (temporarily, until they are tested more); installs with a Piper voice selected fall back to Kokoro
+
 ## [26.10.1] - 2026-10-26
 
 ### Added

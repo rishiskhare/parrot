@@ -15,7 +15,7 @@ English (US & UK) · Spanish · French · Hindi · Italian · Japanese · Portug
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-red)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/rishiskhare/parrot/total)
-![Version](https://img.shields.io/badge/version-26.10.1-blue)
+![Version](https://img.shields.io/badge/version-26.11.1-blue)
 
 </div>
 

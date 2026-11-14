@@ -13,6 +13,7 @@ type OverlayState = "processing" | "speaking";
 interface OverlayPayload {
   state: OverlayState;
   text?: string;
+  animate?: boolean;
 }
 
 const SpeakingOverlay: React.FC = () => {
@@ -27,6 +28,7 @@ const SpeakingOverlay: React.FC = () => {
   // hidden, so it snaps to the correct size instantly instead of animating
   // from the previous state's dimensions.
   const [noTransition, setNoTransition] = useState(true);
+  const [animate, setAnimate] = useState(true);
   const wasVisibleRef = useRef(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const direction = getLanguageDirection(i18n.language);
@@ -69,6 +71,7 @@ const SpeakingOverlay: React.FC = () => {
         }
 
         const payload = event.payload as OverlayPayload;
+        setAnimate(payload.animate ?? true);
 
         if (payload.state === "speaking") {
           if (payload.text) {
@@ -149,7 +152,7 @@ const SpeakingOverlay: React.FC = () => {
     <div
       ref={overlayRef}
       dir={direction}
-      className={`speaking-overlay ${state}-state ${isVisible ? "fade-in" : ""} ${speakingPaused ? "paused" : ""} ${noTransition ? "no-transition" : ""}`}
+      className={`speaking-overlay ${state}-state ${isVisible ? "fade-in" : ""} ${speakingPaused ? "paused" : ""} ${noTransition || !animate ? "no-transition" : ""}`}
     >
       {showCloseButton && (
         <button

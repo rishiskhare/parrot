@@ -2,7 +2,7 @@ use crate::input;
 use crate::settings;
 use crate::settings::OverlayPosition;
 use serde::Serialize;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
 
@@ -10,6 +10,7 @@ use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
 struct OverlayPayload {
     state: String,
     text: Option<String>,
+    animate: bool,
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -62,6 +63,10 @@ const RESIZE_ANIM_MIN_DELTA: f64 = 0.5;
 // text wraps) don't queue up competing animations — only the latest wins.
 static OVERLAY_RESIZE_GENERATION: AtomicU64 = AtomicU64::new(0);
 
+// WebKit leaves stale frames on transparent layer-shell surfaces (Sway,
+// Hyprland), so size changes there snap instead of animating.
+static OVERLAY_ANIMATES: AtomicBool = AtomicBool::new(true);
+
 // cubic-bezier(0.22, 0.61, 0.36, 1) evaluator, matching the easing curve
 // already used for the width/padding/border-radius CSS transitions in
 // SpeakingOverlay.css, for visual consistency between the Rust-animated
@@ -111,11 +116,10 @@ const OVERLAY_TOP_OFFSET: f64 = 46.0;
 #[cfg(any(target_os = "windows", target_os = "linux"))]
 const OVERLAY_TOP_OFFSET: f64 = 4.0;
 
-#[cfg(target_os = "macos")]
+// Gap between the overlay and the bottom edge it floats above: the screen
+// edge on macOS (the panel sits above the dock), the work area (above the
+// taskbar or dock) elsewhere.
 const OVERLAY_BOTTOM_OFFSET: f64 = 15.0;
-
-#[cfg(any(target_os = "windows", target_os = "linux"))]
-const OVERLAY_BOTTOM_OFFSET: f64 = 40.0;
 
 /// Returns the window height for a given overlay state.
 fn height_for_state(state: &str) -> f64 {
@@ -139,10 +143,14 @@ fn update_gtk_layer_shell_anchors(overlay_window: &tauri::webview::WebviewWindow
                 OverlayPosition::Top => {
                     gtk_window.set_anchor(Edge::Top, true);
                     gtk_window.set_anchor(Edge::Bottom, false);
+                    gtk_window.set_layer_shell_margin(Edge::Top, OVERLAY_TOP_OFFSET as i32);
+                    gtk_window.set_layer_shell_margin(Edge::Bottom, 0);
                 }
                 OverlayPosition::Bottom | OverlayPosition::None => {
                     gtk_window.set_anchor(Edge::Bottom, true);
                     gtk_window.set_anchor(Edge::Top, false);
+                    gtk_window.set_layer_shell_margin(Edge::Bottom, OVERLAY_BOTTOM_OFFSET as i32);
+                    gtk_window.set_layer_shell_margin(Edge::Top, 0);
                 }
             }
         }
@@ -276,13 +284,16 @@ fn calculate_overlay_position(
                 work_area_y + OVERLAY_TOP_OFFSET
             }
             OverlayPosition::Bottom | OverlayPosition::None => {
-                // Bottom: position relative to the full screen edge so the
-                // overlay floats just above the screen bottom. The NSPanel
-                // (macOS) renders above the dock at PanelLevel::Status, and
-                // on other platforms always_on_top puts it above the taskbar.
-                let screen_height = monitor.size().height as f64 / scale;
-                let screen_y = monitor.position().y as f64 / scale;
-                screen_y + screen_height - overlay_height - OVERLAY_BOTTOM_OFFSET
+                // macOS: the NSPanel renders above the dock at
+                // PanelLevel::Status, so float just above the screen bottom.
+                // Elsewhere, float above the taskbar/dock via the work area.
+                #[cfg(target_os = "macos")]
+                let (bottom_y, bottom_height) = (monitor.position().y, monitor.size().height);
+                #[cfg(not(target_os = "macos"))]
+                let (bottom_y, bottom_height) = (work_area.position.y, work_area.size.height);
+                bottom_y as f64 / scale + bottom_height as f64 / scale
+                    - overlay_height
+                    - OVERLAY_BOTTOM_OFFSET
             }
         };
 
@@ -298,10 +309,18 @@ fn resize_and_reposition(
     overlay_window: &tauri::webview::WebviewWindow,
     height: f64,
 ) {
-    let _ = overlay_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
+    let size = tauri::Size::Logical(tauri::LogicalSize {
         width: OVERLAY_WIDTH,
         height,
-    }));
+    });
+    // Regular Linux windows are resizable (see create_speaking_overlay), so
+    // pin min = max to stop the window manager offering a resize handle.
+    #[cfg(target_os = "linux")]
+    if overlay_window.is_resizable().unwrap_or(false) {
+        let _ = overlay_window.set_min_size(Some(size));
+        let _ = overlay_window.set_max_size(Some(size));
+    }
+    let _ = overlay_window.set_size(size);
 
     #[cfg(target_os = "linux")]
     {
@@ -335,6 +354,16 @@ fn animate_resize_to(
         .unwrap_or(target_height);
 
     if (target_height - start_height).abs() < RESIZE_ANIM_MIN_DELTA {
+        return;
+    }
+
+    if !OVERLAY_ANIMATES.load(Ordering::Relaxed) {
+        OVERLAY_RESIZE_GENERATION.fetch_add(1, Ordering::SeqCst);
+        let app_handle = app_handle.clone();
+        let window = overlay_window.clone();
+        let _ = overlay_window.run_on_main_thread(move || {
+            resize_and_reposition(&app_handle, &window, target_height);
+        });
         return;
     }
 
@@ -430,8 +459,20 @@ pub fn create_speaking_overlay(app_handle: &AppHandle) {
         Ok(window) => {
             if init_gtk_layer_shell(&window) {
                 debug!("GTK layer shell initialized for overlay window");
+                OVERLAY_ANIMATES.store(false, Ordering::Relaxed);
             } else {
                 debug!("GTK layer shell not available, falling back to regular window");
+                // GTK keeps non-resizable windows at least as big as the
+                // webview's natural size (200 px tall), so the overlay could
+                // not shrink to fit. Layer-shell surfaces stop drawing when
+                // resizable, so only regular windows get this.
+                let size = tauri::Size::Logical(tauri::LogicalSize {
+                    width: OVERLAY_WIDTH,
+                    height: PROCESSING_HEIGHT,
+                });
+                let _ = window.set_resizable(true);
+                let _ = window.set_min_size(Some(size));
+                let _ = window.set_max_size(Some(size));
             }
             debug!("Speaking overlay window created successfully (hidden)");
         }
@@ -522,6 +563,7 @@ fn show_overlay_state_now(app_handle: &AppHandle, state: &str, text: Option<Stri
         let payload = OverlayPayload {
             state: state.to_string(),
             text,
+            animate: OVERLAY_ANIMATES.load(Ordering::Relaxed),
         };
         let _ = overlay_window.emit("show-overlay", payload);
     }

@@ -142,14 +142,7 @@
         "allLanguages": "Все языки"
       },
       "noModelsMatch": "Нет моделей, соответствующих этому фильтру.",
-      "searchPlaceholder": "Поиск моделей",
-      "huggingFace": {
-        "title": "Добавить с Hugging Face",
-        "placeholder": "owner/model или URL huggingface.co",
-        "add": "Добавить",
-        "adding": "Добавление...",
-        "hint": "Поддерживаются голоса Piper (.onnx + .onnx.json) и модели Kokoro ONNX (.onnx + voices .bin)."
-      }
+      "searchPlaceholder": "Поиск моделей"
     },
     "sound": {
       "title": "Звук",

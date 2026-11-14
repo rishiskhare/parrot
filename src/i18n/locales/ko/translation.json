@@ -142,14 +142,7 @@
         "allLanguages": "모든 언어"
       },
       "noModelsMatch": "이 필터에 맞는 모델이 없습니다.",
-      "searchPlaceholder": "모델 검색",
-      "huggingFace": {
-        "title": "Hugging Face에서 추가",
-        "placeholder": "owner/model 또는 huggingface.co URL",
-        "add": "추가",
-        "adding": "추가 중...",
-        "hint": "Piper 음성(.onnx + .onnx.json)과 Kokoro ONNX 모델(.onnx + voices .bin)을 지원합니다."
-      }
+      "searchPlaceholder": "모델 검색"
     },
     "sound": {
       "title": "사운드",

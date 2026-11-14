@@ -176,17 +176,6 @@ pub async fn cancel_download(
 
 #[tauri::command]
 #[specta::specta]
-pub async fn refresh_model_catalog(
-    model_manager: State<'_, Arc<ModelManager>>,
-) -> Result<(), String> {
-    model_manager
-        .refresh_huggingface_catalog()
-        .await
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-#[specta::specta]
 pub async fn add_huggingface_model(
     model_manager: State<'_, Arc<ModelManager>>,
     repo: String,

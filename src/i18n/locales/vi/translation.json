@@ -142,14 +142,7 @@
         "allLanguages": "Tất cả ngôn ngữ"
       },
       "noModelsMatch": "Không có mô hình nào khớp với bộ lọc này.",
-      "searchPlaceholder": "Tìm mô hình",
-      "huggingFace": {
-        "title": "Thêm từ Hugging Face",
-        "placeholder": "owner/model hoặc URL huggingface.co",
-        "add": "Thêm",
-        "adding": "Đang thêm...",
-        "hint": "Hỗ trợ giọng Piper (.onnx + .onnx.json) và mô hình Kokoro ONNX (.onnx + voices .bin)."
-      }
+      "searchPlaceholder": "Tìm mô hình"
     },
     "sound": {
       "title": "Âm thanh",

@@ -142,14 +142,7 @@
         "allLanguages": "Todos los idiomas"
       },
       "noModelsMatch": "Ningún modelo coincide con este filtro.",
-      "searchPlaceholder": "Buscar modelos",
-      "huggingFace": {
-        "title": "Añadir desde Hugging Face",
-        "placeholder": "owner/model o URL de huggingface.co",
-        "add": "Añadir",
-        "adding": "Añadiendo...",
-        "hint": "Admite voces Piper (.onnx + .onnx.json) y modelos Kokoro ONNX (.onnx + voices .bin)."
-      }
+      "searchPlaceholder": "Buscar modelos"
     },
     "sound": {
       "title": "Sonido",
