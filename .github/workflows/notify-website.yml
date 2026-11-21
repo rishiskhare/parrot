@@ -1,0 +1,39 @@
+name: Rebuild website
+
+on:
+  release:
+    types: [released]
+
+permissions:
+  contents: read
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait until this release is the latest with every installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version="${TAG#v}"
+          for attempt in $(seq 10); do
+            names="$(gh api "repos/$GH_REPO/releases/latest" --jq 'select(.tag_name == env.TAG) | .assets[].name' || true)"
+            missing=0
+            for suffix in _aarch64.dmg _x64-setup.exe _arm64-setup.exe _amd64.AppImage _amd64.deb _aarch64.AppImage _arm64.deb; do
+              grep -qxF "Parrot_${version}${suffix}" <<< "$names" || missing=1
+            done
+            if [ "$missing" = 0 ]; then exit 0; fi
+            echo "Attempt $attempt: $TAG is not yet the latest release with all installers"
+            sleep 60
+          done
+          exit 1
+
+      - name: Trigger website rebuild
+        env:
+          WEBSITE_DEPLOY_HOOK: ${{ secrets.WEBSITE_DEPLOY_HOOK }}
+        run: |
+          : "${WEBSITE_DEPLOY_HOOK:?Set the WEBSITE_DEPLOY_HOOK secret}"
+          curl --fail-with-body --silent --show-error --request POST "$WEBSITE_DEPLOY_HOOK"
